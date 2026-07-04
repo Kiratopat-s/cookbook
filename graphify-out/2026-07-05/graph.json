@@ -89,7 +89,7 @@
       "label": "Content Conventions",
       "file_type": "document",
       "source_file": "AGENTS.md",
-      "source_location": "L15",
+      "source_location": "L13",
       "id": "agents_content_conventions",
       "community": 1,
       "norm_label": "content conventions"
@@ -98,7 +98,7 @@
       "label": "Quality Bar",
       "file_type": "document",
       "source_file": "AGENTS.md",
-      "source_location": "L25",
+      "source_location": "L23",
       "id": "agents_quality_bar",
       "community": 1,
       "norm_label": "quality bar"
@@ -134,7 +134,7 @@
       "label": "Publishing",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L14",
+      "source_location": "L13",
       "id": "readme_publishing",
       "community": 5,
       "norm_label": "publishing"
@@ -147,9 +147,9 @@
       "source_file": "AGENTS.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agents",
-      "target": "agents_project_instructions"
+      "target": "agents_project_instructions",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -157,9 +157,9 @@
       "source_file": "AGENTS.md",
       "source_location": "L13",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agents_project_instructions",
-      "target": "agents_content_conventions"
+      "target": "agents_content_conventions",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -167,9 +167,9 @@
       "source_file": "AGENTS.md",
       "source_location": "L23",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agents_project_instructions",
-      "target": "agents_quality_bar"
+      "target": "agents_quality_bar",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -177,9 +177,9 @@
       "source_file": "AGENTS.md",
       "source_location": "L5",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agents_project_instructions",
-      "target": "agents_site_shape"
+      "target": "agents_site_shape",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -187,9 +187,9 @@
       "source_file": "README.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme",
-      "target": "readme_devsecops_cookbook_knowledge"
+      "target": "readme_devsecops_cookbook_knowledge",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -197,9 +197,9 @@
       "source_file": "README.md",
       "source_location": "L13",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme_devsecops_cookbook_knowledge",
-      "target": "readme_publishing"
+      "target": "readme_publishing",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -207,9 +207,9 @@
       "source_file": "README.md",
       "source_location": "L6",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme_devsecops_cookbook_knowledge",
-      "target": "readme_structure"
+      "target": "readme_structure",
+      "confidence_score": 1.0
     }
   ],
   "hyperedges": [
@@ -266,5 +266,5 @@
       "source_file": "AGENTS.md"
     }
   ],
-  "built_at_commit": "7ce5f708aeab95f9739852839abf0de3dc5a4f35"
+  "built_at_commit": "ef5c3810e58080fb0f2288dc654988e7d8e23ddf"
 }
