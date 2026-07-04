@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -6,268 +6,2190 @@
     <title>DevSecOps Cookbook</title>
     <style>
       :root {
-        color-scheme: light;
-        --ink: #15171a;
-        --muted: #59606a;
-        --paper: #fbfaf7;
-        --panel: #f1f5f4;
-        --line: #d8dedc;
-        --accent: #00796b;
-        --accent-strong: #004d40;
-        --warn: #b45309;
-        --danger: #b91c1c;
-        --terminal: #101316;
-        --terminal-line: #2a3035;
+        color-scheme: dark;
+        --bg: #080a0d;
+        --bg-soft: #0e1217;
+        --panel: #121820;
+        --panel-2: #17202a;
+        --panel-3: #10151c;
+        --ink: #edf7f3;
+        --muted: #9aa8a6;
+        --muted-2: #73817f;
+        --line: #26333c;
+        --line-strong: #334650;
+        --accent: #2dd4bf;
+        --accent-2: #fbbf24;
+        --accent-3: #fb7185;
+        --good: #34d399;
+        --warn: #f59e0b;
+        --danger: #ef4444;
+        --code: #090d11;
+        --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+        --sidebar: 304px;
       }
 
       * {
         box-sizing: border-box;
       }
 
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 24px;
+      }
+
       body {
         margin: 0;
         min-height: 100vh;
+        overflow-x: hidden;
         color: var(--ink);
         background:
-          linear-gradient(90deg, rgba(0, 121, 107, 0.08) 1px, transparent 1px),
-          linear-gradient(180deg, rgba(180, 83, 9, 0.08) 1px, transparent 1px),
-          linear-gradient(135deg, #fbfaf7 0%, #eef5f2 54%, #f7efe5 100%);
-        background-size: 44px 44px, 44px 44px, auto;
-        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        line-height: 1.5;
+          linear-gradient(90deg, rgba(45, 212, 191, 0.05) 1px, transparent 1px),
+          linear-gradient(180deg, rgba(251, 191, 36, 0.035) 1px, transparent 1px),
+          radial-gradient(circle at top left, rgba(45, 212, 191, 0.12), transparent 34rem),
+          var(--bg);
+        background-size: 48px 48px, 48px 48px, auto, auto;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.6;
       }
 
-      main {
-        width: min(1120px, calc(100% - 32px));
-        margin: 0 auto;
-        padding: 44px 0;
+      a {
+        color: var(--accent);
+        text-decoration-thickness: 0.08em;
+        text-underline-offset: 0.2em;
       }
 
-      .hero {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(320px, 0.82fr);
-        gap: 32px;
-        align-items: center;
-        min-height: 58vh;
+      code,
+      pre {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       }
 
-      .eyebrow {
-        margin: 0 0 12px;
-        color: var(--accent-strong);
-        font-size: 0.82rem;
+      .skip-link {
+        position: fixed;
+        z-index: 1000;
+        top: 12px;
+        left: 12px;
+        transform: translateY(-150%);
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: var(--accent);
+        color: #03201c;
+        font-weight: 800;
+      }
+
+      .skip-link:focus {
+        transform: translateY(0);
+      }
+
+      .mobile-bar {
+        display: none;
+      }
+
+      .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: var(--sidebar);
+        overflow-y: auto;
+        border-right: 1px solid var(--line);
+        background: rgba(8, 10, 13, 0.96);
+        backdrop-filter: blur(16px);
+        z-index: 20;
+      }
+
+      .brand {
+        padding: 24px 22px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .brand-eyebrow {
+        margin: 0 0 8px;
+        color: var(--accent);
+        font-size: 0.75rem;
         font-weight: 800;
         letter-spacing: 0;
         text-transform: uppercase;
       }
 
-      h1 {
-        max-width: 10ch;
+      .brand h1 {
         margin: 0;
-        font-size: clamp(3rem, 7vw, 6.4rem);
+        font-size: 1.45rem;
+        line-height: 1.1;
+        letter-spacing: 0;
+      }
+
+      .brand p {
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .search {
+        padding: 16px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .search label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .search input {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        color: var(--ink);
+        background: #0c1117;
+        padding: 0 12px;
+        font: inherit;
+      }
+
+      .search input:focus {
+        outline: 2px solid rgba(45, 212, 191, 0.45);
+        outline-offset: 2px;
+      }
+
+      .nav {
+        padding: 14px 12px 24px;
+      }
+
+      .nav a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 42px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        color: var(--muted);
+        font-size: 0.92rem;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .nav a:hover,
+      .nav a:focus,
+      .nav a.is-active {
+        color: var(--ink);
+        background: rgba(45, 212, 191, 0.11);
+      }
+
+      .nav-index {
+        display: inline-grid;
+        place-items: center;
+        min-width: 26px;
+        height: 26px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        color: var(--accent);
+        font-size: 0.78rem;
+      }
+
+      .page {
+        margin-left: var(--sidebar);
+        min-height: 100vh;
+      }
+
+      main {
+        width: min(1180px, calc(100vw - var(--sidebar) - 40px));
+        margin: 0 auto;
+        padding: 42px 0 80px;
+      }
+
+      .hero {
+        padding: 28px 0 34px;
+      }
+
+      .kicker {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        margin: 0 0 16px;
+        color: var(--accent);
+        font-size: 0.82rem;
+        font-weight: 850;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .kicker::before {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--good);
+        content: "";
+        box-shadow: 0 0 0 6px rgba(52, 211, 153, 0.11);
+      }
+
+      .hero h2 {
+        max-width: 920px;
+        margin: 0;
+        font-size: clamp(2.8rem, 8vw, 6.6rem);
         line-height: 0.94;
         letter-spacing: 0;
       }
 
-      .lead {
-        max-width: 650px;
+      .hero-lead {
+        max-width: 860px;
         margin: 24px 0 0;
         color: var(--muted);
-        font-size: clamp(1.05rem, 2vw, 1.25rem);
+        font-size: clamp(1.05rem, 1.8vw, 1.25rem);
       }
 
-      .terminal {
-        overflow: hidden;
-        border: 1px solid #263039;
-        border-radius: 8px;
-        background: var(--terminal);
-        box-shadow: 0 24px 80px rgba(21, 23, 26, 0.2);
-      }
-
-      .terminal-bar {
+      .meta-row {
         display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 26px 0 0;
+      }
+
+      .pill {
+        display: inline-flex;
         align-items: center;
-        justify-content: space-between;
-        min-height: 42px;
-        padding: 0 14px;
-        border-bottom: 1px solid var(--terminal-line);
-        color: #b9c2c8;
-        font-size: 0.8rem;
+        gap: 8px;
+        max-width: 100%;
+        min-height: 34px;
+        padding: 6px 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(18, 24, 32, 0.78);
+        color: var(--muted);
+        font-size: 0.9rem;
       }
 
-      .dots {
-        display: flex;
-        gap: 7px;
-      }
-
-      .dots span {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: #5eead4;
-      }
-
-      .dots span:nth-child(2) {
-        background: #fbbf24;
-      }
-
-      .dots span:nth-child(3) {
-        background: #f87171;
-      }
-
-      pre {
-        margin: 0;
-        padding: 22px;
-        overflow-x: auto;
-        color: #d6f5ed;
-        font: 0.92rem/1.65 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      }
-
-      .prompt {
-        color: #5eead4;
-      }
-
-      .comment {
-        color: #94a3b8;
-      }
-
-      .flag {
-        color: #fbbf24;
+      .pill strong {
+        color: var(--ink);
       }
 
       .section {
         margin-top: 42px;
-        padding-top: 30px;
-        border-top: 1px solid var(--line);
+        scroll-margin-top: 24px;
       }
 
-      .section h2 {
-        margin: 0 0 18px;
-        font-size: clamp(1.45rem, 3vw, 2.05rem);
+      .section-header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 20px;
+        align-items: end;
+        margin-bottom: 18px;
+      }
+
+      .section h2,
+      .section h3 {
+        margin: 0;
         letter-spacing: 0;
       }
 
-      .entry-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-        gap: 16px;
-        margin: 0;
-        padding: 0;
-        list-style: none;
+      .section h2 {
+        font-size: clamp(1.9rem, 4vw, 3rem);
+        line-height: 1.04;
       }
 
-      .entry-grid li {
-        min-height: 132px;
-        padding: 18px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: rgba(251, 250, 247, 0.82);
+      .section h3 {
+        font-size: clamp(1.45rem, 3vw, 2.1rem);
       }
 
-      .entry-grid strong {
-        display: block;
-        margin-bottom: 8px;
-        font-size: 1.05rem;
-      }
-
-      .entry-grid span {
+      .section-copy {
+        max-width: 820px;
+        margin: 12px 0 0;
         color: var(--muted);
       }
 
-      .tag-row {
+      .practice-number {
+        align-self: start;
+        min-width: 82px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 10px;
+        color: var(--accent-2);
+        background: var(--panel-3);
+        font-weight: 850;
+        text-align: center;
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(130px, 1fr));
+        gap: 12px;
+      }
+
+      .flow-step,
+      .callout,
+      .tool-card,
+      .reference-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(18, 24, 32, 0.9);
+        box-shadow: var(--shadow);
+      }
+
+      .flow-step {
+        min-height: 150px;
+        padding: 16px;
+      }
+
+      .flow-step span {
+        display: inline-grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        margin-bottom: 18px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        color: var(--accent);
+        background: var(--code);
+        font-weight: 850;
+      }
+
+      .flow-step strong {
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .flow-step p,
+      .callout p,
+      .tool-summary,
+      .reference-card p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .callout {
+        margin-top: 18px;
+        padding: 18px;
+      }
+
+      .callout.warning {
+        border-color: rgba(245, 158, 11, 0.45);
+        background: rgba(245, 158, 11, 0.08);
+      }
+
+      .callout.danger {
+        border-color: rgba(239, 68, 68, 0.42);
+        background: rgba(239, 68, 68, 0.08);
+      }
+
+      .callout strong {
+        color: var(--accent-2);
+      }
+
+      .tool-grid {
+        display: grid;
+        gap: 18px;
+      }
+
+      .tool-card {
+        overflow: hidden;
+      }
+
+      .tool-head {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 16px;
+        padding: 20px;
+        border-bottom: 1px solid var(--line);
+        background:
+          linear-gradient(135deg, rgba(45, 212, 191, 0.08), transparent 42%),
+          var(--panel);
+      }
+
+      .tool-head h4 {
+        margin: 0;
+        font-size: clamp(1.25rem, 2.4vw, 1.8rem);
+        letter-spacing: 0;
+      }
+
+      .tool-summary {
+        margin-top: 8px;
+      }
+
+      .tool-tags {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin-top: 22px;
+        justify-content: flex-end;
       }
 
       .tag {
-        padding: 6px 10px;
+        align-self: start;
+        padding: 5px 8px;
         border: 1px solid var(--line);
         border-radius: 999px;
-        background: rgba(255, 255, 255, 0.7);
         color: var(--muted);
-        font-size: 0.88rem;
+        background: rgba(8, 10, 13, 0.62);
+        font-size: 0.78rem;
+        font-weight: 750;
       }
 
-      a {
-        color: var(--accent-strong);
-        text-decoration-thickness: 0.08em;
-        text-underline-offset: 0.18em;
+      .accordion {
+        display: grid;
       }
 
-      @media (max-width: 820px) {
-        main {
-          width: min(100% - 24px, 1120px);
-          padding: 28px 0;
+      .accordion-item + .accordion-item {
+        border-top: 1px solid var(--line);
+      }
+
+      .accordion-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        width: 100%;
+        padding: 16px 20px;
+        border: 0;
+        color: var(--ink);
+        background: var(--panel-3);
+        font: inherit;
+        font-weight: 850;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .accordion-trigger:hover,
+      .accordion-trigger:focus {
+        background: #151d25;
+        outline: none;
+      }
+
+      .accordion-trigger:focus-visible {
+        outline: 2px solid rgba(45, 212, 191, 0.48);
+        outline-offset: -4px;
+      }
+
+      .accordion-trigger::after {
+        content: "+";
+        color: var(--accent);
+        font-size: 1.3rem;
+        line-height: 1;
+      }
+
+      .accordion-trigger[aria-expanded="true"]::after {
+        content: "-";
+      }
+
+      .accordion-panel {
+        padding: 20px;
+        background: rgba(18, 24, 32, 0.58);
+      }
+
+      .accordion-panel[hidden] {
+        display: none;
+      }
+
+      .content-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .content-box {
+        min-width: 0;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(8, 10, 13, 0.46);
+      }
+
+      .content-box h5 {
+        margin: 0 0 10px;
+        color: var(--accent);
+        font-size: 0.95rem;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .content-box p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .content-box ul {
+        margin: 0;
+        padding-left: 1.1rem;
+        color: var(--muted);
+      }
+
+      .content-box li + li {
+        margin-top: 7px;
+      }
+
+      .code-block {
+        overflow: hidden;
+        margin: 16px 0 0;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: var(--code);
+      }
+
+      .code-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 40px;
+        padding: 0 10px 0 14px;
+        border-bottom: 1px solid var(--line);
+        color: var(--muted-2);
+        font-size: 0.78rem;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .copy-btn {
+        min-height: 28px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        color: var(--ink);
+        background: rgba(45, 212, 191, 0.11);
+        font: inherit;
+        font-size: 0.78rem;
+        font-weight: 850;
+        cursor: pointer;
+      }
+
+      .copy-btn:hover,
+      .copy-btn:focus {
+        border-color: var(--accent);
+        outline: none;
+      }
+
+      pre {
+        margin: 0;
+        overflow-x: auto;
+        padding: 16px;
+        color: #dbeafe;
+        font-size: 0.9rem;
+        line-height: 1.65;
+      }
+
+      code .comment {
+        color: #8492a6;
+      }
+
+      code .flag {
+        color: #fcd34d;
+      }
+
+      code .value {
+        color: #86efac;
+      }
+
+      code .key {
+        color: #67e8f9;
+      }
+
+      code .danger {
+        color: #fca5a5;
+      }
+
+      .refs {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 12px;
+      }
+
+      .reference-card {
+        padding: 16px;
+      }
+
+      .reference-card strong {
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .no-results {
+        display: none;
+        margin-top: 18px;
+        padding: 18px;
+        border: 1px dashed var(--line-strong);
+        border-radius: 8px;
+        color: var(--muted);
+        background: rgba(18, 24, 32, 0.54);
+      }
+
+      body.has-no-results .no-results {
+        display: block;
+      }
+
+      .tool-card.is-hidden {
+        display: none;
+      }
+
+      @media (max-width: 1120px) {
+        .flow {
+          grid-template-columns: repeat(3, minmax(160px, 1fr));
         }
 
-        .hero {
+        .content-grid {
           grid-template-columns: 1fr;
-          min-height: auto;
+        }
+      }
+
+      @media (max-width: 840px) {
+        :root {
+          --sidebar: 286px;
         }
 
-        h1 {
-          max-width: 11ch;
+        .mobile-bar {
+          position: sticky;
+          top: 0;
+          z-index: 30;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          min-height: 58px;
+          padding: 0 14px;
+          border-bottom: 1px solid var(--line);
+          background: rgba(8, 10, 13, 0.96);
+          backdrop-filter: blur(16px);
+        }
+
+        .mobile-bar strong {
+          font-size: 0.95rem;
+        }
+
+        .menu-btn {
+          min-height: 36px;
+          border: 1px solid var(--line-strong);
+          border-radius: 8px;
+          color: var(--ink);
+          background: var(--panel);
+          font: inherit;
+          font-weight: 800;
+        }
+
+        .sidebar {
+          transform: translateX(-100%);
+          transition: transform 180ms ease;
+        }
+
+        body.nav-open .sidebar {
+          transform: translateX(0);
+        }
+
+        .page {
+          margin-left: 0;
+        }
+
+        main {
+          width: calc(100vw - 24px);
+          max-width: calc(100vw - 24px);
+          padding-top: 22px;
+        }
+
+        .hero h2 {
+          font-size: clamp(2.5rem, 14vw, 4.2rem);
+        }
+
+        .hero h2,
+        .hero-lead,
+        .section-copy,
+        .flow-step p,
+        .pill {
+          overflow-wrap: anywhere;
+        }
+
+        .section-header,
+        .tool-head {
+          grid-template-columns: 1fr;
+        }
+
+        .tool-tags {
+          justify-content: flex-start;
+        }
+
+        .flow {
+          grid-template-columns: 1fr;
         }
       }
     </style>
   </head>
   <body>
-    <main>
-      <section class="hero" aria-labelledby="site-title">
-        <div>
-          <p class="eyebrow">DevSecOps field notes</p>
-          <h1 id="site-title">DevSecOps Cookbook</h1>
-          <p class="lead">
-            A practical library of tools, command patterns, security checks, CI/CD workflows,
-            cloud notes, and operational playbooks. Each page is a complete recipe you can use on its own.
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="mobile-bar">
+      <strong>DevSecOps Cookbook</strong>
+      <button class="menu-btn" type="button" aria-controls="site-sidebar" aria-expanded="false">Menu</button>
+    </div>
+
+    <aside class="sidebar" id="site-sidebar" aria-label="Cookbook navigation">
+      <div class="brand">
+        <p class="brand-eyebrow">Operator reference</p>
+        <h1>DevSecOps Cookbook</h1>
+        <p>Atomic architecture, deployment patterns, CLI usage, logs, and failure drills for a Kubernetes-centered DevSecOps stack.</p>
+      </div>
+
+      <div class="search">
+        <label for="cookbook-search">Filter cookbook</label>
+        <input id="cookbook-search" type="search" placeholder="Search tools, commands, failure modes">
+      </div>
+
+      <nav class="nav" aria-label="Practice sections">
+        <a class="nav-link is-active" href="#operational-flow"><span class="nav-index">0</span><span>Operational Flow</span></a>
+        <a class="nav-link" href="#practice-orchestration"><span class="nav-index">1</span><span>Orchestration & Nodes</span></a>
+        <a class="nav-link" href="#practice-gitops"><span class="nav-index">2</span><span>GitOps & CD</span></a>
+        <a class="nav-link" href="#practice-ci"><span class="nav-index">3</span><span>CI & Build Automation</span></a>
+        <a class="nav-link" href="#practice-secrets"><span class="nav-index">4</span><span>Secrets & Zero Trust</span></a>
+        <a class="nav-link" href="#practice-edge"><span class="nav-index">5</span><span>Edge DNS</span></a>
+        <a class="nav-link" href="#practice-observability"><span class="nav-index">6</span><span>Observability</span></a>
+        <a class="nav-link" href="#references"><span class="nav-index">R</span><span>References</span></a>
+      </nav>
+    </aside>
+
+    <div class="page">
+      <main id="main-content">
+        <section class="hero" aria-labelledby="page-title">
+          <p class="kicker">Single-file GitHub Pages edition</p>
+          <h2 id="page-title">DevSecOps Cookbook</h2>
+          <p class="hero-lead">
+            A practical field manual for designing, deploying, operating, and debugging a modern DevSecOps pipeline.
+            The stack centers on Kubernetes, GitLab Runner, ArgoCD, Vault, Trivy, Cloudflare DNS, Prometheus, Grafana,
+            Loki, and the log agents that connect them.
           </p>
-          <div class="tag-row" aria-label="Cookbook topics">
-            <span class="tag">CLI usage</span>
-            <span class="tag">Security scanning</span>
-            <span class="tag">CI/CD</span>
-            <span class="tag">Kubernetes</span>
-            <span class="tag">Cloud identity</span>
+          <div class="meta-row" aria-label="Cookbook metadata">
+            <span class="pill"><strong>6</strong> practices</span>
+            <span class="pill"><strong>16</strong> tools and companions</span>
+            <span class="pill"><strong>0</strong> external scripts</span>
+            <span class="pill"><strong>Static</strong> HTML, CSS, JS</span>
           </div>
-        </div>
+        </section>
 
-        <aside class="terminal" aria-label="Example DevSecOps commands">
-          <div class="terminal-bar">
-            <div class="dots" aria-hidden="true"><span></span><span></span><span></span></div>
-            <span>cookbook.sh</span>
+        <section class="section" id="operational-flow" aria-labelledby="operational-flow-title">
+          <div class="section-header">
+            <div>
+              <h2 id="operational-flow-title">Operational Flow</h2>
+              <p class="section-copy">
+                A secure delivery path starts with a signed source event, produces a verifiable artifact, reconciles desired state,
+                runs on hardened nodes, emits telemetry, and keeps credentials out of application images.
+              </p>
+            </div>
+            <span class="practice-number">Flow</span>
           </div>
-          <pre><code><span class="comment"># container scan recipe</span>
-<span class="prompt">$</span> trivy image <span class="flag">--severity HIGH,CRITICAL</span> &lt;image&gt;
 
-<span class="comment"># cluster context check</span>
-<span class="prompt">$</span> kubectl config current-context
+          <div class="flow" aria-label="DevSecOps pipeline flow">
+            <article class="flow-step">
+              <span>1</span>
+              <strong>Commit triggers CI</strong>
+              <p>GitLab Runner picks a job, checks out source, restores cache, builds, tests, and publishes artifacts.</p>
+            </article>
+            <article class="flow-step">
+              <span>2</span>
+              <strong>Scan the artifact</strong>
+              <p>Trivy scans image layers, packages, IaC, config, SBOMs, and secrets before promotion.</p>
+            </article>
+            <article class="flow-step">
+              <span>3</span>
+              <strong>GitOps records intent</strong>
+              <p>A deployment repo change updates Helm values, Kustomize overlays, or raw manifests.</p>
+            </article>
+            <article class="flow-step">
+              <span>4</span>
+              <strong>ArgoCD reconciles</strong>
+              <p>The application-controller compares Git state with live cluster state and applies drift corrections.</p>
+            </article>
+            <article class="flow-step">
+              <span>5</span>
+              <strong>Kubernetes runs it</strong>
+              <p>The API server, scheduler, controllers, kubelet, CNI, CSI, and container runtime execute the workload.</p>
+            </article>
+            <article class="flow-step">
+              <span>6</span>
+              <strong>Observe and secure</strong>
+              <p>Vault issues secrets, DNS publishes endpoints, and Prometheus, Grafana, and Loki expose runtime evidence.</p>
+            </article>
+          </div>
 
-<span class="comment"># secret search before commit</span>
-<span class="prompt">$</span> gitleaks detect <span class="flag">--source .</span></code></pre>
-        </aside>
-      </section>
+          <div class="callout warning">
+            <p><strong>Safety boundary:</strong> Treat DNS writes, Vault root tokens, cluster-admin kubeconfigs, forced ArgoCD syncs, and Kubernetes delete commands as production-impacting operations. Prefer short-lived credentials, scoped tokens, dry-runs, peer review, and explicit namespace targeting.</p>
+          </div>
+        </section>
 
-      <section class="section" aria-labelledby="entries-title">
-        <h2 id="entries-title">Cookbook Entries</h2>
-        <ul class="entry-grid">
-          <li>
-            <strong>Tool Recipes</strong>
-            <span>CLI usage notes for scanners, cloud CLIs, Kubernetes tools, GitHub tooling, and local security checks.</span>
-          </li>
-          <li>
-            <strong>Workflow Playbooks</strong>
-            <span>Repeatable steps for CI/CD hardening, release checks, incident triage, and environment validation.</span>
-          </li>
-          <li>
-            <strong>Command Patterns</strong>
-            <span>Copy-pasteable commands with placeholders, expected output, gotchas, and cleanup steps.</span>
-          </li>
-          <li>
-            <strong>Coming Soon</strong>
-            <span>The first standalone DevSecOps recipe page can be linked here once it is added.</span>
-          </li>
-        </ul>
-      </section>
-    </main>
+        <section class="section practice" id="practice-orchestration" aria-labelledby="practice-orchestration-title">
+          <div class="section-header">
+            <div>
+              <h2 id="practice-orchestration-title">Practice 1: Container Orchestration & Node Management</h2>
+              <p class="section-copy">Kubernetes is the runtime control system. `kubectl`, Helm, and kubelet-facing diagnostics are the operator interface for desired state, release packaging, and node inspection.</p>
+            </div>
+            <span class="practice-number">P1</span>
+          </div>
+
+          <div class="tool-grid">
+            <article class="tool-card" data-tool="kubernetes kubectl kubelet api server scheduler controller manager etcd node cni csi core dns">
+              <header class="tool-head">
+                <div>
+                  <h3>Kubernetes</h3>
+                  <p class="tool-summary">Declarative control plane for container workloads, networking, service discovery, storage attachment, and cluster policy.</p>
+                </div>
+                <div class="tool-tags"><span class="tag">control plane</span><span class="tag">data plane</span><span class="tag">runtime</span></div>
+              </header>
+              <div class="accordion">
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="k8s-arch-btn" type="button" aria-expanded="true" aria-controls="k8s-arch">Atomic ground base architecture</button>
+                  <div class="accordion-panel" id="k8s-arch" role="region" aria-labelledby="k8s-arch-btn">
+                    <div class="content-grid">
+                      <div class="content-box">
+                        <h4>Control plane</h4>
+                        <ul>
+                          <li>`kube-apiserver` is the HTTPS front door. It validates requests, applies admission, persists objects to `etcd`, and serves watch streams.</li>
+                          <li>`etcd` stores desired and observed cluster state. Backups and quorum health are part of the security boundary.</li>
+                          <li>`kube-scheduler` binds unscheduled Pods to Nodes based on resources, affinity, taints, topology, and policy.</li>
+                          <li>`kube-controller-manager` runs reconciliation loops for Deployments, ReplicaSets, Nodes, Jobs, endpoints, and service accounts.</li>
+                        </ul>
+                      </div>
+                      <div class="content-box">
+                        <h4>Data plane</h4>
+                        <ul>
+                          <li>`kubelet` watches PodSpecs assigned to its node and asks the container runtime through CRI to run containers.</li>
+                          <li>`kube-proxy` or an eBPF replacement implements Service virtual IP routing.</li>
+                          <li>CNI plugins attach Pod networking; CSI plugins attach persistent storage.</li>
+                          <li>CoreDNS provides in-cluster DNS for Services and Pods.</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="k8s-setup-btn" type="button" aria-expanded="false" aria-controls="k8s-setup">Setup & orchestration</button>
+                  <div class="accordion-panel" id="k8s-setup" role="region" aria-labelledby="k8s-setup-btn" hidden>
+                    <div class="content-grid">
+                      <div class="content-box">
+                        <h4>Production baseline</h4>
+                        <ul>
+                          <li>Use managed Kubernetes or kubeadm with HA control plane nodes, externalized backups, and private API endpoints where possible.</li>
+                          <li>Separate platform namespaces from application namespaces. Apply ResourceQuota, LimitRange, NetworkPolicy, and Pod Security Admission labels.</li>
+                          <li>Keep `etcd` encrypted at rest, protect kubeconfig distribution, and rotate client certificates and service account tokens.</li>
+                          <li>Install platform add-ons with Helm or GitOps, not ad-hoc mutable shell sessions.</li>
+                        </ul>
+                      </div>
+                      <div class="content-box">
+                        <h4>Release hygiene</h4>
+                        <ul>
+                          <li>Pin Kubernetes minor versions in runbooks and validate add-on compatibility before upgrades.</li>
+                          <li>Drain nodes before kernel/runtime upgrades and respect PodDisruptionBudgets.</li>
+                          <li>Test admission policies and CRDs in a staging cluster before promoting to production.</li>
+                        </ul>
+                      </div>
+                    </div>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">kubectl config get-contexts
+kubectl config use-context &lt;cluster&gt;
+kubectl auth can-i create deployments --namespace &lt;namespace&gt;
+kubectl create namespace &lt;namespace&gt; --dry-run=client -o yaml
+kubectl label namespace &lt;namespace&gt; pod-security.kubernetes.io/enforce=restricted --overwrite</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="k8s-cli-btn" type="button" aria-expanded="false" aria-controls="k8s-cli">CLI usage & examples</button>
+                  <div class="accordion-panel" id="k8s-cli" role="region" aria-labelledby="k8s-cli-btn" hidden>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">kubectl get nodes -o wide
+kubectl get pods -A --sort-by=.metadata.creationTimestamp
+kubectl describe pod &lt;pod&gt; -n &lt;namespace&gt;
+kubectl logs deploy/&lt;deployment&gt; -n &lt;namespace&gt; --since=30m --all-containers
+kubectl rollout status deploy/&lt;deployment&gt; -n &lt;namespace&gt;
+kubectl rollout undo deploy/&lt;deployment&gt; -n &lt;namespace&gt;
+kubectl diff -f ./manifests/
+kubectl apply --server-side -f ./manifests/</code></pre>
+                    </div>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">kubectl top nodes
+kubectl top pods -A --containers
+kubectl get events -A --sort-by=.lastTimestamp
+kubectl debug node/&lt;node&gt; -it --image=busybox:stable
+kubectl cordon &lt;node&gt;
+kubectl drain &lt;node&gt; --ignore-daemonsets --delete-emptydir-data
+kubectl uncordon &lt;node&gt;</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="k8s-logs-btn" type="button" aria-expanded="false" aria-controls="k8s-logs">Logs & troubleshooting</button>
+                  <div class="accordion-panel" id="k8s-logs" role="region" aria-labelledby="k8s-logs-btn" hidden>
+                    <div class="content-grid">
+                      <div class="content-box">
+                        <h4>Where to look</h4>
+                        <ul>
+                          <li>Control plane: API server, scheduler, controller-manager, cloud-controller-manager, and `etcd` logs.</li>
+                          <li>Node: `journalctl -u kubelet`, container runtime logs, CNI logs, CSI plugin Pods, and node conditions.</li>
+                          <li>Workload: Pod events, readiness/liveness failures, image pull errors, admission denials, and Service endpoint mismatches.</li>
+                        </ul>
+                      </div>
+                      <div class="content-box">
+                        <h4>Failure pattern</h4>
+                        <p>Start from desired state, then walk toward runtime: object exists, controller created child resources, scheduler bound the Pod, kubelet pulled and started containers, readiness passed, endpoints updated, and DNS/ingress routed traffic.</p>
+                      </div>
+                    </div>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">kubectl get deploy,rs,pod,svc,endpoints -n &lt;namespace&gt; -l app=&lt;app&gt;
+kubectl describe pod &lt;pod&gt; -n &lt;namespace&gt;
+kubectl get events -n &lt;namespace&gt; --sort-by=.lastTimestamp
+journalctl -u kubelet --since "30 minutes ago"
+crictl ps -a
+crictl logs &lt;container_id&gt;</code></pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="tool-card" data-tool="kubectl kubeconfig jsonpath context auth logs exec port forward patch diff rollout">
+              <header class="tool-head">
+                <div>
+                  <h3>kubectl</h3>
+                  <p class="tool-summary">The Kubernetes API client used for inspection, reconciliation, debug sessions, rollout control, and emergency operations.</p>
+                </div>
+                <div class="tool-tags"><span class="tag">client</span><span class="tag">REST API</span><span class="tag">debug</span></div>
+              </header>
+              <div class="accordion">
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="kubectl-arch-btn" type="button" aria-expanded="true" aria-controls="kubectl-arch">Atomic ground base architecture</button>
+                  <div class="accordion-panel" id="kubectl-arch" role="region" aria-labelledby="kubectl-arch-btn">
+                    <p>`kubectl` reads kubeconfig, selects cluster/user/context, builds authenticated HTTPS requests, and talks to `kube-apiserver`. Output printers, JSONPath, server-side apply, watch streams, and exec/log subresources are client behaviors layered on top of Kubernetes API resources.</p>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="kubectl-setup-btn" type="button" aria-expanded="false" aria-controls="kubectl-setup">Setup & orchestration</button>
+                  <div class="accordion-panel" id="kubectl-setup" role="region" aria-labelledby="kubectl-setup-btn" hidden>
+                    <ul>
+                      <li>Install a kubectl version within one minor version of the cluster control plane.</li>
+                      <li>Store kubeconfigs with least-privilege users, avoid long-lived cluster-admin files, and prefer OIDC or exec credential plugins.</li>
+                      <li>Use explicit `--context` and `--namespace` in scripts to prevent accidental cross-cluster writes.</li>
+                    </ul>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">kubectl version --client
+kubectl config view --minify
+kubectl config set-context --current --namespace=&lt;namespace&gt;
+kubectl auth can-i '*' '*' --all-namespaces</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="kubectl-cli-btn" type="button" aria-expanded="false" aria-controls="kubectl-cli">CLI usage & examples</button>
+                  <div class="accordion-panel" id="kubectl-cli" role="region" aria-labelledby="kubectl-cli-btn" hidden>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">kubectl get pods -n &lt;namespace&gt; -o custom-columns=NAME:.metadata.name,NODE:.spec.nodeName,PHASE:.status.phase
+kubectl get secret &lt;secret&gt; -n &lt;namespace&gt; -o jsonpath='{.type}'
+kubectl patch deployment &lt;deployment&gt; -n &lt;namespace&gt; --type merge -p '{"spec":{"replicas":3}}'
+kubectl exec -n &lt;namespace&gt; deploy/&lt;deployment&gt; -- env
+kubectl port-forward -n &lt;namespace&gt; svc/&lt;service&gt; 8080:80</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="kubectl-logs-btn" type="button" aria-expanded="false" aria-controls="kubectl-logs">Logs & troubleshooting</button>
+                  <div class="accordion-panel" id="kubectl-logs" role="region" aria-labelledby="kubectl-logs-btn" hidden>
+                    <p>When kubectl fails, separate client, auth, network, and API problems. Use `kubectl --v=8` for HTTP trace detail, verify kubeconfig context, and test RBAC with `kubectl auth can-i` before assuming the workload is broken.</p>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">kubectl --v=8 get ns
+kubectl cluster-info
+kubectl auth can-i get pods -n &lt;namespace&gt; --as &lt;user&gt;
+kubectl get --raw='/readyz?verbose'</code></pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="tool-card" data-tool="helm chart release values templates rollback repository upgrade install diff">
+              <header class="tool-head">
+                <div>
+                  <h3>Helm</h3>
+                  <p class="tool-summary">Kubernetes package manager for repeatable releases, chart templating, rollback metadata, and values-driven deployment.</p>
+                </div>
+                <div class="tool-tags"><span class="tag">charts</span><span class="tag">release state</span><span class="tag">values</span></div>
+              </header>
+              <div class="accordion">
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="helm-arch-btn" type="button" aria-expanded="true" aria-controls="helm-arch">Atomic ground base architecture</button>
+                  <div class="accordion-panel" id="helm-arch" role="region" aria-labelledby="helm-arch-btn">
+                    <p>A Helm chart is a versioned bundle of templates, default values, metadata, and optional hooks/tests. Helm renders templates locally, submits Kubernetes manifests to the API server, and stores release history in cluster Secrets or ConfigMaps, enabling upgrades and rollbacks.</p>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="helm-setup-btn" type="button" aria-expanded="false" aria-controls="helm-setup">Setup & orchestration</button>
+                  <div class="accordion-panel" id="helm-setup" role="region" aria-labelledby="helm-setup-btn" hidden>
+                    <ul>
+                      <li>Pin chart versions and values files in Git; do not rely on floating chart latest in production.</li>
+                      <li>Render with `helm template` and inspect diffs before cluster writes.</li>
+                      <li>Keep environment-specific values small and explicit; use sealed or external secrets rather than plaintext secret values.</li>
+                    </ul>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">helm repo add &lt;repo&gt; &lt;chart_repo_url&gt;
+helm repo update
+helm template &lt;release&gt; &lt;repo&gt;/&lt;chart&gt; -n &lt;namespace&gt; -f values.yaml
+helm upgrade --install &lt;release&gt; &lt;repo&gt;/&lt;chart&gt; -n &lt;namespace&gt; --create-namespace -f values.yaml --atomic --timeout 10m</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="helm-cli-btn" type="button" aria-expanded="false" aria-controls="helm-cli">CLI usage & examples</button>
+                  <div class="accordion-panel" id="helm-cli" role="region" aria-labelledby="helm-cli-btn" hidden>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">helm list -A
+helm status &lt;release&gt; -n &lt;namespace&gt;
+helm get values &lt;release&gt; -n &lt;namespace&gt; --all
+helm get manifest &lt;release&gt; -n &lt;namespace&gt;
+helm history &lt;release&gt; -n &lt;namespace&gt;
+helm rollback &lt;release&gt; &lt;revision&gt; -n &lt;namespace&gt;
+helm uninstall &lt;release&gt; -n &lt;namespace&gt; --dry-run</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="helm-logs-btn" type="button" aria-expanded="false" aria-controls="helm-logs">Logs & troubleshooting</button>
+                  <div class="accordion-panel" id="helm-logs" role="region" aria-labelledby="helm-logs-btn" hidden>
+                    <p>Helm failures are usually invalid templates, missing CRDs, rejected admission, hook Jobs, or unhealthy workloads after apply. Inspect rendered manifests, release Secrets, hook Pods, and Kubernetes events.</p>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">helm upgrade --install &lt;release&gt; &lt;chart&gt; -n &lt;namespace&gt; -f values.yaml --dry-run --debug
+kubectl get secret -n &lt;namespace&gt; -l owner=helm,name=&lt;release&gt;
+kubectl get jobs,pods -n &lt;namespace&gt; -l helm.sh/hook
+kubectl get events -n &lt;namespace&gt; --sort-by=.lastTimestamp</code></pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="tool-card" data-tool="kubeletctl kubelet api node assessment 10250 unauthenticated scan exec pods metrics">
+              <header class="tool-head">
+                <div>
+                  <h3>kubeletctl</h3>
+                  <p class="tool-summary">Security assessment client for kubelet APIs. Use it to verify node exposure, auth posture, and kubelet API behavior from controlled networks.</p>
+                </div>
+                <div class="tool-tags"><span class="tag">node API</span><span class="tag">assessment</span><span class="tag">10250</span></div>
+              </header>
+              <div class="accordion">
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="kubeletctl-arch-btn" type="button" aria-expanded="true" aria-controls="kubeletctl-arch">Atomic ground base architecture</button>
+                  <div class="accordion-panel" id="kubeletctl-arch" role="region" aria-labelledby="kubeletctl-arch-btn">
+                    <p>kubeletctl talks directly to kubelet endpoints, commonly on HTTPS port `10250`. Those endpoints expose node health, Pod lists, metrics, logs, and in dangerous configurations exec-like access. In a hardened cluster, kubelet authentication, authorization, TLS, firewalling, and API server mediated access prevent direct abuse.</p>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="kubeletctl-setup-btn" type="button" aria-expanded="false" aria-controls="kubeletctl-setup">Setup & orchestration</button>
+                  <div class="accordion-panel" id="kubeletctl-setup" role="region" aria-labelledby="kubeletctl-setup-btn" hidden>
+                    <div class="callout danger">
+                      <p><strong>Controlled use only:</strong> Run kubeletctl from approved assessment hosts. Do not scan networks you do not own. Treat service account tokens and kubelet client certificates as sensitive credentials.</p>
+                    </div>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">kubeletctl version
+kubeletctl --help
+kubeletctl scan --cidr &lt;node_cidr&gt;
+kubeletctl --server &lt;node_ip&gt; healthz</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="kubeletctl-cli-btn" type="button" aria-expanded="false" aria-controls="kubeletctl-cli">CLI usage & examples</button>
+                  <div class="accordion-panel" id="kubeletctl-cli" role="region" aria-labelledby="kubeletctl-cli-btn" hidden>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">kubeletctl --server &lt;node_ip&gt; pods
+kubeletctl --server &lt;node_ip&gt; metrics
+kubeletctl --server &lt;node_ip&gt; log
+kubeletctl --server &lt;node_ip&gt; runningpods
+kubeletctl --server &lt;node_ip&gt; --namespace &lt;namespace&gt; --pod &lt;pod&gt; --container &lt;container&gt; containerLogs</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="kubeletctl-logs-btn" type="button" aria-expanded="false" aria-controls="kubeletctl-logs">Logs & troubleshooting</button>
+                  <div class="accordion-panel" id="kubeletctl-logs" role="region" aria-labelledby="kubeletctl-logs-btn" hidden>
+                    <ul>
+                      <li>Connection refused usually means firewall, host networking, or kubelet port configuration blocks direct access.</li>
+                      <li>HTTP 401/403 is the expected result on hardened nodes unless the client presents authorized credentials.</li>
+                      <li>If unauthenticated endpoints respond with Pod data or exec capability, immediately restrict kubelet access and rotate exposed tokens.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section practice" id="practice-gitops" aria-labelledby="practice-gitops-title">
+          <div class="section-header">
+            <div>
+              <h2 id="practice-gitops-title">Practice 2: GitOps & Continuous Delivery</h2>
+              <p class="section-copy">Git is the delivery API. ArgoCD continuously compares desired state from Git with live state in Kubernetes and reconciles drift.</p>
+            </div>
+            <span class="practice-number">P2</span>
+          </div>
+
+          <div class="tool-grid">
+            <article class="tool-card" data-tool="argocd gitops application controller repo server dex redis sync health drift rollback">
+              <header class="tool-head">
+                <div>
+                  <h3>ArgoCD</h3>
+                  <p class="tool-summary">Declarative continuous delivery controller for Kubernetes applications sourced from Git, Helm charts, Kustomize, Jsonnet, or plain manifests.</p>
+                </div>
+                <div class="tool-tags"><span class="tag">GitOps</span><span class="tag">reconcile</span><span class="tag">rollback</span></div>
+              </header>
+              <div class="accordion">
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="argo-arch-btn" type="button" aria-expanded="true" aria-controls="argo-arch">Atomic ground base architecture</button>
+                  <div class="accordion-panel" id="argo-arch" role="region" aria-labelledby="argo-arch-btn">
+                    <div class="content-grid">
+                      <div class="content-box">
+                        <h4>Core components</h4>
+                        <ul>
+                          <li>`argocd-server` serves API/UI and authenticates users through local accounts, SSO, or Dex.</li>
+                          <li>`repo-server` clones Git and renders Helm, Kustomize, Jsonnet, or directory manifests.</li>
+                          <li>`application-controller` watches Applications, compares desired and live state, computes health, and applies sync operations.</li>
+                          <li>Redis caches application state and repository metadata.</li>
+                        </ul>
+                      </div>
+                      <div class="content-box">
+                        <h4>Security model</h4>
+                        <ul>
+                          <li>AppProjects scope allowed repos, destinations, namespaces, and resource kinds.</li>
+                          <li>Cluster credentials are stored as Kubernetes Secrets in the ArgoCD namespace.</li>
+                          <li>Sync waves and hooks control ordering, but failed hooks can block delivery.</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="argo-setup-btn" type="button" aria-expanded="false" aria-controls="argo-setup">Setup & orchestration</button>
+                  <div class="accordion-panel" id="argo-setup" role="region" aria-labelledby="argo-setup-btn" hidden>
+                    <ul>
+                      <li>Install ArgoCD with the official manifests or Helm chart into a dedicated `argocd` namespace.</li>
+                      <li>Use AppProjects to isolate teams and environments. Disable broad cluster-scoped writes unless required.</li>
+                      <li>Prefer automated sync with pruning only after review gates, health checks, and rollback behavior are understood.</li>
+                    </ul>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl rollout status deploy/argocd-server -n argocd
+kubectl port-forward svc/argocd-server -n argocd 8080:443</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="argo-cli-btn" type="button" aria-expanded="false" aria-controls="argo-cli">CLI usage & examples</button>
+                  <div class="accordion-panel" id="argo-cli" role="region" aria-labelledby="argo-cli-btn" hidden>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">argocd login &lt;argocd_host&gt;
+argocd app list
+argocd app get &lt;app&gt;
+argocd app diff &lt;app&gt;
+argocd app sync &lt;app&gt; --prune
+argocd app wait &lt;app&gt; --health --sync --timeout 600
+argocd app history &lt;app&gt;
+argocd app rollback &lt;app&gt; &lt;revision_id&gt;</code></pre>
+                    </div>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>yaml</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-yaml"><span class="key">apiVersion</span>: argoproj.io/v1alpha1
+<span class="key">kind</span>: Application
+<span class="key">metadata</span>:
+  <span class="key">name</span>: &lt;app&gt;
+  <span class="key">namespace</span>: argocd
+<span class="key">spec</span>:
+  <span class="key">project</span>: &lt;project&gt;
+  <span class="key">source</span>:
+    <span class="key">repoURL</span>: &lt;git_repo_url&gt;
+    <span class="key">targetRevision</span>: main
+    <span class="key">path</span>: environments/prod
+  <span class="key">destination</span>:
+    <span class="key">server</span>: https://kubernetes.default.svc
+    <span class="key">namespace</span>: &lt;namespace&gt;
+  <span class="key">syncPolicy</span>:
+    <span class="key">automated</span>:
+      <span class="key">prune</span>: true
+      <span class="key">selfHeal</span>: true</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="argo-logs-btn" type="button" aria-expanded="false" aria-controls="argo-logs">Logs & troubleshooting</button>
+                  <div class="accordion-panel" id="argo-logs" role="region" aria-labelledby="argo-logs-btn" hidden>
+                    <ul>
+                      <li>Compare failures: repo render error, invalid manifests, missing CRDs, rejected admission, or destination RBAC denial.</li>
+                      <li>Health failures: workload applied but ArgoCD health check reports Progressing, Degraded, or Missing.</li>
+                      <li>Sync stuck: inspect hooks, sync waves, finalizers, and resources requiring deletion approval.</li>
+                    </ul>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">kubectl logs -n argocd deploy/argocd-application-controller --since=30m
+kubectl logs -n argocd deploy/argocd-repo-server --since=30m
+kubectl logs -n argocd deploy/argocd-server --since=30m
+argocd app get &lt;app&gt; --hard-refresh
+argocd app resources &lt;app&gt;
+argocd app manifests &lt;app&gt;</code></pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="tool-card" data-tool="gitops flow promotion environment repo helm values kustomize sync waves drift">
+              <header class="tool-head">
+                <div>
+                  <h3>GitOps Flow</h3>
+                  <p class="tool-summary">A delivery operating model where reviewed Git commits are the durable source of truth for runtime configuration.</p>
+                </div>
+                <div class="tool-tags"><span class="tag">promotion</span><span class="tag">drift</span><span class="tag">review</span></div>
+              </header>
+              <div class="accordion">
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="gitops-arch-btn" type="button" aria-expanded="true" aria-controls="gitops-arch">Atomic ground base architecture</button>
+                  <div class="accordion-panel" id="gitops-arch" role="region" aria-labelledby="gitops-arch-btn">
+                    <p>GitOps separates artifact creation from environment promotion. CI builds and signs images; a deployment repository records image tags, digests, Helm values, or Kustomize overlays; ArgoCD reconciles that intent. This creates an audit trail and makes rollback a Git or ArgoCD history operation.</p>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="gitops-cli-btn" type="button" aria-expanded="false" aria-controls="gitops-cli">CLI usage & examples</button>
+                  <div class="accordion-panel" id="gitops-cli" role="region" aria-labelledby="gitops-cli-btn" hidden>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">git checkout -b promote/&lt;app&gt;-&lt;image_tag&gt;
+yq -i '.image.tag = "&lt;image_tag&gt;"' environments/prod/&lt;app&gt;/values.yaml
+yq -i '.image.digest = "&lt;image_digest&gt;"' environments/prod/&lt;app&gt;/values.yaml
+git diff
+git commit -am "Promote &lt;app&gt; to &lt;image_tag&gt;"
+git push origin promote/&lt;app&gt;-&lt;image_tag&gt;</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="gitops-logs-btn" type="button" aria-expanded="false" aria-controls="gitops-logs">Logs & troubleshooting</button>
+                  <div class="accordion-panel" id="gitops-logs" role="region" aria-labelledby="gitops-logs-btn" hidden>
+                    <p>If Git and live state disagree, decide whether the cluster is wrong or Git is stale. Never patch live state as the permanent fix; patching live state without committing the desired state creates repeating drift.</p>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section practice" id="practice-ci" aria-labelledby="practice-ci-title">
+          <div class="section-header">
+            <div>
+              <h2 id="practice-ci-title">Practice 3: Continuous Integration & Build Automation</h2>
+              <p class="section-copy">CI creates the evidence trail: source revision, tests, artifact digest, scan output, provenance, and deployable configuration updates.</p>
+            </div>
+            <span class="practice-number">P3</span>
+          </div>
+
+          <div class="tool-grid">
+            <article class="tool-card" data-tool="gitlab ci runner executor docker kubernetes shell helper image cache artifact token registration pipeline">
+              <header class="tool-head">
+                <div>
+                  <h3>GitLab CI Runner</h3>
+                  <p class="tool-summary">Agent that polls GitLab for jobs, executes them through an executor, uploads artifacts, and reports job state back to the coordinator.</p>
+                </div>
+                <div class="tool-tags"><span class="tag">CI</span><span class="tag">executors</span><span class="tag">artifacts</span></div>
+              </header>
+              <div class="accordion">
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="runner-arch-btn" type="button" aria-expanded="true" aria-controls="runner-arch">Atomic ground base architecture</button>
+                  <div class="accordion-panel" id="runner-arch" role="region" aria-labelledby="runner-arch-btn">
+                    <div class="content-grid">
+                      <div class="content-box">
+                        <h4>Control path</h4>
+                        <ul>
+                          <li>The runner service authenticates to GitLab, asks for jobs, streams logs, and reports job status.</li>
+                          <li>Registration and authentication tokens must be scoped and rotated like production credentials.</li>
+                          <li>Runner tags, protected branches, and locked runners determine which jobs can execute on which infrastructure.</li>
+                        </ul>
+                      </div>
+                      <div class="content-box">
+                        <h4>Execution path</h4>
+                        <ul>
+                          <li>Executors include Docker, Kubernetes, shell, SSH, virtual machine, and custom drivers.</li>
+                          <li>The helper image handles repository checkout, artifact upload/download, and cache transfer.</li>
+                          <li>Cache accelerates repeated dependency downloads; artifacts preserve build outputs and scan reports.</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="runner-setup-btn" type="button" aria-expanded="false" aria-controls="runner-setup">Setup & orchestration</button>
+                  <div class="accordion-panel" id="runner-setup" role="region" aria-labelledby="runner-setup-btn" hidden>
+                    <ul>
+                      <li>Use the Kubernetes executor for cluster-native isolation, or Docker executor for dedicated build hosts.</li>
+                      <li>Use separate runners for protected branches, privileged builds, untrusted merge requests, and release signing.</li>
+                      <li>Limit privileged mode, mount only required volumes, and use short-lived registry credentials.</li>
+                    </ul>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">helm repo add gitlab https://charts.gitlab.io
+helm repo update
+helm upgrade --install gitlab-runner gitlab/gitlab-runner \
+  -n gitlab-runner --create-namespace \
+  --set gitlabUrl=&lt;gitlab_url&gt; \
+  --set runnerRegistrationToken=&lt;registration_token&gt;</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="runner-cli-btn" type="button" aria-expanded="false" aria-controls="runner-cli">CLI usage & examples</button>
+                  <div class="accordion-panel" id="runner-cli" role="region" aria-labelledby="runner-cli-btn" hidden>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">gitlab-runner --version
+gitlab-runner list
+gitlab-runner verify
+gitlab-runner status
+gitlab-runner run --working-directory /var/lib/gitlab-runner
+gitlab-runner unregister --name &lt;runner_name&gt;</code></pre>
+                    </div>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>yaml</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-yaml"><span class="key">stages</span>:
+  - test
+  - scan
+  - package
+
+<span class="key">variables</span>:
+  <span class="key">IMAGE</span>: &lt;registry&gt;/&lt;project&gt;:&lt;commit_sha&gt;
+
+<span class="key">trivy:image</span>:
+  <span class="key">stage</span>: scan
+  <span class="key">image</span>: aquasec/trivy:latest
+  <span class="key">script</span>:
+    - trivy image --exit-code 1 --severity HIGH,CRITICAL "$IMAGE"
+  <span class="key">artifacts</span>:
+    <span class="key">when</span>: always
+    <span class="key">paths</span>:
+      - trivy-report.json</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="runner-logs-btn" type="button" aria-expanded="false" aria-controls="runner-logs">Logs & troubleshooting</button>
+                  <div class="accordion-panel" id="runner-logs" role="region" aria-labelledby="runner-logs-btn" hidden>
+                    <ul>
+                      <li>Stuck jobs usually mean tag mismatch, runner offline, protected branch restrictions, or exhausted concurrency.</li>
+                      <li>Image pull failures usually mean registry auth, network egress, DNS, or missing image architecture.</li>
+                      <li>Cache failures are often object storage credentials, cache key churn, or unmounted cache volumes.</li>
+                    </ul>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">kubectl logs -n gitlab-runner deploy/gitlab-runner --since=30m
+kubectl describe pod -n gitlab-runner -l app=gitlab-runner
+journalctl -u gitlab-runner --since "30 minutes ago"
+gitlab-runner verify --delete</code></pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section practice" id="practice-secrets" aria-labelledby="practice-secrets-title">
+          <div class="section-header">
+            <div>
+              <h2 id="practice-secrets-title">Practice 4: Secrets Management & Zero Trust</h2>
+              <p class="section-copy">Secrets and vulnerability evidence should be short-lived, auditable, and policy-controlled. Vault issues secrets; Trivy validates what you ship and run.</p>
+            </div>
+            <span class="practice-number">P4</span>
+          </div>
+
+          <div class="tool-grid">
+            <article class="tool-card" data-tool="hashicorp vault secret engine auth kubernetes policy token lease audit transit kv dynamic database">
+              <header class="tool-head">
+                <div>
+                  <h3>HashiCorp Vault</h3>
+                  <p class="tool-summary">Central control plane for static secrets, dynamic credentials, encryption services, workload identity, leases, and audit trails.</p>
+                </div>
+                <div class="tool-tags"><span class="tag">secrets</span><span class="tag">identity</span><span class="tag">leases</span></div>
+              </header>
+              <div class="accordion">
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="vault-arch-btn" type="button" aria-expanded="true" aria-controls="vault-arch">Atomic ground base architecture</button>
+                  <div class="accordion-panel" id="vault-arch" role="region" aria-labelledby="vault-arch-btn">
+                    <div class="content-grid">
+                      <div class="content-box">
+                        <h4>Core internals</h4>
+                        <ul>
+                          <li>Vault stores encrypted data behind a barrier and must be unsealed or auto-unsealed before serving requests.</li>
+                          <li>Auth methods turn identities into tokens; policies attach capabilities to paths.</li>
+                          <li>Secrets engines manage static KV, PKI, transit encryption, databases, cloud credentials, and dynamic leases.</li>
+                          <li>Audit devices record request metadata and are mandatory for production traceability.</li>
+                        </ul>
+                      </div>
+                      <div class="content-box">
+                        <h4>Kubernetes integration</h4>
+                        <ul>
+                          <li>Kubernetes auth validates service account JWTs against the Kubernetes API.</li>
+                          <li>Vault Agent Injector, CSI provider, and Vault Secrets Operator are different ways to deliver secrets to Pods.</li>
+                          <li>Use namespaces, policies, auth roles, and token TTLs to isolate applications.</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="vault-setup-btn" type="button" aria-expanded="false" aria-controls="vault-setup">Setup & orchestration</button>
+                  <div class="accordion-panel" id="vault-setup" role="region" aria-labelledby="vault-setup-btn" hidden>
+                    <ul>
+                      <li>Deploy with the official Helm chart or an external managed Vault; use HA mode for production.</li>
+                      <li>Use integrated storage or supported HA storage, TLS everywhere, auto-unseal backed by a cloud KMS or HSM, and persistent audit logs.</li>
+                      <li>Never put Vault root tokens in CI variables, Kubernetes Secrets, shell history, or Git.</li>
+                    </ul>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">helm repo add hashicorp https://helm.releases.hashicorp.com
+helm repo update
+helm upgrade --install vault hashicorp/vault -n vault --create-namespace -f vault-values.yaml
+kubectl get pods -n vault
+kubectl exec -n vault vault-0 -- vault status</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="vault-cli-btn" type="button" aria-expanded="false" aria-controls="vault-cli">CLI usage & examples</button>
+                  <div class="accordion-panel" id="vault-cli" role="region" aria-labelledby="vault-cli-btn" hidden>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">export VAULT_ADDR=&lt;vault_addr&gt;
+vault status
+vault login -method=oidc
+vault secrets enable -path=kv kv-v2
+vault kv put kv/&lt;app&gt;/config username=&lt;username&gt; password=&lt;password&gt;
+vault kv get kv/&lt;app&gt;/config
+vault token lookup
+vault lease renew &lt;lease_id&gt;
+vault audit enable file file_path=/vault/audit/audit.log</code></pre>
+                    </div>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">vault auth enable kubernetes
+vault write auth/kubernetes/config \
+  kubernetes_host=&lt;kubernetes_api_url&gt; \
+  kubernetes_ca_cert=@&lt;ca_file&gt;
+vault policy write &lt;app&gt;-read ./policy.hcl
+vault write auth/kubernetes/role/&lt;app&gt; \
+  bound_service_account_names=&lt;service_account&gt; \
+  bound_service_account_namespaces=&lt;namespace&gt; \
+  policies=&lt;app&gt;-read \
+  ttl=1h</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="vault-logs-btn" type="button" aria-expanded="false" aria-controls="vault-logs">Logs & troubleshooting</button>
+                  <div class="accordion-panel" id="vault-logs" role="region" aria-labelledby="vault-logs-btn" hidden>
+                    <ul>
+                      <li>`sealed` means Vault cannot decrypt storage; verify auto-unseal credentials and KMS access.</li>
+                      <li>`permission denied` means token policy lacks capabilities for the requested path or auth role binding is wrong.</li>
+                      <li>Kubernetes auth failures usually come from service account audience, issuer, namespace/name binding, or API connectivity.</li>
+                    </ul>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">kubectl logs -n vault statefulset/vault --since=30m
+kubectl describe pod -n vault vault-0
+vault read sys/health
+vault auth list
+vault token capabilities &lt;token&gt; kv/data/&lt;app&gt;/config
+vault audit list</code></pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="tool-card" data-tool="trivy vulnerability scanner container image filesystem repository config secret sbom sarif gitlab">
+              <header class="tool-head">
+                <div>
+                  <h3>Trivy</h3>
+                  <p class="tool-summary">Security scanner for container images, filesystems, repositories, IaC misconfigurations, SBOMs, licenses, and secrets.</p>
+                </div>
+                <div class="tool-tags"><span class="tag">scan</span><span class="tag">SBOM</span><span class="tag">CI gate</span></div>
+              </header>
+              <div class="accordion">
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="trivy-arch-btn" type="button" aria-expanded="true" aria-controls="trivy-arch">Atomic ground base architecture</button>
+                  <div class="accordion-panel" id="trivy-arch" role="region" aria-labelledby="trivy-arch-btn">
+                    <p>Trivy downloads vulnerability and policy databases, inspects target artifacts, detects OS and language packages, evaluates misconfiguration rules, and reports findings with severity and package metadata. In CI, it becomes an admission gate before promotion.</p>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="trivy-setup-btn" type="button" aria-expanded="false" aria-controls="trivy-setup">Setup & orchestration</button>
+                  <div class="accordion-panel" id="trivy-setup" role="region" aria-labelledby="trivy-setup-btn" hidden>
+                    <ul>
+                      <li>Cache Trivy DB between CI jobs to reduce network dependency and speed up scans.</li>
+                      <li>Use digest-pinned images for release gates and export SARIF or JSON for security evidence.</li>
+                      <li>Fail on HIGH/CRITICAL for protected branches, but document exception handling for accepted risk.</li>
+                    </ul>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">trivy --version
+trivy image --download-db-only
+trivy image --severity HIGH,CRITICAL --exit-code 1 &lt;image&gt;
+trivy fs --scanners vuln,secret,misconfig .
+trivy config ./manifests
+trivy image --format cyclonedx --output sbom.cdx.json &lt;image&gt;</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="trivy-cli-btn" type="button" aria-expanded="false" aria-controls="trivy-cli">CLI usage & examples</button>
+                  <div class="accordion-panel" id="trivy-cli" role="region" aria-labelledby="trivy-cli-btn" hidden>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">trivy image --ignore-unfixed --severity HIGH,CRITICAL &lt;image&gt;
+trivy image --format json --output trivy-image.json &lt;image&gt;
+trivy repo --scanners vuln,secret,misconfig &lt;git_repo_url&gt;
+trivy k8s --report summary cluster
+trivy sbom --format spdx-json --output sbom.spdx.json &lt;image&gt;
+trivy clean --scan-cache</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="trivy-logs-btn" type="button" aria-expanded="false" aria-controls="trivy-logs">Logs & troubleshooting</button>
+                  <div class="accordion-panel" id="trivy-logs" role="region" aria-labelledby="trivy-logs-btn" hidden>
+                    <p>Trivy failures are usually DB download issues, registry auth, rate limits, unsupported image architecture, or scan policy thresholds. Add `--debug`, validate registry login, and separate scanner errors from vulnerability findings.</p>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">trivy image --debug &lt;image&gt;
+docker login &lt;registry&gt;
+trivy image --skip-db-update &lt;image&gt;
+trivy image --timeout 10m &lt;image&gt;</code></pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section practice" id="practice-edge" aria-labelledby="practice-edge-title">
+          <div class="section-header">
+            <div>
+              <h2 id="practice-edge-title">Practice 5: Edge Networking & DNS</h2>
+              <p class="section-copy">Cloudflare DNS, ExternalDNS, and cert-manager connect cluster services to names, edge routing, and certificates.</p>
+            </div>
+            <span class="practice-number">P5</span>
+          </div>
+
+          <div class="tool-grid">
+            <article class="tool-card" data-tool="cloudflare dns api zone record token proxied curl externaldns cert-manager dns01">
+              <header class="tool-head">
+                <div>
+                  <h3>Cloudflare DNS API</h3>
+                  <p class="tool-summary">HTTP API for managing zones, DNS records, proxy mode, TTLs, and automation tokens used by CI, ExternalDNS, and cert-manager.</p>
+                </div>
+                <div class="tool-tags"><span class="tag">DNS</span><span class="tag">API token</span><span class="tag">edge</span></div>
+              </header>
+              <div class="accordion">
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="cf-arch-btn" type="button" aria-expanded="true" aria-controls="cf-arch">Atomic ground base architecture</button>
+                  <div class="accordion-panel" id="cf-arch" role="region" aria-labelledby="cf-arch-btn">
+                    <p>Cloudflare stores DNS records under zones. API tokens authorize actions like `Zone:DNS:Read` and `Zone:DNS:Edit`. Records can be DNS-only or proxied through Cloudflare edge. Automation should scope tokens to exact zones and avoid global keys.</p>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="cf-setup-btn" type="button" aria-expanded="false" aria-controls="cf-setup">Setup & orchestration</button>
+                  <div class="accordion-panel" id="cf-setup" role="region" aria-labelledby="cf-setup-btn" hidden>
+                    <ul>
+                      <li>Create one token per automation boundary: ExternalDNS, cert-manager DNS01, and manual break-glass scripts.</li>
+                      <li>Use DNS-only records for validation and private origins unless Cloudflare proxy behavior is intended.</li>
+                      <li>Store tokens in Vault or a sealed secret workflow, not plaintext manifests.</li>
+                    </ul>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">curl -sS -X GET "https://api.cloudflare.com/client/v4/zones" \
+  -H "Authorization: Bearer &lt;token&gt;" \
+  -H "Content-Type: application/json"</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="cf-cli-btn" type="button" aria-expanded="false" aria-controls="cf-cli">CLI usage & examples</button>
+                  <div class="accordion-panel" id="cf-cli" role="region" aria-labelledby="cf-cli-btn" hidden>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">curl -sS -X GET "https://api.cloudflare.com/client/v4/zones/&lt;cloudflare_zone_id&gt;/dns_records?type=A&amp;name=&lt;fqdn&gt;" \
+  -H "Authorization: Bearer &lt;token&gt;" \
+  -H "Content-Type: application/json"
+
+curl -sS -X POST "https://api.cloudflare.com/client/v4/zones/&lt;cloudflare_zone_id&gt;/dns_records" \
+  -H "Authorization: Bearer &lt;token&gt;" \
+  -H "Content-Type: application/json" \
+  --data '{"type":"A","name":"&lt;fqdn&gt;","content":"&lt;ip_address&gt;","ttl":300,"proxied":false}'</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="cf-logs-btn" type="button" aria-expanded="false" aria-controls="cf-logs">Logs & troubleshooting</button>
+                  <div class="accordion-panel" id="cf-logs" role="region" aria-labelledby="cf-logs-btn" hidden>
+                    <ul>
+                      <li>HTTP 403 usually means token scope, zone mismatch, or missing DNS edit permission.</li>
+                      <li>DNS propagation problems can be stale recursive resolver cache, wrong TTL expectations, split-horizon DNS, or proxied vs DNS-only confusion.</li>
+                      <li>For ACME DNS01, verify TXT record name and token scope before blaming cert-manager.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="tool-card" data-tool="externaldns ingress service cloudflare txt registry domain filter sync policy">
+              <header class="tool-head">
+                <div>
+                  <h3>ExternalDNS</h3>
+                  <p class="tool-summary">Kubernetes controller that watches Services and Ingresses and reconciles DNS records in providers such as Cloudflare.</p>
+                </div>
+                <div class="tool-tags"><span class="tag">controller</span><span class="tag">DNS sync</span><span class="tag">Cloudflare</span></div>
+              </header>
+              <div class="accordion">
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="externaldns-arch-btn" type="button" aria-expanded="true" aria-controls="externaldns-arch">Atomic ground base architecture</button>
+                  <div class="accordion-panel" id="externaldns-arch" role="region" aria-labelledby="externaldns-arch-btn">
+                    <p>ExternalDNS watches Kubernetes resources, builds a desired DNS record set, compares it against provider records, and applies changes. A TXT registry marks ownership so multiple clusters or controllers do not overwrite each other accidentally.</p>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="externaldns-setup-btn" type="button" aria-expanded="false" aria-controls="externaldns-setup">Setup & orchestration</button>
+                  <div class="accordion-panel" id="externaldns-setup" role="region" aria-labelledby="externaldns-setup-btn" hidden>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>yaml</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-yaml"><span class="key">provider</span>: cloudflare
+<span class="key">policy</span>: sync
+<span class="key">domainFilters</span>:
+  - &lt;domain&gt;
+<span class="key">env</span>:
+  - <span class="key">name</span>: CF_API_TOKEN
+    <span class="key">valueFrom</span>:
+      <span class="key">secretKeyRef</span>:
+        <span class="key">name</span>: cloudflare-api-token
+        <span class="key">key</span>: api-token
+<span class="key">txtOwnerId</span>: &lt;cluster&gt;</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="externaldns-cli-btn" type="button" aria-expanded="false" aria-controls="externaldns-cli">CLI usage & examples</button>
+                  <div class="accordion-panel" id="externaldns-cli" role="region" aria-labelledby="externaldns-cli-btn" hidden>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">kubectl annotate ingress &lt;ingress&gt; -n &lt;namespace&gt; external-dns.alpha.kubernetes.io/hostname=&lt;fqdn&gt;
+kubectl logs -n external-dns deploy/external-dns --since=30m
+kubectl describe deploy -n external-dns external-dns
+kubectl get ingress,svc -A -o wide</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="externaldns-logs-btn" type="button" aria-expanded="false" aria-controls="externaldns-logs">Logs & troubleshooting</button>
+                  <div class="accordion-panel" id="externaldns-logs" role="region" aria-labelledby="externaldns-logs-btn" hidden>
+                    <p>Check source resources, domain filters, provider credentials, TXT ownership records, and whether policy is `sync` or `upsert-only`. A typo in hostname annotation can create a valid record in the wrong place.</p>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="tool-card" data-tool="cert-manager certificate issuer clusterissuer acme dns01 cloudflare order challenge ingress tls">
+              <header class="tool-head">
+                <div>
+                  <h3>cert-manager</h3>
+                  <p class="tool-summary">Kubernetes certificate controller that automates issuance, renewal, and ACME DNS01 validation with Cloudflare.</p>
+                </div>
+                <div class="tool-tags"><span class="tag">TLS</span><span class="tag">ACME</span><span class="tag">DNS01</span></div>
+              </header>
+              <div class="accordion">
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="certmanager-arch-btn" type="button" aria-expanded="true" aria-controls="certmanager-arch">Atomic ground base architecture</button>
+                  <div class="accordion-panel" id="certmanager-arch" role="region" aria-labelledby="certmanager-arch-btn">
+                    <p>cert-manager watches Certificate resources, uses Issuers or ClusterIssuers, creates ACME Orders and Challenges, writes DNS01 TXT records through a provider token, waits for validation, and stores issued key material in Kubernetes Secrets.</p>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="certmanager-setup-btn" type="button" aria-expanded="false" aria-controls="certmanager-setup">Setup & orchestration</button>
+                  <div class="accordion-panel" id="certmanager-setup" role="region" aria-labelledby="certmanager-setup-btn" hidden>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>yaml</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-yaml"><span class="key">apiVersion</span>: cert-manager.io/v1
+<span class="key">kind</span>: ClusterIssuer
+<span class="key">metadata</span>:
+  <span class="key">name</span>: letsencrypt-cloudflare
+<span class="key">spec</span>:
+  <span class="key">acme</span>:
+    <span class="key">email</span>: &lt;email&gt;
+    <span class="key">server</span>: https://acme-v02.api.letsencrypt.org/directory
+    <span class="key">privateKeySecretRef</span>:
+      <span class="key">name</span>: letsencrypt-cloudflare-account-key
+    <span class="key">solvers</span>:
+      - <span class="key">dns01</span>:
+          <span class="key">cloudflare</span>:
+            <span class="key">apiTokenSecretRef</span>:
+              <span class="key">name</span>: cloudflare-api-token
+              <span class="key">key</span>: api-token</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="certmanager-cli-btn" type="button" aria-expanded="false" aria-controls="certmanager-cli">CLI usage & examples</button>
+                  <div class="accordion-panel" id="certmanager-cli" role="region" aria-labelledby="certmanager-cli-btn" hidden>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">kubectl get clusterissuer,issuer -A
+kubectl get certificate,certificaterequest,order,challenge -A
+kubectl describe certificate &lt;certificate&gt; -n &lt;namespace&gt;
+kubectl describe challenge &lt;challenge&gt; -n &lt;namespace&gt;
+kubectl logs -n cert-manager deploy/cert-manager --since=30m</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="certmanager-logs-btn" type="button" aria-expanded="false" aria-controls="certmanager-logs">Logs & troubleshooting</button>
+                  <div class="accordion-panel" id="certmanager-logs" role="region" aria-labelledby="certmanager-logs-btn" hidden>
+                    <p>Failed issuance usually comes from ACME account problems, DNS01 TXT record creation failures, wrong hosted zone, Cloudflare token permissions, DNS propagation delay, or rate limits. Always inspect Certificate, Order, and Challenge resources together.</p>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section practice" id="practice-observability" aria-labelledby="practice-observability-title">
+          <div class="section-header">
+            <div>
+              <h2 id="practice-observability-title">Practice 6: Observability (Monitoring & Logging)</h2>
+              <p class="section-copy">Metrics, dashboards, logs, and alerting turn a deployment into an operable service. Prometheus answers what changed; Loki answers what happened; Grafana connects both for humans.</p>
+            </div>
+            <span class="practice-number">P6</span>
+          </div>
+
+          <div class="tool-grid">
+            <article class="tool-card" data-tool="prometheus promql scrape target service monitor alertmanager tsdb kube-prometheus-stack promtool">
+              <header class="tool-head">
+                <div>
+                  <h3>Prometheus</h3>
+                  <p class="tool-summary">Pull-based metrics and alerting toolkit with PromQL, local TSDB, service discovery, exporters, recording rules, and Alertmanager integration.</p>
+                </div>
+                <div class="tool-tags"><span class="tag">metrics</span><span class="tag">PromQL</span><span class="tag">alerts</span></div>
+              </header>
+              <div class="accordion">
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="prom-arch-btn" type="button" aria-expanded="true" aria-controls="prom-arch">Atomic ground base architecture</button>
+                  <div class="accordion-panel" id="prom-arch" role="region" aria-labelledby="prom-arch-btn">
+                    <p>Prometheus discovers scrape targets, pulls metrics over HTTP, stores samples in a local TSDB, evaluates PromQL rules, and sends alert state to Alertmanager. It is intentionally autonomous so it remains useful during outages.</p>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="prom-setup-btn" type="button" aria-expanded="false" aria-controls="prom-setup">Setup & orchestration</button>
+                  <div class="accordion-panel" id="prom-setup" role="region" aria-labelledby="prom-setup-btn" hidden>
+                    <ul>
+                      <li>Use kube-prometheus-stack for Kubernetes because it installs Prometheus Operator, Alertmanager, Grafana dashboards, ServiceMonitors, and common rules.</li>
+                      <li>Keep label cardinality low; high-cardinality labels can exhaust memory and storage.</li>
+                      <li>Set retention by time and size, plan remote write if long-term retention is required, and test alert routes.</li>
+                    </ul>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+  -n monitoring --create-namespace -f monitoring-values.yaml</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="prom-cli-btn" type="button" aria-expanded="false" aria-controls="prom-cli">CLI usage & examples</button>
+                  <div class="accordion-panel" id="prom-cli" role="region" aria-labelledby="prom-cli-btn" hidden>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">kubectl get prometheus,alertmanager,servicemonitor,prometheusrule -n monitoring
+kubectl port-forward -n monitoring svc/kube-prometheus-stack-prometheus 9090:9090
+promtool check config prometheus.yml
+promtool check rules rules.yml
+curl -sS "http://localhost:9090/api/v1/query?query=up"</code></pre>
+                    </div>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>promql</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-promql">sum(rate(container_cpu_usage_seconds_total{namespace="&lt;namespace&gt;"}[5m])) by (pod)
+sum(kube_pod_container_status_restarts_total{namespace="&lt;namespace&gt;"}) by (pod)
+histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service))</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="prom-logs-btn" type="button" aria-expanded="false" aria-controls="prom-logs">Logs & troubleshooting</button>
+                  <div class="accordion-panel" id="prom-logs" role="region" aria-labelledby="prom-logs-btn" hidden>
+                    <ul>
+                      <li>Targets down: inspect ServiceMonitor selectors, scrape endpoint path/port, TLS/auth config, and NetworkPolicy.</li>
+                      <li>Missing metrics: check exporter deployment, Service labels, and Prometheus target discovery page.</li>
+                      <li>Memory growth: inspect high-cardinality labels and long query ranges.</li>
+                    </ul>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">kubectl logs -n monitoring statefulset/prometheus-kube-prometheus-stack-prometheus --since=30m
+kubectl describe servicemonitor -n monitoring &lt;servicemonitor&gt;
+kubectl get endpoints -n &lt;namespace&gt; &lt;service&gt;
+curl -sS "http://localhost:9090/api/v1/targets" | jq '.data.activeTargets[] | select(.health!="up")'</code></pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="tool-card" data-tool="grafana dashboard datasource alerting provisioning api cli admin plugin">
+              <header class="tool-head">
+                <div>
+                  <h3>Grafana</h3>
+                  <p class="tool-summary">Dashboard, alerting, and exploration layer for Prometheus metrics, Loki logs, traces, and operational runbooks.</p>
+                </div>
+                <div class="tool-tags"><span class="tag">dashboards</span><span class="tag">datasources</span><span class="tag">alerts</span></div>
+              </header>
+              <div class="accordion">
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="grafana-arch-btn" type="button" aria-expanded="true" aria-controls="grafana-arch">Atomic ground base architecture</button>
+                  <div class="accordion-panel" id="grafana-arch" role="region" aria-labelledby="grafana-arch-btn">
+                    <p>Grafana stores dashboards, users, folders, alert rules, datasources, and plugin metadata in its database. Query execution usually goes through datasource plugins to Prometheus, Loki, Tempo, or other backends; Grafana does not replace the telemetry stores.</p>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="grafana-setup-btn" type="button" aria-expanded="false" aria-controls="grafana-setup">Setup & orchestration</button>
+                  <div class="accordion-panel" id="grafana-setup" role="region" aria-labelledby="grafana-setup-btn" hidden>
+                    <ul>
+                      <li>Provision datasources and dashboards from ConfigMaps or chart values to keep changes reviewable.</li>
+                      <li>Use SSO and team mappings; avoid shared admin accounts.</li>
+                      <li>Back up Grafana database or keep dashboards fully provisioned from Git.</li>
+                    </ul>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">kubectl get secret -n monitoring kube-prometheus-stack-grafana -o jsonpath='{.data.admin-password}' | base64 -d
+kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80
+kubectl logs -n monitoring deploy/kube-prometheus-stack-grafana --since=30m</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="grafana-cli-btn" type="button" aria-expanded="false" aria-controls="grafana-cli">CLI usage & examples</button>
+                  <div class="accordion-panel" id="grafana-cli" role="region" aria-labelledby="grafana-cli-btn" hidden>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">grafana cli plugins ls
+grafana cli admin reset-admin-password &lt;new_password&gt;
+curl -sS -H "Authorization: Bearer &lt;token&gt;" &lt;grafana_url&gt;/api/health
+curl -sS -H "Authorization: Bearer &lt;token&gt;" &lt;grafana_url&gt;/api/datasources</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="grafana-logs-btn" type="button" aria-expanded="false" aria-controls="grafana-logs">Logs & troubleshooting</button>
+                  <div class="accordion-panel" id="grafana-logs" role="region" aria-labelledby="grafana-logs-btn" hidden>
+                    <p>Dashboard failures are usually datasource URL/auth, folder permission, missing plugin, query timeout, or broken variable. Alert failures need separate checks for rule evaluation, contact point routing, and notification delivery.</p>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="tool-card" data-tool="loki logql distributor ingester querier query frontend compactor object storage promtail alloy logcli">
+              <header class="tool-head">
+                <div>
+                  <h3>Loki</h3>
+                  <p class="tool-summary">Log aggregation system that indexes labels, stores compressed log chunks, and queries logs with LogQL.</p>
+                </div>
+                <div class="tool-tags"><span class="tag">logs</span><span class="tag">LogQL</span><span class="tag">labels</span></div>
+              </header>
+              <div class="accordion">
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="loki-arch-btn" type="button" aria-expanded="true" aria-controls="loki-arch">Atomic ground base architecture</button>
+                  <div class="accordion-panel" id="loki-arch" role="region" aria-labelledby="loki-arch-btn">
+                    <p>Loki receives log streams, indexes labels instead of full text, writes compressed chunks to storage, and serves queries through queriers or query frontends. Distributed mode splits write, read, backend, and gateway concerns for scale.</p>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="loki-setup-btn" type="button" aria-expanded="false" aria-controls="loki-setup">Setup & orchestration</button>
+                  <div class="accordion-panel" id="loki-setup" role="region" aria-labelledby="loki-setup-btn" hidden>
+                    <ul>
+                      <li>Use Helm for monolithic, simple scalable, or microservices deployment mode based on retention and query volume.</li>
+                      <li>Keep labels low-cardinality. Use structured metadata or parsed fields for high-cardinality values.</li>
+                      <li>Plan object storage, retention, compactor, cache, and tenant strategy before production ingest.</li>
+                    </ul>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+helm upgrade --install loki grafana/loki -n monitoring -f loki-values.yaml
+kubectl get pods -n monitoring -l app.kubernetes.io/name=loki</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="loki-cli-btn" type="button" aria-expanded="false" aria-controls="loki-cli">CLI usage & examples</button>
+                  <div class="accordion-panel" id="loki-cli" role="region" aria-labelledby="loki-cli-btn" hidden>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">logcli --addr=&lt;loki_url&gt; labels
+logcli --addr=&lt;loki_url&gt; series '{namespace="&lt;namespace&gt;"}' --since=1h
+logcli --addr=&lt;loki_url&gt; query '{namespace="&lt;namespace&gt;", app="&lt;app&gt;"} |= "error"' --since=30m
+kubectl port-forward -n monitoring svc/loki 3100:3100</code></pre>
+                    </div>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>logql</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-logql">sum by (pod) (rate({namespace="&lt;namespace&gt;"} |= "error" [5m]))
+{namespace="&lt;namespace&gt;", app="&lt;app&gt;"} | json | level="error"
+topk(10, sum by (pod) (count_over_time({namespace="&lt;namespace&gt;"}[15m])))</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="loki-logs-btn" type="button" aria-expanded="false" aria-controls="loki-logs">Logs & troubleshooting</button>
+                  <div class="accordion-panel" id="loki-logs" role="region" aria-labelledby="loki-logs-btn" hidden>
+                    <ul>
+                      <li>Ingest failures: check distributor logs, client push errors, rate limits, tenant headers, and label validation.</li>
+                      <li>Query failures: check querier/query-frontend logs, object storage access, cache health, and excessive time ranges.</li>
+                      <li>Storage failures: inspect compactor, index gateway, retention config, and object storage permissions.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="tool-card" data-tool="promtail grafana alloy log agent scrape configs pipeline stages positions daemonset kubernetes logs">
+              <header class="tool-head">
+                <div>
+                  <h3>Promtail / Grafana Alloy</h3>
+                  <p class="tool-summary">Log collection agent layer. Promtail is now legacy; Alloy is the supported path for new Grafana log collection pipelines.</p>
+                </div>
+                <div class="tool-tags"><span class="tag">agent</span><span class="tag">Kubernetes logs</span><span class="tag">migration</span></div>
+              </header>
+              <div class="accordion">
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="promtail-arch-btn" type="button" aria-expanded="true" aria-controls="promtail-arch">Atomic ground base architecture</button>
+                  <div class="accordion-panel" id="promtail-arch" role="region" aria-labelledby="promtail-arch-btn">
+                    <p>Promtail runs as a DaemonSet, discovers Pods on each node, tails container log files, tracks positions, applies pipeline stages, attaches labels, and pushes streams to Loki. As of March 2, 2026, Promtail is EOL; keep this knowledge for existing estates and use Grafana Alloy for new deployments.</p>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="promtail-setup-btn" type="button" aria-expanded="false" aria-controls="promtail-setup">Setup & orchestration</button>
+                  <div class="accordion-panel" id="promtail-setup" role="region" aria-labelledby="promtail-setup-btn" hidden>
+                    <ul>
+                      <li>For new systems, deploy Grafana Alloy or the current Grafana Kubernetes monitoring chart.</li>
+                      <li>For existing Promtail, keep pipeline stages small, avoid high-cardinality labels, and monitor dropped entries.</li>
+                      <li>Mount `/var/log/pods` and `/var/lib/docker/containers` only as required by the runtime.</li>
+                    </ul>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+helm upgrade --install alloy grafana/alloy -n monitoring -f alloy-values.yaml
+kubectl get pods -n monitoring -l app.kubernetes.io/name=alloy</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="promtail-cli-btn" type="button" aria-expanded="false" aria-controls="promtail-cli">CLI usage & examples</button>
+                  <div class="accordion-panel" id="promtail-cli" role="region" aria-labelledby="promtail-cli-btn" hidden>
+                    <div class="code-block">
+                      <div class="code-toolbar"><span>shell</span><button class="copy-btn" type="button">Copy</button></div>
+                      <pre><code class="language-shell">kubectl logs -n monitoring daemonset/promtail --since=30m
+kubectl logs -n monitoring daemonset/alloy --since=30m
+kubectl describe pod -n monitoring -l app.kubernetes.io/name=alloy
+kubectl get configmap -n monitoring -l app.kubernetes.io/name=alloy -o yaml</code></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-trigger" id="promtail-logs-btn" type="button" aria-expanded="false" aria-controls="promtail-logs">Logs & troubleshooting</button>
+                  <div class="accordion-panel" id="promtail-logs" role="region" aria-labelledby="promtail-logs-btn" hidden>
+                    <p>Agent problems are usually missing host log mounts, RBAC denial for Pod metadata, bad relabel rules, Loki push errors, tenant header mismatch, or label cardinality. Compare agent logs with Loki distributor logs to find whether data left the node.</p>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section" id="references" aria-labelledby="references-title">
+          <div class="section-header">
+            <div>
+              <h2 id="references-title">Official References</h2>
+              <p class="section-copy">Primary docs used to keep command shapes and architecture notes grounded. The cookbook remains readable offline, but these links are the upgrade path when versions change.</p>
+            </div>
+            <span class="practice-number">Refs</span>
+          </div>
+          <div class="refs">
+            <article class="reference-card"><strong>Kubernetes</strong><p><a href="https://kubernetes.io/docs/reference/kubectl/quick-reference/">kubectl quick reference</a> and cluster architecture docs.</p></article>
+            <article class="reference-card"><strong>Helm</strong><p><a href="https://helm.sh/docs/intro/using_helm/">Using Helm</a> for release install, upgrade, status, and rollback workflows.</p></article>
+            <article class="reference-card"><strong>ArgoCD</strong><p><a href="https://argo-cd.readthedocs.io/en/stable/user-guide/commands/argocd_app/">argocd app command reference</a>.</p></article>
+            <article class="reference-card"><strong>GitLab Runner</strong><p><a href="https://docs.gitlab.com/runner/">GitLab Runner documentation</a> for runner operation and executors.</p></article>
+            <article class="reference-card"><strong>Vault</strong><p><a href="https://developer.hashicorp.com/vault/docs">Vault documentation</a> and <a href="https://developer.hashicorp.com/vault/docs/deploy/kubernetes">Kubernetes deployment notes</a>.</p></article>
+            <article class="reference-card"><strong>Trivy</strong><p><a href="https://trivy.dev/docs/latest/">Trivy documentation</a> for scan targets and CI usage.</p></article>
+            <article class="reference-card"><strong>Cloudflare</strong><p><a href="https://developers.cloudflare.com/api/resources/dns/subresources/records/methods/list/">DNS Records API</a> for DNS automation.</p></article>
+            <article class="reference-card"><strong>Prometheus</strong><p><a href="https://prometheus.io/docs/introduction/overview/">Prometheus overview</a> and <a href="https://prometheus.io/docs/prometheus/latest/command-line/prometheus/">command-line reference</a>.</p></article>
+            <article class="reference-card"><strong>Grafana Loki</strong><p><a href="https://grafana.com/docs/loki/latest/">Loki documentation</a> and <a href="https://grafana.com/docs/loki/latest/send-data/promtail/">Promtail EOL notice</a>.</p></article>
+          </div>
+          <div class="no-results" role="status">No tool cards match the current filter.</div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      (function () {
+        var body = document.body;
+        var menuButton = document.querySelector(".menu-btn");
+        var sidebar = document.getElementById("site-sidebar");
+        var navLinks = Array.prototype.slice.call(document.querySelectorAll(".nav-link"));
+        var sections = navLinks
+          .map(function (link) {
+            var target = document.querySelector(link.getAttribute("href"));
+            return target ? { link: link, target: target } : null;
+          })
+          .filter(Boolean);
+        var searchInput = document.getElementById("cookbook-search");
+        var cards = Array.prototype.slice.call(document.querySelectorAll(".tool-card"));
+        var copyButtons = Array.prototype.slice.call(document.querySelectorAll(".copy-btn"));
+        var accordions = Array.prototype.slice.call(document.querySelectorAll(".accordion-trigger"));
+
+        function closeNav() {
+          body.classList.remove("nav-open");
+          if (menuButton) {
+            menuButton.setAttribute("aria-expanded", "false");
+          }
+        }
+
+        if (menuButton) {
+          menuButton.addEventListener("click", function () {
+            var isOpen = body.classList.toggle("nav-open");
+            menuButton.setAttribute("aria-expanded", String(isOpen));
+          });
+        }
+
+        navLinks.forEach(function (link) {
+          link.addEventListener("click", function () {
+            closeNav();
+          });
+        });
+
+        document.addEventListener("keydown", function (event) {
+          if (event.key === "Escape") {
+            closeNav();
+          }
+        });
+
+        accordions.forEach(function (trigger) {
+          trigger.addEventListener("click", function () {
+            var panel = document.getElementById(trigger.getAttribute("aria-controls"));
+            var isOpen = trigger.getAttribute("aria-expanded") === "true";
+            trigger.setAttribute("aria-expanded", String(!isOpen));
+            if (panel) {
+              panel.hidden = isOpen;
+            }
+          });
+        });
+
+        function copyText(text, button) {
+          function done() {
+            var original = button.textContent;
+            button.textContent = "Copied";
+            window.setTimeout(function () {
+              button.textContent = original;
+            }, 1300);
+          }
+
+          if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(done).catch(function () {
+              fallbackCopy(text, done);
+            });
+          } else {
+            fallbackCopy(text, done);
+          }
+        }
+
+        function fallbackCopy(text, done) {
+          var textarea = document.createElement("textarea");
+          textarea.value = text;
+          textarea.setAttribute("readonly", "");
+          textarea.style.position = "fixed";
+          textarea.style.left = "-9999px";
+          document.body.appendChild(textarea);
+          textarea.select();
+          try {
+            document.execCommand("copy");
+            done();
+          } finally {
+            document.body.removeChild(textarea);
+          }
+        }
+
+        copyButtons.forEach(function (button) {
+          button.addEventListener("click", function () {
+            var block = button.closest(".code-block");
+            var code = block ? block.querySelector("code") : null;
+            if (code) {
+              copyText(code.innerText.replace(/\n+$/g, ""), button);
+            }
+          });
+        });
+
+        function applyFilter() {
+          var query = searchInput ? searchInput.value.trim().toLowerCase() : "";
+          var visibleCount = 0;
+          cards.forEach(function (card) {
+            var haystack = (card.textContent + " " + (card.getAttribute("data-tool") || "")).toLowerCase();
+            var visible = !query || haystack.indexOf(query) !== -1;
+            card.classList.toggle("is-hidden", !visible);
+            if (visible) {
+              visibleCount += 1;
+            }
+          });
+          body.classList.toggle("has-no-results", Boolean(query && visibleCount === 0));
+        }
+
+        if (searchInput) {
+          searchInput.addEventListener("input", applyFilter);
+        }
+
+        if ("IntersectionObserver" in window) {
+          var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                navLinks.forEach(function (link) {
+                  link.classList.remove("is-active");
+                });
+                var active = navLinks.find(function (link) {
+                  return link.getAttribute("href") === "#" + entry.target.id;
+                });
+                if (active) {
+                  active.classList.add("is-active");
+                }
+              }
+            });
+          }, { rootMargin: "-35% 0px -55% 0px", threshold: 0.01 });
+
+          sections.forEach(function (item) {
+            observer.observe(item.target);
+          });
+        }
+
+        document.addEventListener("click", function (event) {
+          if (!body.classList.contains("nav-open")) {
+            return;
+          }
+          if (sidebar && sidebar.contains(event.target)) {
+            return;
+          }
+          if (menuButton && menuButton.contains(event.target)) {
+            return;
+          }
+          closeNav();
+        });
+      })();
+    </script>
   </body>
 </html>
