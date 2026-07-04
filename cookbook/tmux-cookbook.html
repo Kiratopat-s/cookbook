@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tmux cookbook — every command, grouped by practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#10151A;
+  --pane:#141B21;
+  --pane-2:#0C1116;
+  --border:#2A3640;
+  --border-active:#35C860;
+  --text:#C9D6DF;
+  --dim:#7E8C97;
+  --faint:#4A5761;
+  --green:#35C860;
+  --green-ink:#071309;
+  --yellow:#E3C078;
+  --blue:#6CB2F0;
+  --magenta:#C792DD;
+  --cyan:#5FC6CC;
+  --red:#E06C75;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --statusbar-h:44px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:15.5px;
+  line-height:1.6;
+  padding-bottom:calc(var(--statusbar-h) + 48px);
+}
+::selection{background:var(--green);color:var(--green-ink)}
+a{color:var(--cyan);text-decoration:none}
+a:hover{text-decoration:underline}
+code{font-family:var(--mono)}
+kbd{
+  font-family:var(--mono);font-size:.82em;font-weight:500;
+  background:var(--pane-2);border:1px solid var(--border);border-bottom-width:2px;
+  border-radius:4px;padding:1px 7px;color:var(--yellow);white-space:nowrap;
+}
+.prefix-chip{color:var(--green);border-color:#274a33}
+
+/* ---------- top command prompt (search) ---------- */
+.prompt-bar{
+  position:sticky;top:0;z-index:40;
+  background:linear-gradient(var(--bg) 82%,rgba(16,21,26,0));
+  padding:14px 20px 18px;
+}
+.prompt-inner{
+  max-width:960px;margin:0 auto;display:flex;align-items:center;gap:0;
+  background:var(--pane-2);border:1px solid var(--border);border-radius:6px;
+  font-family:var(--mono);
+  transition:border-color .15s;
+}
+.prompt-inner:focus-within{border-color:var(--green)}
+.prompt-colon{color:var(--green);padding:9px 0 9px 14px;font-weight:700}
+#search{
+  flex:1;background:none;border:0;outline:0;color:var(--text);
+  font-family:var(--mono);font-size:14.5px;padding:9px 12px;min-width:0;
+}
+#search::placeholder{color:var(--faint)}
+.prompt-hint{color:var(--faint);font-size:12px;padding-right:14px;white-space:nowrap}
+#result-count{color:var(--yellow)}
+@media(max-width:560px){.prompt-hint span.kb-hint{display:none}}
+
+/* ---------- hero ---------- */
+.hero{max-width:960px;margin:26px auto 10px;padding:0 20px}
+.hero-terminal{
+  border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--pane-2);
+}
+.hero-titlebar{
+  display:flex;align-items:center;gap:8px;background:var(--pane);
+  border-bottom:1px solid var(--border);padding:9px 14px;
+  font-family:var(--mono);font-size:12px;color:var(--dim);
+}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--faint);opacity:.55}
+.dot.r{background:var(--red)} .dot.y{background:var(--yellow)} .dot.g{background:var(--green)}
+.hero-body{padding:30px 28px 34px;font-family:var(--mono)}
+.hero-cmd{color:var(--dim);font-size:14px}
+.hero-cmd .u{color:var(--green)}
+.hero-body h1{
+  font-size:clamp(28px,5.4vw,46px);font-weight:700;letter-spacing:-.02em;
+  margin:14px 0 10px;color:#EAF2F7;
+}
+.hero-body h1 .accent{color:var(--green)}
+.hero-sub{color:var(--dim);font-family:var(--sans);max-width:620px;font-size:15.5px}
+.hero-sub b{color:var(--text);font-weight:600}
+.hero-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;font-size:12.5px}
+.hero-meta .tag{
+  border:1px solid var(--border);border-radius:99px;padding:3px 12px;color:var(--dim);
+}
+.hero-meta .tag i{font-style:normal;color:var(--cyan)}
+.cursor{display:inline-block;width:9px;height:1.1em;background:var(--green);vertical-align:text-bottom;animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* prefix explainer strip */
+.prefix-note{
+  max-width:960px;margin:26px auto 0;padding:14px 18px;display:flex;gap:14px;align-items:flex-start;
+  border:1px dashed var(--border);border-radius:8px;color:var(--dim);font-size:14px;
+  margin-left:auto;margin-right:auto;
+}
+.prefix-note .pn-icon{color:var(--yellow);font-family:var(--mono);font-weight:700}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px}
+.prefix-note-wrap{padding:0 20px}
+
+/* ---------- sections as tmux panes ---------- */
+section.group{max-width:960px;margin:44px auto 0;padding:0 20px}
+.pane{
+  border:1px solid var(--border);border-radius:8px;background:var(--pane);
+  position:relative;
+}
+.pane-title{
+  display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+  padding:16px 20px 14px;border-bottom:1px solid var(--border);
+  font-family:var(--mono);
+}
+.pane-title .win-no{
+  color:var(--green-ink);background:var(--green);border-radius:4px;
+  font-size:12px;font-weight:700;padding:2px 8px;
+}
+.pane-title h2{font-size:19px;font-weight:700;color:#EAF2F7;letter-spacing:-.01em}
+.pane-title .pane-desc{color:var(--dim);font-family:var(--sans);font-size:14px;flex-basis:100%;line-height:1.55;font-weight:400}
+.pane-body{padding:8px 20px 20px}
+
+/* ---------- recipe (one command) ---------- */
+.recipe{padding:18px 0 16px;border-bottom:1px dashed #202b33}
+.recipe:last-child{border-bottom:0}
+.recipe.hidden{display:none}
+.recipe-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.recipe-head h3{font-family:var(--sans);font-size:15px;font-weight:600;color:#DDE8EF}
+.bind{
+  font-family:var(--mono);font-size:11.5px;color:var(--magenta);
+  border:1px solid #3a2f44;background:#1a1420;border-radius:4px;padding:1px 8px;white-space:nowrap;
+}
+.bind::before{content:"⌨ ";opacity:.7}
+.codeblock{
+  position:relative;background:var(--pane-2);border:1px solid var(--border);
+  border-radius:6px;overflow:hidden;
+}
+.codeblock pre{
+  padding:12px 46px 12px 14px;overflow-x:auto;
+  font-family:var(--mono);font-size:13.5px;line-height:1.75;
+}
+.codeblock pre::-webkit-scrollbar{height:8px}
+.codeblock pre::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.p{color:var(--faint);user-select:none} /* $ prompt */
+.c{color:var(--faint);font-style:italic} /* comment */
+.k{color:var(--green);font-weight:500}  /* tmux keyword */
+.f{color:var(--blue)}                    /* flags */
+.a{color:var(--yellow)}                  /* args/names */
+.s{color:var(--cyan)}                    /* strings */
+.copy-btn{
+  position:absolute;top:7px;right:7px;
+  background:var(--pane);border:1px solid var(--border);border-radius:5px;
+  color:var(--dim);font-family:var(--mono);font-size:11px;
+  padding:4px 9px;cursor:pointer;transition:all .12s;
+}
+.copy-btn:hover{color:var(--text);border-color:var(--dim)}
+.copy-btn.ok{color:var(--green-ink);background:var(--green);border-color:var(--green)}
+.copy-btn:focus-visible,#search:focus-visible,.win:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.recipe .why{margin-top:9px;color:var(--dim);font-size:14px;max-width:760px}
+.recipe .why b,.recipe .why code{color:var(--text)}
+.recipe .why code{font-size:.88em;background:var(--pane-2);border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+.tip{
+  margin-top:10px;padding:9px 13px;border-left:3px solid var(--yellow);
+  background:#1a1811;border-radius:0 6px 6px 0;font-size:13.5px;color:#CBBE97;
+}
+.tip.danger{border-color:var(--red);background:#1c1214;color:#D8A0A6}
+.tip b{color:var(--yellow)} .tip.danger b{color:var(--red)}
+.out{
+  margin-top:8px;background:#0A0E12;border:1px solid #1d262e;border-radius:6px;
+  padding:10px 14px;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--dim);
+  overflow-x:auto;white-space:pre;
+}
+.out .hl{color:var(--green)}
+
+/* keys table */
+table.keys{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
+table.keys th{
+  text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--faint);padding:8px 10px;border-bottom:1px solid var(--border);
+}
+table.keys td{padding:7px 10px;border-bottom:1px dashed #202b33;vertical-align:top}
+table.keys tr:last-child td{border-bottom:0}
+table.keys td:first-child{white-space:nowrap;width:1%}
+table.keys td:last-child{color:var(--dim)}
+
+/* no results */
+#no-results{
+  display:none;max-width:960px;margin:60px auto;padding:0 20px;text-align:center;
+  font-family:var(--mono);color:var(--dim);
+}
+#no-results .big{color:var(--yellow);font-size:18px;margin-bottom:6px}
+
+/* footer */
+footer{max-width:960px;margin:60px auto 30px;padding:0 20px;color:var(--faint);font-size:13px;font-family:var(--mono)}
+
+/* ---------- signature: tmux status bar ---------- */
+.statusbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;height:var(--statusbar-h);
+  background:var(--green);color:var(--green-ink);
+  font-family:var(--mono);font-size:12.5px;font-weight:500;
+  display:flex;align-items:stretch;gap:0;
+  box-shadow:0 -6px 24px rgba(0,0,0,.45);
+}
+.sb-session{
+  display:flex;align-items:center;padding:0 14px;background:#0E3B1E;color:#8FE8AC;
+  font-weight:700;white-space:nowrap;
+}
+.sb-windows{
+  display:flex;align-items:stretch;overflow-x:auto;flex:1;scrollbar-width:none;
+}
+.sb-windows::-webkit-scrollbar{display:none}
+.win{
+  border:0;background:none;cursor:pointer;font:inherit;color:inherit;
+  display:flex;align-items:center;padding:0 12px;white-space:nowrap;
+  border-right:1px solid rgba(0,0,0,.12);transition:background .12s;
+}
+.win:hover{background:rgba(0,0,0,.14)}
+.win.active{background:#0E3B1E;color:#B9F5CD;font-weight:700}
+.win .star{opacity:0;margin-left:2px}
+.win.active .star{opacity:1}
+.sb-right{
+  display:none;align-items:center;gap:14px;padding:0 16px;background:#0E3B1E;color:#8FE8AC;white-space:nowrap;
+}
+@media(min-width:760px){.sb-right{display:flex}}
+</style>
+</head>
+<body>
+
+<!-- command prompt / search -->
+<div class="prompt-bar" role="search">
+  <div class="prompt-inner">
+    <span class="prompt-colon">:</span>
+    <input id="search" type="text" placeholder="find-command … (e.g. split, detach, resize, clipboard)" aria-label="Filter recipes">
+    <span class="prompt-hint"><span id="result-count"></span> <span class="kb-hint">press <kbd>/</kbd> to focus · <kbd>Esc</kbd> clears</span></span>
+  </div>
+</div>
+
+<!-- hero -->
+<div class="hero">
+  <div class="hero-terminal">
+    <div class="hero-titlebar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span style="margin-left:6px">bash — 80×24</span>
+    </div>
+    <div class="hero-body">
+      <div class="hero-cmd"><span class="p">$</span> <span class="u">tmux</span> new -s cookbook<span class="cursor"></span></div>
+      <h1>The tmux <span class="accent">cookbook</span></h1>
+      <p class="hero-sub">Every command you'll actually use — sessions, windows, panes, copy mode, config, scripting, and recovery — grouped by <b>practice</b>, with the reasoning behind each one. Copy any line straight into your terminal.</p>
+      <div class="hero-meta">
+        <span class="tag"><i>9</i> practice groups</span>
+        <span class="tag"><i>80+</i> recipes</span>
+        <span class="tag">works with tmux <i>≥ 3.0</i></span>
+        <span class="tag">nav lives in the <i>status bar</i> below ↓</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="prefix-note-wrap"><div class="prefix-note">
+  <span class="pn-icon">!</span>
+  <div>Two kinds of recipe live here. <b style="color:var(--text)">Shell commands</b> start with <code style="color:var(--faint)">$</code> and run from your normal prompt. <b style="color:var(--text)">Key bindings</b> are pressed <em>inside</em> tmux and always start with the <b style="color:var(--text)">prefix</b> — <kbd class="prefix-chip">Ctrl</kbd>+<kbd class="prefix-chip">b</kbd> by default — released <em>before</em> the key that follows. So "<code>prefix %</code>" means: press Ctrl+b, let go, press %.</div>
+</div></div>
+
+<!-- ============ 0: GETTING STARTED ============ -->
+<section class="group" id="basics" data-title="basics">
+<div class="pane">
+  <div class="pane-title">
+    <span class="win-no">0</span><h2>Getting started</h2>
+    <p class="pane-desc">tmux keeps your terminal work alive on the server side. Close the window, drop the SSH connection, come back tomorrow — your shells, processes, and layout are still there. These are the first five minutes.</p>
+  </div>
+  <div class="pane-body">
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Install tmux</h3></div>
+    <div class="codeblock"><pre><span class="c"># Debian / Ubuntu</span>
+<span class="p">$</span> sudo apt install <span class="a">tmux</span>
+<span class="c"># macOS (Homebrew)</span>
+<span class="p">$</span> brew install <span class="a">tmux</span>
+<span class="c"># Fedora / RHEL</span>
+<span class="p">$</span> sudo dnf install <span class="a">tmux</span>
+<span class="c"># Arch</span>
+<span class="p">$</span> sudo pacman -S <span class="a">tmux</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Check what you got with <code>tmux -V</code>. Anything ≥ 3.0 runs every recipe in this book.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Start your first session</h3></div>
+    <div class="codeblock"><pre><span class="p">$</span> <span class="k">tmux</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Opens a new session with one window and drops you into a shell. The <b>green bar at the bottom</b> is the status line — session name on the left, windows in the middle, clock on the right. (This page's bottom bar imitates it.)</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Detach — leave everything running</h3><span class="bind">prefix d</span></div>
+    <div class="codeblock"><pre><span class="c"># inside tmux: Ctrl+b, then d</span>
+<span class="c"># or as a command from another terminal:</span>
+<span class="p">$</span> <span class="k">tmux</span> detach</pre><button class="copy-btn">copy</button></div>
+    <p class="why">Detaching is the whole point of tmux: your programs keep running on the server even after you log out. This is not quitting — it's walking away with the engine on.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Come back (attach)</h3></div>
+    <div class="codeblock"><pre><span class="p">$</span> <span class="k">tmux</span> attach
+<span class="c"># shorter:</span>
+<span class="p">$</span> <span class="k">tmux</span> a</pre><button class="copy-btn">copy</button></div>
+    <p class="why">Re-enters your most recent session exactly as you left it. If you have several sessions, name one with <code>-t</code> — see the Sessions group.</p>
+    <div class="tip"><b>Habit worth building:</b> <code>tmux a || tmux</code> — attach if a session exists, otherwise start one. Many people alias this to <code>t</code>.</div>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>The command prompt</h3><span class="bind">prefix :</span></div>
+    <div class="codeblock"><pre><span class="c"># Ctrl+b, then :  — a prompt appears in the status line</span>
+:new-window -n <span class="a">logs</span>
+:kill-pane</pre><button class="copy-btn">copy</button></div>
+    <p class="why">Every key binding in tmux is just a shortcut for a command you can type here. If you forget a binding, you can always spell the command out. It has tab-completion.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Built-in help &amp; discoverability</h3><span class="bind">prefix ?</span></div>
+    <div class="codeblock"><pre><span class="c"># list every active key binding (q to quit the list)</span>
+<span class="p">$</span> <span class="k">tmux</span> list-keys
+<span class="c"># list every command tmux understands</span>
+<span class="p">$</span> <span class="k">tmux</span> list-commands
+<span class="c"># the manual is genuinely good:</span>
+<span class="p">$</span> man tmux</pre><button class="copy-btn">copy</button></div>
+    <p class="why"><kbd>prefix</kbd>+<kbd>?</kbd> shows bindings without leaving tmux. <code>list-commands</code> is the fastest way to discover flags you didn't know existed.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>The mental model</h3></div>
+    <div class="out">server ─┬─ session: work      <span class="hl">← one project</span>
+        │    ├─ window 0: editor   <span class="hl">← like a browser tab</span>
+        │    ├─ window 1: server
+        │    └─ window 2: logs ─┬─ pane 0   <span class="hl">← split of a window</span>
+        │                       └─ pane 1
+        └─ session: personal</div>
+    <p class="why">One background <b>server</b> holds everything. A <b>session</b> is a workspace (usually one per project). A <b>window</b> is a full-screen tab inside it. A <b>pane</b> is a split inside a window. Every group below maps to one layer of this tree.</p>
+  </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ============ 1: SESSIONS ============ -->
+<section class="group" id="sessions" data-title="sessions">
+<div class="pane">
+  <div class="pane-title">
+    <span class="win-no">1</span><h2>Sessions — one per project</h2>
+    <p class="pane-desc">The habit that makes tmux pay off: a named session for each project, attached and detached at will. Everything here runs from the shell or the command prompt.</p>
+  </div>
+  <div class="pane-body">
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Create a named session</h3></div>
+    <div class="codeblock"><pre><span class="p">$</span> <span class="k">tmux</span> new <span class="f">-s</span> <span class="a">api</span>
+<span class="c"># long form: tmux new-session -s api</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Names beat numbers. <code>tmux attach -t api</code> reads like what it does; <code>tmux attach -t 3</code> does not.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Create it detached (in the background)</h3></div>
+    <div class="codeblock"><pre><span class="p">$</span> <span class="k">tmux</span> new <span class="f">-d</span> <span class="f">-s</span> <span class="a">workers</span>
+<span class="c"># start it already running a command:</span>
+<span class="p">$</span> <span class="k">tmux</span> new <span class="f">-d</span> <span class="f">-s</span> <span class="a">workers</span> <span class="s">'npm run worker'</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why"><code>-d</code> creates the session without attaching your terminal to it. This is the building block of every startup script — see the Scripting group.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>List sessions</h3><span class="bind">prefix s</span></div>
+    <div class="codeblock"><pre><span class="p">$</span> <span class="k">tmux</span> ls</pre><button class="copy-btn">copy</button></div>
+    <div class="out">api: 3 windows (created Fri Jul  3 09:12:44 2026)
+workers: 1 windows (created Fri Jul  3 09:15:02 2026) <span class="hl">(attached)</span></div>
+    <p class="why">Inside tmux, <kbd>prefix</kbd>+<kbd>s</kbd> opens an interactive chooser instead — arrow keys to pick, <kbd>Enter</kbd> to jump.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Attach to a specific session</h3></div>
+    <div class="codeblock"><pre><span class="p">$</span> <span class="k">tmux</span> attach <span class="f">-t</span> <span class="a">api</span>
+<span class="c"># attach and force other clients to detach (fixes wrong-size screens):</span>
+<span class="p">$</span> <span class="k">tmux</span> attach <span class="f">-d</span> <span class="f">-t</span> <span class="a">api</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">If the session looks shrunk with a border of dots, another (smaller) client is still attached — that's what <code>-d</code> kicks off.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Switch sessions without detaching</h3><span class="bind">prefix ( / )</span></div>
+    <div class="codeblock"><pre><span class="c"># from inside tmux (command prompt or a script):</span>
+:switch-client <span class="f">-t</span> <span class="a">personal</span>
+<span class="c"># prefix (  → previous session,  prefix )  → next session</span>
+<span class="c"># prefix L  → last-used session (like alt-tab)</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">You never need to detach-then-attach to move between projects. <kbd>prefix</kbd>+<kbd>L</kbd> flipping between your two hottest sessions is a huge quality-of-life win.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Rename a session</h3><span class="bind">prefix $</span></div>
+    <div class="codeblock"><pre><span class="p">$</span> <span class="k">tmux</span> rename-session <span class="f">-t</span> <span class="a">0</span> <span class="a">api</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Rescue an unnamed session you started with plain <code>tmux</code>. Inside, <kbd>prefix</kbd>+<kbd>$</kbd> edits the current one.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Kill a session / kill everything</h3></div>
+    <div class="codeblock"><pre><span class="p">$</span> <span class="k">tmux</span> kill-session <span class="f">-t</span> <span class="a">workers</span>
+<span class="c"># kill every session EXCEPT the one named api:</span>
+<span class="p">$</span> <span class="k">tmux</span> kill-session <span class="f">-a</span> <span class="f">-t</span> <span class="a">api</span>
+<span class="c"># nuke the whole server (all sessions, no undo):</span>
+<span class="p">$</span> <span class="k">tmux</span> kill-server</pre><button class="copy-btn">copy</button></div>
+    <div class="tip danger"><b>No undo.</b> Killing a session terminates every process inside it. <code>kill-server</code> takes everything with it.</div>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Check if a session exists (for scripts)</h3></div>
+    <div class="codeblock"><pre><span class="p">$</span> <span class="k">tmux</span> has-session <span class="f">-t</span> <span class="a">api</span> 2>/dev/null <span class="k">&amp;&amp;</span> echo <span class="s">"running"</span> <span class="k">||</span> echo <span class="s">"not running"</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Exit code 0 if the session exists. The standard guard at the top of a project launcher: create the session only if it isn't already there.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Attach-or-create in one line</h3></div>
+    <div class="codeblock"><pre><span class="p">$</span> <span class="k">tmux</span> new <span class="f">-A</span> <span class="f">-s</span> <span class="a">api</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why"><code>-A</code> means "attach if it exists, create if it doesn't" — idempotent, perfect for an alias or the last line of an SSH login snippet.</p>
+  </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ============ 2: WINDOWS ============ -->
+<section class="group" id="windows" data-title="windows">
+<div class="pane">
+  <div class="pane-title">
+    <span class="win-no">2</span><h2>Windows — tabs inside a session</h2>
+    <p class="pane-desc">A window fills the whole screen, like a browser tab. Typical setup: window 0 for the editor, 1 for the dev server, 2 for logs, 3 for a scratch shell.</p>
+  </div>
+  <div class="pane-body">
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>New window</h3><span class="bind">prefix c</span></div>
+    <div class="codeblock"><pre>:new-window
+<span class="c"># with a name, from the shell:</span>
+<span class="p">$</span> <span class="k">tmux</span> new-window <span class="f">-n</span> <span class="a">logs</span>
+<span class="c"># open it running a command; window closes when the command exits:</span>
+<span class="p">$</span> <span class="k">tmux</span> new-window <span class="f">-n</span> <span class="a">top</span> <span class="s">'htop'</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">New windows open after the current one and get the next free number.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Rename the current window</h3><span class="bind">prefix ,</span></div>
+    <div class="codeblock"><pre>:rename-window <span class="a">server</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Names show in the status bar — <code>1:server</code> beats <code>1:zsh</code>. To stop tmux renaming windows after the running program, set <code>set -g allow-rename off</code> in your config.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Move between windows</h3><span class="bind">prefix n / p / 0-9</span></div>
+    <div class="codeblock"><pre><span class="c"># prefix n     next window</span>
+<span class="c"># prefix p     previous window</span>
+<span class="c"># prefix 0..9  jump straight to that number</span>
+<span class="c"># prefix l     last-used window (alt-tab)</span>
+<span class="c"># prefix '     prompt for a window index</span>
+:select-window <span class="f">-t</span> <span class="a">3</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why"><kbd>prefix</kbd>+<kbd>l</kbd> (lowercase L) bounces between your two most-used windows — the fastest movement in tmux once it's muscle memory.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Interactive window list</h3><span class="bind">prefix w</span></div>
+    <div class="codeblock"><pre>:choose-tree <span class="f">-w</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">A tree of every session and window, with live previews. Arrow keys to move, <kbd>Enter</kbd> to jump, <kbd>x</kbd> to kill the highlighted item. The best "where was that thing running?" tool tmux has.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Search all windows for text</h3></div>
+    <div class="codeblock"><pre>:find-window <span class="s">'error'</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Matches against window names, titles, and visible content — handy when a stack trace scrolled past in *some* window twenty minutes ago.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Reorder windows</h3></div>
+    <div class="codeblock"><pre><span class="c"># swap window 3 with window 1:</span>
+:swap-window <span class="f">-s</span> <span class="a">3</span> <span class="f">-t</span> <span class="a">1</span>
+<span class="c"># move current window to slot 0 (must be free):</span>
+:move-window <span class="f">-t</span> <span class="a">0</span>
+<span class="c"># close gaps in numbering (0,1,4,7 → 0,1,2,3):</span>
+:move-window <span class="f">-r</span></pre><button class="copy-btn">copy</button></div>
+    <div class="tip"><b>Set it and forget it:</b> <code>set -g renumber-windows on</code> in <code>~/.tmux.conf</code> renumbers automatically whenever a window closes.</div>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Move a window between sessions</h3></div>
+    <div class="codeblock"><pre><span class="c"># take window 2 of session "api" into session "work":</span>
+<span class="p">$</span> <span class="k">tmux</span> move-window <span class="f">-s</span> <span class="a">api:2</span> <span class="f">-t</span> <span class="a">work:</span>
+<span class="c"># same but keep the original (link, not move):</span>
+<span class="p">$</span> <span class="k">tmux</span> link-window <span class="f">-s</span> <span class="a">api:2</span> <span class="f">-t</span> <span class="a">work:</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Target syntax everywhere in tmux is <code>session:window.pane</code> — e.g. <code>api:2.1</code> is pane 1 of window 2 in session api.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Kill a window</h3><span class="bind">prefix &amp;</span></div>
+    <div class="codeblock"><pre>:kill-window
+<span class="c"># kill every window except the current one:</span>
+:kill-window <span class="f">-a</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why"><kbd>prefix</kbd>+<kbd>&amp;</kbd> asks for confirmation before killing — the processes inside die with it.</p>
+  </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ============ 3: PANES ============ -->
+<section class="group" id="panes" data-title="panes">
+<div class="pane">
+  <div class="pane-title">
+    <span class="win-no">3</span><h2>Panes — splits you live in</h2>
+    <p class="pane-desc">Panes split one window into multiple shells you can see at once: editor on the left, tests on the right, logs on the bottom. This is where tmux keybindings earn their keep.</p>
+  </div>
+  <div class="pane-body">
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Split the window</h3><span class="bind">prefix % / "</span></div>
+    <div class="codeblock"><pre><span class="c"># prefix %   split left|right (vertical divider)</span>
+<span class="c"># prefix "   split top/bottom (horizontal divider)</span>
+:split-window <span class="f">-h</span>            <span class="c"># side by side</span>
+:split-window <span class="f">-v</span>            <span class="c"># stacked</span>
+:split-window <span class="f">-h</span> <span class="f">-p</span> <span class="a">30</span>      <span class="c"># new pane takes 30% width</span>
+:split-window <span class="f">-v</span> <span class="s">'tail -f app.log'</span>  <span class="c"># split straight into a command</span></pre><button class="copy-btn">copy</button></div>
+    <div class="tip"><b>Memory hook:</b> the <code>%</code> character has a vertical-ish slash → vertical divider; <code>"</code> is two marks side by side on a line → horizontal divider. (Or rebind to <code>|</code> and <code>-</code> — see Config.)</div>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Move between panes</h3><span class="bind">prefix ← ↑ ↓ →</span></div>
+    <div class="codeblock"><pre><span class="c"># prefix + arrow keys   directional move</span>
+<span class="c"># prefix o              cycle to next pane</span>
+<span class="c"># prefix ;              last-used pane</span>
+:select-pane <span class="f">-L</span>   <span class="c"># -L -R -U -D from scripts</span></pre><button class="copy-btn">copy</button></div>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Jump by number</h3><span class="bind">prefix q</span></div>
+    <div class="codeblock"><pre>:display-panes
+<span class="c"># big numbers flash over each pane — press one to jump to it</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Faster than arrowing through a 6-pane layout. Extend the flash time with <code>set -g display-panes-time 2000</code>.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Zoom a pane to full screen</h3><span class="bind">prefix z</span></div>
+    <div class="codeblock"><pre>:resize-pane <span class="f">-Z</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Toggles the current pane to fill the window and back, layout untouched. A <code>Z</code> appears next to the window name while zoomed. Probably the single most-loved binding in tmux.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Resize panes</h3><span class="bind">prefix Ctrl+←→↑↓</span></div>
+    <div class="codeblock"><pre>:resize-pane <span class="f">-L</span> <span class="a">10</span>   <span class="c"># 10 cells left; also -R -U -D</span>
+:resize-pane <span class="f">-x</span> <span class="a">80</span>   <span class="c"># exactly 80 columns wide</span>
+:resize-pane <span class="f">-y</span> <span class="a">20</span>   <span class="c"># exactly 20 rows tall</span></pre><button class="copy-btn">copy</button></div>
+    <div class="tip"><b>Or just drag:</b> with <code>set -g mouse on</code>, grab the divider with the mouse.</div>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Rearrange panes</h3><span class="bind">prefix { / }</span></div>
+    <div class="codeblock"><pre><span class="c"># prefix {   swap with previous pane</span>
+<span class="c"># prefix }   swap with next pane</span>
+:swap-pane <span class="f">-s</span> <span class="a">0</span> <span class="f">-t</span> <span class="a">2</span>   <span class="c"># swap specific panes</span>
+:rotate-window          <span class="c"># prefix Ctrl+o — rotate all panes around</span></pre><button class="copy-btn">copy</button></div>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Preset layouts</h3><span class="bind">prefix Space</span></div>
+    <div class="codeblock"><pre><span class="c"># prefix Space cycles layouts; or jump directly:</span>
+<span class="c"># prefix Alt+1  even-horizontal    prefix Alt+2  even-vertical</span>
+<span class="c"># prefix Alt+3  main-horizontal    prefix Alt+4  main-vertical</span>
+<span class="c"># prefix Alt+5  tiled</span>
+:select-layout <span class="a">main-vertical</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why"><code>main-vertical</code> = one big pane on the left, the rest stacked on the right — the classic editor-plus-terminals arrangement.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Break a pane out / merge it back</h3><span class="bind">prefix !</span></div>
+    <div class="codeblock"><pre><span class="c"># pane → its own window:</span>
+:break-pane
+<span class="c"># window 3 → a pane inside the current window:</span>
+:join-pane <span class="f">-s</span> <span class="a">3</span>
+<span class="c"># send current pane into window 1 as a split:</span>
+:join-pane <span class="f">-t</span> <span class="a">1</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">The pair that makes layouts fluid: promote a busy log pane to a full window, pull it back in when things calm down.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Type into every pane at once</h3></div>
+    <div class="codeblock"><pre>:setw synchronize-panes on
+<span class="c"># ... run your command on 6 servers at once ...</span>
+:setw synchronize-panes off</pre><button class="copy-btn">copy</button></div>
+    <div class="tip danger"><b>Sharp tool.</b> Every keystroke goes to every pane in the window — spectacular for fleet SSH work, catastrophic if you forget it's on. Consider a toggle binding: <code>bind S setw synchronize-panes</code>.</div>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Kill a pane</h3><span class="bind">prefix x</span></div>
+    <div class="codeblock"><pre>:kill-pane
+<span class="c"># kill all panes in the window except this one:</span>
+:kill-pane <span class="f">-a</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Exiting the shell (<code>exit</code> or <kbd>Ctrl</kbd>+<kbd>d</kbd>) closes a pane too — <kbd>prefix</kbd>+<kbd>x</kbd> is for when the thing inside is stuck.</p>
+  </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ============ 4: COPY MODE ============ -->
+<section class="group" id="copy-mode" data-title="copy-mode">
+<div class="pane">
+  <div class="pane-title">
+    <span class="win-no">4</span><h2>Copy mode — scrollback, search, clipboard</h2>
+    <p class="pane-desc">tmux keeps its own scrollback per pane. Copy mode freezes the screen so you can scroll, search, and select text with the keyboard — no mouse required.</p>
+  </div>
+  <div class="pane-body">
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Enter and leave copy mode</h3><span class="bind">prefix [</span></div>
+    <div class="codeblock"><pre><span class="c"># enter: prefix [     leave: q  (or Escape)</span>
+:copy-mode</pre><button class="copy-btn">copy</button></div>
+    <p class="why">A position indicator like <code>[12/3000]</code> appears top-right: your line offset over total history. With <code>mouse on</code>, scrolling the wheel enters copy mode automatically.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Use vi keys inside copy mode</h3></div>
+    <div class="codeblock"><pre><span class="c"># ~/.tmux.conf</span>
+<span class="k">setw</span> <span class="f">-g</span> mode-keys <span class="a">vi</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Turns copy mode into a vim buffer: <code>h j k l</code> to move, <code>w b</code> by word, <code>g / G</code> to history top/bottom, <kbd>Ctrl</kbd>+<kbd>u</kbd>/<kbd>d</kbd> half-page. The recipes below assume vi mode (the default emacs keys are shown where they differ).</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Search the scrollback</h3></div>
+    <div class="codeblock"><pre><span class="c"># in copy mode (vi keys):</span>
+<span class="c">#   ?pattern   search UP      /pattern   search DOWN</span>
+<span class="c">#   n          next match      N          previous match</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Searching <em>up</em> (<code>?</code>) is the common case — the error you want is above you. Matches are highlighted across the whole history.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Select, copy, paste</h3><span class="bind">prefix ]</span></div>
+    <div class="codeblock"><pre><span class="c"># vi keys:  Space begins selection → move → Enter copies</span>
+<span class="c">#           v (rectangle: Ctrl+v) also begins selection in vi mode</span>
+<span class="c"># emacs:    Ctrl+Space begins → Ctrl+w copies</span>
+<span class="c"># paste the most recent buffer:</span>
+<span class="c">#   prefix ]</span>
+:paste-buffer</pre><button class="copy-btn">copy</button></div>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Copy to the system clipboard</h3></div>
+    <div class="codeblock"><pre><span class="c"># tmux ≥ 3.2 — usually all you need:</span>
+<span class="k">set</span> <span class="f">-g</span> set-clipboard <span class="a">on</span>
+<span class="c"># explicit pipe on Linux (X11) if your terminal lacks OSC 52:</span>
+<span class="k">bind-key</span> <span class="f">-T</span> copy-mode-vi <span class="a">y</span> send-keys <span class="f">-X</span> copy-pipe-and-cancel <span class="s">"xclip -selection clipboard"</span>
+<span class="c"># Wayland: "wl-copy"     macOS: "pbcopy"</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Two mechanisms exist: OSC 52 escape codes (terminal does the copying — works over SSH!) and piping to a clipboard tool on the same machine. Try <code>set-clipboard on</code> first; fall back to the pipe.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Work with multiple buffers</h3><span class="bind">prefix =</span></div>
+    <div class="codeblock"><pre><span class="p">$</span> <span class="k">tmux</span> list-buffers
+:choose-buffer            <span class="c"># prefix = — pick one interactively to paste</span>
+<span class="p">$</span> <span class="k">tmux</span> show-buffer       <span class="c"># print newest buffer to stdout</span>
+<span class="p">$</span> <span class="k">tmux</span> save-buffer <span class="a">out.txt</span>
+<span class="p">$</span> echo <span class="s">"hello"</span> | <span class="k">tmux</span> load-buffer <span class="f">-</span>   <span class="c"># stdin → paste buffer</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Every copy lands in a stack of buffers, so nothing is lost when you copy twice. <code>load-buffer -</code> turns tmux into a paste bridge between shells.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Dump a pane's contents to a file</h3></div>
+    <div class="codeblock"><pre><span class="c"># visible screen:</span>
+<span class="p">$</span> <span class="k">tmux</span> capture-pane <span class="f">-p</span> > <span class="a">screen.txt</span>
+<span class="c"># entire scrollback history:</span>
+<span class="p">$</span> <span class="k">tmux</span> capture-pane <span class="f">-p</span> <span class="f">-S</span> <span class="a">-</span> > <span class="a">full-history.txt</span>
+<span class="c"># a specific pane, from outside:</span>
+<span class="p">$</span> <span class="k">tmux</span> capture-pane <span class="f">-p</span> <span class="f">-t</span> <span class="a">api:1.0</span> <span class="f">-S</span> <span class="a">-100</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">The forensic tool: grab the crash output of a detached job without ever attaching. <code>-S -</code> means "from the very start of history".</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Bigger scrollback</h3></div>
+    <div class="codeblock"><pre><span class="c"># ~/.tmux.conf — lines kept per pane (default 2000)</span>
+<span class="k">set</span> <span class="f">-g</span> history-limit <span class="a">50000</span>
+<span class="c"># wipe the current pane's history:</span>
+:clear-history</pre><button class="copy-btn">copy</button></div>
+    <div class="tip"><b>Applies to new panes only</b> — existing panes keep the limit they were created with. Memory cost is per pane, so 50k is a sane ceiling.</div>
+  </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ============ 5: CONFIG ============ -->
+<section class="group" id="config" data-title="config">
+<div class="pane">
+  <div class="pane-title">
+    <span class="win-no">5</span><h2>Configuration — ~/.tmux.conf</h2>
+    <p class="pane-desc">tmux reads <code style="color:var(--cyan)">~/.tmux.conf</code> when the server starts. Everything here is a command you could also type at the prompt — the file is just commands run for you.</p>
+  </div>
+  <div class="pane-body">
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Reload config without restarting</h3></div>
+    <div class="codeblock"><pre>:source-file <span class="a">~/.tmux.conf</span>
+<span class="c"># give yourself a binding for it:</span>
+<span class="k">bind</span> <span class="a">r</span> source-file ~/.tmux.conf \; display <span class="s">"config reloaded"</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">The first line to add to any config. Note: <code>source-file</code> runs new commands but can't <em>unset</em> options you removed — for a truly clean slate, <code>tmux kill-server</code>.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Change the prefix (many use Ctrl+a)</h3></div>
+    <div class="codeblock"><pre><span class="k">unbind</span> <span class="a">C-b</span>
+<span class="k">set</span> <span class="f">-g</span> prefix <span class="a">C-a</span>
+<span class="k">bind</span> <span class="a">C-a</span> send-prefix</pre><button class="copy-btn">copy</button></div>
+    <p class="why"><kbd>Ctrl</kbd>+<kbd>a</kbd> is closer to the home row (GNU screen refugees already know it). The last line lets a double-tap pass a literal Ctrl+a through to programs that want it.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Turn the mouse on</h3></div>
+    <div class="codeblock"><pre><span class="k">set</span> <span class="f">-g</span> mouse <span class="a">on</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Click to select panes and windows, drag dividers to resize, wheel to scroll into copy mode. Keyboard purism is optional; this one option makes tmux friendly on day one.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Friendlier split bindings</h3></div>
+    <div class="codeblock"><pre><span class="k">bind</span> <span class="a">|</span> split-window <span class="f">-h</span> <span class="f">-c</span> <span class="s">"#{pane_current_path}"</span>
+<span class="k">bind</span> <span class="a">-</span> split-window <span class="f">-v</span> <span class="f">-c</span> <span class="s">"#{pane_current_path}"</span>
+<span class="c"># make plain "new window" inherit the path too:</span>
+<span class="k">bind</span> <span class="a">c</span> new-window <span class="f">-c</span> <span class="s">"#{pane_current_path}"</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Two upgrades in one: keys that look like what they do, and new panes that open in the directory you're already in instead of <code>$HOME</code>.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Sane numbering</h3></div>
+    <div class="codeblock"><pre><span class="k">set</span> <span class="f">-g</span> base-index <span class="a">1</span>          <span class="c"># windows start at 1</span>
+<span class="k">setw</span> <span class="f">-g</span> pane-base-index <span class="a">1</span>    <span class="c"># panes too</span>
+<span class="k">set</span> <span class="f">-g</span> renumber-windows <span class="a">on</span>   <span class="c"># no gaps after closing</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Window 1 lives under the <kbd>1</kbd> key on your keyboard; window 0 lives at the far end. Starting at 1 matches your fingers.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Fix colors and escape lag</h3></div>
+    <div class="codeblock"><pre><span class="k">set</span> <span class="f">-g</span> default-terminal <span class="s">"tmux-256color"</span>
+<span class="k">set</span> <span class="f">-ga</span> terminal-overrides <span class="s">",*256col*:Tc"</span>   <span class="c"># true 24-bit color</span>
+<span class="k">set</span> <span class="f">-s</span> escape-time <span class="a">10</span>                       <span class="c"># snappy Esc key in vim</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Without these: washed-out editor themes and a laggy <kbd>Esc</kbd> in vim (tmux waits to see if Esc starts a key sequence). These three lines are in virtually every serious config.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Inspect options — set vs setw, -g and -s</h3></div>
+    <div class="codeblock"><pre><span class="p">$</span> <span class="k">tmux</span> show-options <span class="f">-g</span>        <span class="c"># all global session options</span>
+<span class="p">$</span> <span class="k">tmux</span> show-options <span class="f">-g</span> mouse  <span class="c"># one option</span>
+<span class="p">$</span> <span class="k">tmux</span> show-window-options <span class="f">-g</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Cheat sheet: <code>set</code> = session options, <code>setw</code> = window options, <code>-g</code> = global default, <code>-s</code> = server-wide. When an option "doesn't work", check you used the right scope.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Style the status bar</h3></div>
+    <div class="codeblock"><pre><span class="k">set</span> <span class="f">-g</span> status-position <span class="a">top</span>
+<span class="k">set</span> <span class="f">-g</span> status-style <span class="s">"bg=#233a2c,fg=#9ce3b0"</span>
+<span class="k">set</span> <span class="f">-g</span> status-left <span class="s">" #S "</span>            <span class="c"># session name</span>
+<span class="k">set</span> <span class="f">-g</span> status-right <span class="s">" %Y-%m-%d %H:%M "</span>
+<span class="k">setw</span> <span class="f">-g</span> window-status-current-style <span class="s">"bg=#35C860,fg=#071309,bold"</span>
+<span class="k">set</span> <span class="f">-g</span> status-interval <span class="a">5</span>              <span class="c"># refresh every 5s</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Format strings can embed any tmux variable (<code>#S</code> session, <code>#I</code> window index, <code>#W</code> window name) or shell output via <code>#(command)</code>. See them all: <code>man tmux</code>, FORMATS section.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Plugins with tpm</h3></div>
+    <div class="codeblock"><pre><span class="p">$</span> git clone https://github.com/tmux-plugins/tpm <span class="a">~/.tmux/plugins/tpm</span>
+
+<span class="c"># then at the BOTTOM of ~/.tmux.conf:</span>
+<span class="k">set</span> <span class="f">-g</span> @plugin <span class="s">'tmux-plugins/tpm'</span>
+<span class="k">set</span> <span class="f">-g</span> @plugin <span class="s">'tmux-plugins/tmux-resurrect'</span>  <span class="c"># save/restore sessions across reboots</span>
+<span class="k">set</span> <span class="f">-g</span> @plugin <span class="s">'tmux-plugins/tmux-continuum'</span>  <span class="c"># …automatically</span>
+run <span class="s">'~/.tmux/plugins/tpm/tpm'</span>
+<span class="c"># reload config, then prefix I (capital i) to install plugins</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why"><b>resurrect + continuum</b> solve tmux's one real weakness: sessions dying on reboot. <kbd>prefix</kbd>+<kbd>Ctrl+s</kbd> saves, <kbd>prefix</kbd>+<kbd>Ctrl+r</kbd> restores.</p>
+  </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ============ 6: SCRIPTING ============ -->
+<section class="group" id="scripting" data-title="scripting">
+<div class="pane">
+  <div class="pane-title">
+    <span class="win-no">6</span><h2>Scripting &amp; automation</h2>
+    <p class="pane-desc">Every tmux action is a CLI command, which means whole workspaces can be built by a shell script. Type your project setup once, run it forever.</p>
+  </div>
+  <div class="pane-body">
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>send-keys — type into any pane remotely</h3></div>
+    <div class="codeblock"><pre><span class="c"># run a command in pane 0 of window "server" in session "api":</span>
+<span class="p">$</span> <span class="k">tmux</span> send-keys <span class="f">-t</span> <span class="a">api:server.0</span> <span class="s">'npm run dev'</span> <span class="a">Enter</span>
+<span class="c"># send Ctrl+C to stop it:</span>
+<span class="p">$</span> <span class="k">tmux</span> send-keys <span class="f">-t</span> <span class="a">api:server.0</span> <span class="a">C-c</span>
+<span class="c"># send literal text without interpreting key names:</span>
+<span class="p">$</span> <span class="k">tmux</span> send-keys <span class="f">-l</span> <span class="s">'echo Enter'</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">The workhorse of tmux automation. <code>Enter</code>, <code>C-c</code>, <code>Escape</code>, <code>Tab</code> are key names; everything else is typed literally.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Chain commands with \;</h3></div>
+    <div class="codeblock"><pre><span class="p">$</span> <span class="k">tmux</span> new <span class="f">-d</span> <span class="f">-s</span> <span class="a">demo</span> \; split-window <span class="f">-h</span> \; select-pane <span class="f">-t</span> <span class="a">0</span> \; attach</pre><button class="copy-btn">copy</button></div>
+    <p class="why">One tmux invocation can carry many commands separated by <code>\;</code> (escaped so your shell doesn't eat it). Each command acts on the state the previous one left behind.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>A complete project launcher</h3></div>
+    <div class="codeblock"><pre><span class="c">#!/usr/bin/env bash</span>
+<span class="c"># dev.sh — build (or rejoin) the "api" workspace</span>
+SESSION=<span class="s">"api"</span>
+
+<span class="k">if</span> ! tmux has-session <span class="f">-t</span> <span class="a">"$SESSION"</span> 2>/dev/null; <span class="k">then</span>
+  tmux new-session  <span class="f">-d</span> <span class="f">-s</span> <span class="a">"$SESSION"</span> <span class="f">-n</span> <span class="a">editor</span> <span class="f">-c</span> <span class="a">~/code/api</span>
+  tmux send-keys    <span class="f">-t</span> <span class="a">"$SESSION:editor"</span> <span class="s">'nvim .'</span> <span class="a">Enter</span>
+
+  tmux new-window   <span class="f">-t</span> <span class="a">"$SESSION"</span> <span class="f">-n</span> <span class="a">server</span> <span class="f">-c</span> <span class="a">~/code/api</span>
+  tmux send-keys    <span class="f">-t</span> <span class="a">"$SESSION:server"</span> <span class="s">'npm run dev'</span> <span class="a">Enter</span>
+  tmux split-window <span class="f">-t</span> <span class="a">"$SESSION:server"</span> <span class="f">-v</span> <span class="f">-c</span> <span class="a">~/code/api</span>
+  tmux send-keys    <span class="f">-t</span> <span class="a">"$SESSION:server.1"</span> <span class="s">'npm run test:watch'</span> <span class="a">Enter</span>
+
+  tmux new-window   <span class="f">-t</span> <span class="a">"$SESSION"</span> <span class="f">-n</span> <span class="a">logs</span> <span class="f">-c</span> <span class="a">~/code/api</span>
+  tmux send-keys    <span class="f">-t</span> <span class="a">"$SESSION:logs"</span> <span class="s">'tail -f log/dev.log'</span> <span class="a">Enter</span>
+
+  tmux select-window <span class="f">-t</span> <span class="a">"$SESSION:editor"</span>
+<span class="k">fi</span>
+
+tmux attach <span class="f">-t</span> <span class="a">"$SESSION"</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">The template to steal: guard with <code>has-session</code>, build detached, attach last. Run it twice and it just reattaches. (For declarative YAML versions of this, look at <b>tmuxinator</b> or <b>tmuxp</b>.)</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Query tmux state with formats</h3></div>
+    <div class="codeblock"><pre><span class="p">$</span> <span class="k">tmux</span> list-sessions <span class="f">-F</span> <span class="s">'#{session_name}'</span>
+<span class="p">$</span> <span class="k">tmux</span> list-panes <span class="f">-a</span> <span class="f">-F</span> <span class="s">'#{session_name}:#{window_index}.#{pane_index} #{pane_current_command}'</span>
+<span class="p">$</span> <span class="k">tmux</span> display-message <span class="f">-p</span> <span class="s">'#{pane_current_path}'</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why"><code>-F</code> makes list output machine-readable — the glue for fzf pickers and status scripts. <code>display-message -p</code> prints any format for the current context.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Log a pane to a file (pipe-pane)</h3></div>
+    <div class="codeblock"><pre><span class="c"># start logging everything the pane outputs:</span>
+:pipe-pane <span class="f">-o</span> <span class="s">'cat >> ~/tmux-#S-#W.log'</span>
+<span class="c"># run the same command again to stop (it toggles with -o)</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Live logging for a deploy or migration you may need to audit later. Unlike <code>capture-pane</code>, this records as it happens, unlimited by scrollback.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Restart whatever a pane was running</h3></div>
+    <div class="codeblock"><pre>:respawn-pane <span class="f">-k</span>
+<span class="c"># same for a window:</span>
+:respawn-window <span class="f">-k</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why"><code>-k</code> kills the current process first. Handy when a dev server wedges: one command instead of Ctrl+C, up-arrow, Enter.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Conditional config with if-shell</h3></div>
+    <div class="codeblock"><pre><span class="c"># ~/.tmux.conf — macOS vs Linux clipboard:</span>
+<span class="k">if-shell</span> <span class="s">'uname | grep -q Darwin'</span> \
+  <span class="s">'bind -T copy-mode-vi y send -X copy-pipe-and-cancel pbcopy'</span> \
+  <span class="s">'bind -T copy-mode-vi y send -X copy-pipe-and-cancel "xclip -sel clip"'</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">One dotfile repo, many machines. The first string runs if the shell test succeeds, the second if it fails.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Wait for a job to finish (wait-for)</h3></div>
+    <div class="codeblock"><pre><span class="c"># pane A — run the build, then signal the channel "build-done":</span>
+<span class="p">$</span> make all; <span class="k">tmux</span> wait-for <span class="f">-S</span> <span class="a">build-done</span>
+<span class="c"># pane B / script — block until the signal arrives:</span>
+<span class="p">$</span> <span class="k">tmux</span> wait-for <span class="a">build-done</span> <span class="k">&amp;&amp;</span> ./deploy.sh</pre><button class="copy-btn">copy</button></div>
+    <p class="why">A tiny synchronization primitive between panes and scripts — no polling, no sleep loops.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Popups — a floating terminal (tmux ≥ 3.2)</h3></div>
+    <div class="codeblock"><pre>:display-popup <span class="f">-E</span> <span class="f">-w</span> <span class="a">80%</span> <span class="f">-h</span> <span class="a">80%</span> <span class="s">'lazygit'</span>
+<span class="c"># bind a scratch popup to prefix g:</span>
+<span class="k">bind</span> <span class="a">g</span> display-popup <span class="f">-E</span> <span class="f">-w</span> <span class="a">80%</span> <span class="f">-h</span> <span class="a">80%</span> <span class="s">'lazygit'</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">A floating window over your layout — perfect for lazygit, a quick fzf picker, or a throwaway shell. <code>-E</code> closes the popup when the command exits.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Hooks — run commands on events</h3></div>
+    <div class="codeblock"><pre><span class="c"># announce whenever a session is created:</span>
+<span class="k">set-hook</span> <span class="f">-g</span> session-created <span class="s">'display "new session: #S"'</span>
+<span class="c"># auto-rebalance panes whenever one closes:</span>
+<span class="k">set-hook</span> <span class="f">-g</span> pane-exited <span class="s">'select-layout main-vertical'</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Event-driven tmux: <code>after-new-window</code>, <code>client-attached</code>, <code>pane-died</code> and dozens more. <code>tmux show-hooks -g</code> lists what's set.</p>
+  </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ============ 7: PRO WORKFLOWS ============ -->
+<section class="group" id="workflows" data-title="workflows">
+<div class="pane">
+  <div class="pane-title">
+    <span class="win-no">7</span><h2>Pro workflows</h2>
+    <p class="pane-desc">Patterns that combine everything above: remote work that survives disconnects, pairing, nested sessions, and monitoring.</p>
+  </div>
+  <div class="pane-body">
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>SSH straight into tmux</h3></div>
+    <div class="codeblock"><pre><span class="p">$</span> ssh <span class="a">myserver</span> <span class="f">-t</span> <span class="s">'tmux new -A -s main'</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">One command: connect, attach if <code>main</code> exists, create it if not. If your connection drops mid-work, nothing is lost — run the same command and you're back where you were. <code>-t</code> forces the TTY allocation tmux needs.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>tmux inside tmux (local + remote)</h3></div>
+    <div class="codeblock"><pre><span class="c"># send the prefix to the INNER tmux by pressing it twice:</span>
+<span class="c">#   Ctrl+b Ctrl+b d   → detaches the inner (remote) session</span>
+<span class="c"># or give the inner tmux a different prefix in its ~/.tmux.conf:</span>
+<span class="k">set</span> <span class="f">-g</span> prefix <span class="a">C-a</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Running local tmux and SSH-ing into a machine that also runs tmux is normal. Prefix-twice targets the inner one; distinct prefixes (outer Ctrl+b, inner Ctrl+a) remove the ambiguity entirely.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Pair programming on one session</h3></div>
+    <div class="codeblock"><pre><span class="c"># same user account: both simply attach —</span>
+<span class="p">$</span> <span class="k">tmux</span> attach <span class="f">-t</span> <span class="a">pair</span>
+<span class="c"># different accounts: share a socket file</span>
+<span class="p">$</span> <span class="k">tmux</span> <span class="f">-S</span> <span class="a">/tmp/pair</span> new <span class="f">-s</span> <span class="a">pair</span>
+<span class="p">$</span> chmod 660 <span class="a">/tmp/pair</span>          <span class="c"># plus a shared group</span>
+<span class="c"># partner:</span>
+<span class="p">$</span> <span class="k">tmux</span> <span class="f">-S</span> <span class="a">/tmp/pair</span> attach</pre><button class="copy-btn">copy</button></div>
+    <p class="why">Both people see and type into the same panes in real time. If you want to browse <em>different</em> windows of the same session, attach with <code>tmux new -t pair -s mine</code> (a grouped session).</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Monitor a window for activity or silence</h3></div>
+    <div class="codeblock"><pre><span class="c"># highlight window in status bar when output appears:</span>
+:setw monitor-activity on
+<span class="c"># alert when a window goes QUIET for 30s (build finished):</span>
+:setw monitor-silence <span class="a">30</span>
+<span class="c"># make alerts audible/visible:</span>
+<span class="k">set</span> <span class="f">-g</span> visual-activity <span class="a">on</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Kick off a long build in window 3, go work in window 1, get pinged when it's done. <code>monitor-silence</code> flipping the logic is the underrated half.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Show a big clock</h3><span class="bind">prefix t</span></div>
+    <div class="codeblock"><pre>:clock-mode</pre><button class="copy-btn">copy</button></div>
+    <p class="why">A full-pane clock. Genuinely useful on a spare pane during incident calls; any key dismisses it.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Rename programmatically as you move around</h3></div>
+    <div class="codeblock"><pre><span class="c"># show the current directory as the window name:</span>
+<span class="k">setw</span> <span class="f">-g</span> automatic-rename <span class="a">on</span>
+<span class="k">setw</span> <span class="f">-g</span> automatic-rename-format <span class="s">'#{b:pane_current_path}'</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why"><code>#{b:...}</code> is the basename modifier — <code>~/code/api</code> shows as <code>api</code>. Your status bar becomes a project map for free.</p>
+  </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ============ 8: TROUBLESHOOTING ============ -->
+<section class="group" id="troubleshooting" data-title="rescue">
+<div class="pane">
+  <div class="pane-title">
+    <span class="win-no">8</span><h2>Troubleshooting &amp; rescue</h2>
+    <p class="pane-desc">The problems everyone hits, in the order they usually hit them.</p>
+  </div>
+  <div class="pane-body">
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>"sessions should be nested with care" / can't start tmux</h3></div>
+    <div class="codeblock"><pre><span class="c"># you're already inside tmux — check:</span>
+<span class="p">$</span> echo <span class="a">$TMUX</span>
+<span class="c"># to deliberately nest anyway (rarely wise):</span>
+<span class="p">$</span> TMUX= <span class="k">tmux</span> new <span class="f">-s</span> <span class="a">inner</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">tmux refuses to start inside itself as a guardrail. Usually the fix is realizing you're already in a session — check the green bar.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Screen framed by dots / stuck small</h3></div>
+    <div class="codeblock"><pre><span class="p">$</span> <span class="k">tmux</span> attach <span class="f">-d</span> <span class="f">-t</span> <span class="a">api</span>       <span class="c"># detach the other, smaller client</span>
+<span class="c"># or keep both attached but stop sizing to the smallest (tmux ≥ 3.1):</span>
+<span class="k">set</span> <span class="f">-g</span> window-size <span class="a">latest</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">A session renders at the size of its smallest attached client — often a forgotten laptop terminal at home. <code>-d</code> evicts it.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Colors look wrong in vim/nvim</h3></div>
+    <div class="codeblock"><pre><span class="c"># inside tmux, verify:</span>
+<span class="p">$</span> echo <span class="a">$TERM</span>            <span class="c"># should be tmux-256color or screen-256color</span>
+<span class="c"># ~/.tmux.conf:</span>
+<span class="k">set</span> <span class="f">-g</span> default-terminal <span class="s">"tmux-256color"</span>
+<span class="k">set</span> <span class="f">-ga</span> terminal-overrides <span class="s">",*256col*:Tc"</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Never set <code>TERM</code> yourself inside tmux — set the tmux option and restart the server (<code>tmux kill-server</code>) so it takes effect everywhere.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>A pane is frozen</h3></div>
+    <div class="codeblock"><pre><span class="c"># 1. maybe you hit Ctrl+s (terminal flow control) — unfreeze:</span>
+<span class="c">#    press Ctrl+q</span>
+<span class="c"># 2. maybe the pane is in copy mode — press q</span>
+<span class="c"># 3. still stuck? restart the process in place:</span>
+:respawn-pane <span class="f">-k</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">In that order. Ctrl+s freezes output at the terminal layer and is the classic "tmux is broken" that isn't tmux at all.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Lost? Find every running session and what's in it</h3></div>
+    <div class="codeblock"><pre><span class="p">$</span> <span class="k">tmux</span> ls
+<span class="p">$</span> <span class="k">tmux</span> list-panes <span class="f">-a</span> <span class="f">-F</span> <span class="s">'#{session_name}:#{window_index}.#{pane_index}  #{pane_current_command}  #{pane_current_path}'</span></pre><button class="copy-btn">copy</button></div>
+    <div class="out">api:1.0  nvim   /home/me/code/api
+api:2.0  node   /home/me/code/api
+api:2.1  node   /home/me/code/api
+work:1.0 psql   /home/me</div>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Config change not taking effect</h3></div>
+    <div class="codeblock"><pre><span class="c"># reload:</span>
+<span class="p">$</span> <span class="k">tmux</span> source-file <span class="a">~/.tmux.conf</span>
+<span class="c"># find the typo — tmux reports the line number:</span>
+<span class="p">$</span> <span class="k">tmux</span> source-file <span class="a">~/.tmux.conf</span> 2>&amp;1 | head
+<span class="c"># scorched earth (kills everything, reads config fresh):</span>
+<span class="p">$</span> <span class="k">tmux</span> kill-server <span class="k">&amp;&amp;</span> <span class="k">tmux</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Remember the asymmetry: sourcing applies new lines but can't un-apply deleted ones. Server options and <code>default-terminal</code> in particular need a full server restart.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>What is this key bound to?</h3></div>
+    <div class="codeblock"><pre><span class="p">$</span> <span class="k">tmux</span> list-keys | grep <span class="s">'\bz\b'</span>
+<span class="p">$</span> <span class="k">tmux</span> list-keys <span class="f">-T</span> <span class="a">copy-mode-vi</span>   <span class="c"># bindings inside copy mode</span></pre><button class="copy-btn">copy</button></div>
+    <p class="why">Key tables (<code>prefix</code>, <code>root</code>, <code>copy-mode-vi</code>…) each hold their own bindings — if a binding "doesn't exist", you may be grepping the wrong table.</p>
+  </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ============ 9: CHEAT SHEET ============ -->
+<section class="group" id="cheatsheet" data-title="cheats">
+<div class="pane">
+  <div class="pane-title">
+    <span class="win-no">9</span><h2>Key-binding cheat sheet</h2>
+    <p class="pane-desc">Everything is <kbd class="prefix-chip">Ctrl</kbd>+<kbd class="prefix-chip">b</kbd>, release, then the key shown.</p>
+  </div>
+  <div class="pane-body">
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Sessions &amp; windows</h3></div>
+    <table class="keys">
+      <tr><th>key</th><th>action</th></tr>
+      <tr><td><kbd>d</kbd></td><td>detach — leave everything running</td></tr>
+      <tr><td><kbd>s</kbd></td><td>choose session interactively</td></tr>
+      <tr><td><kbd>$</kbd></td><td>rename session</td></tr>
+      <tr><td><kbd>(</kbd> <kbd>)</kbd></td><td>previous / next session</td></tr>
+      <tr><td><kbd>c</kbd></td><td>new window</td></tr>
+      <tr><td><kbd>,</kbd></td><td>rename window</td></tr>
+      <tr><td><kbd>n</kbd> <kbd>p</kbd></td><td>next / previous window</td></tr>
+      <tr><td><kbd>l</kbd></td><td>last-used window</td></tr>
+      <tr><td><kbd>0</kbd>–<kbd>9</kbd></td><td>jump to window number</td></tr>
+      <tr><td><kbd>w</kbd></td><td>window/session tree with previews</td></tr>
+      <tr><td><kbd>&amp;</kbd></td><td>kill window (confirms)</td></tr>
+    </table>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Panes</h3></div>
+    <table class="keys">
+      <tr><th>key</th><th>action</th></tr>
+      <tr><td><kbd>%</kbd></td><td>split left | right</td></tr>
+      <tr><td><kbd>"</kbd></td><td>split top / bottom</td></tr>
+      <tr><td><kbd>←↑↓→</kbd></td><td>move between panes</td></tr>
+      <tr><td><kbd>o</kbd> <kbd>;</kbd></td><td>next pane / last pane</td></tr>
+      <tr><td><kbd>q</kbd></td><td>flash pane numbers, press one to jump</td></tr>
+      <tr><td><kbd>z</kbd></td><td>zoom pane (toggle full screen)</td></tr>
+      <tr><td><kbd>{</kbd> <kbd>}</kbd></td><td>swap pane with previous / next</td></tr>
+      <tr><td><kbd>Space</kbd></td><td>cycle preset layouts</td></tr>
+      <tr><td><kbd>!</kbd></td><td>break pane into its own window</td></tr>
+      <tr><td><kbd>x</kbd></td><td>kill pane (confirms)</td></tr>
+    </table>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>Copy mode &amp; misc</h3></div>
+    <table class="keys">
+      <tr><th>key</th><th>action</th></tr>
+      <tr><td><kbd>[</kbd></td><td>enter copy mode / scrollback</td></tr>
+      <tr><td><kbd>]</kbd></td><td>paste most recent buffer</td></tr>
+      <tr><td><kbd>=</kbd></td><td>choose a buffer to paste</td></tr>
+      <tr><td><kbd>:</kbd></td><td>command prompt</td></tr>
+      <tr><td><kbd>?</kbd></td><td>list all key bindings</td></tr>
+      <tr><td><kbd>t</kbd></td><td>big clock</td></tr>
+      <tr><td><kbd>Ctrl+b</kbd></td><td>(pressed twice) send prefix to nested tmux</td></tr>
+    </table>
+  </div>
+
+  </div>
+</div>
+</section>
+
+<div id="no-results">
+  <div class="big">no matches found</div>
+  <div>:find-command returned nothing — press <kbd>Esc</kbd> to clear the filter</div>
+</div>
+
+<footer>
+  <span style="color:var(--green)">~</span> tmux cookbook · defaults shown for tmux ≥ 3.0 with prefix Ctrl+b · <code>man tmux</code> for the full story
+</footer>
+
+<!-- ============ signature status bar ============ -->
+<nav class="statusbar" aria-label="Section navigation">
+  <span class="sb-session">[cookbook]</span>
+  <div class="sb-windows" id="sb-windows"></div>
+  <div class="sb-right">
+    <span id="sb-progress">0%</span>
+    <span id="sb-clock">--:--</span>
+  </div>
+</nav>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ---------- build status-bar windows from sections ---------- */
+  var sections = Array.prototype.slice.call(document.querySelectorAll('section.group'));
+  var winWrap = document.getElementById('sb-windows');
+  var winBtns = sections.map(function(sec, i){
+    var b = document.createElement('button');
+    b.className = 'win';
+    b.type = 'button';
+    b.innerHTML = i + ':' + sec.dataset.title + '<span class="star">*</span>';
+    b.setAttribute('aria-label', 'Go to ' + sec.dataset.title);
+    b.addEventListener('click', function(){
+      sec.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+    winWrap.appendChild(b);
+    return b;
+  });
+
+  /* ---------- scroll spy: mark active "window" ---------- */
+  function setActive(idx){
+    winBtns.forEach(function(b,i){ b.classList.toggle('active', i===idx); });
+    var btn = winBtns[idx];
+    if(btn && btn.scrollIntoView){
+      btn.scrollIntoView({block:'nearest', inline:'nearest'});
+    }
+  }
+  if('IntersectionObserver' in window){
+    var current = 0;
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          current = sections.indexOf(e.target);
+          setActive(current);
+        }
+      });
+    }, {rootMargin:'-20% 0px -60% 0px'});
+    sections.forEach(function(s){ io.observe(s); });
+  }
+  setActive(0);
+
+  /* ---------- live clock + scroll progress ---------- */
+  var clock = document.getElementById('sb-clock');
+  function tick(){
+    var d = new Date();
+    function p(n){ return (n<10?'0':'')+n; }
+    clock.textContent = p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  tick(); setInterval(tick, 15000);
+
+  var prog = document.getElementById('sb-progress');
+  var ticking = false;
+  window.addEventListener('scroll', function(){
+    if(ticking) return;
+    ticking = true;
+    requestAnimationFrame(function(){
+      var h = document.documentElement;
+      var max = h.scrollHeight - h.clientHeight;
+      prog.textContent = (max>0 ? Math.round(h.scrollTop/max*100) : 0) + '%';
+      ticking = false;
+    });
+  }, {passive:true});
+
+  /* ---------- copy buttons ---------- */
+  document.querySelectorAll('.codeblock').forEach(function(block){
+    var btn = block.querySelector('.copy-btn');
+    if(!btn) return;
+    btn.addEventListener('click', function(){
+      var pre = block.querySelector('pre');
+      // strip $ prompts and comment-only lines for a paste-ready result
+      var lines = pre.innerText.split('\n').map(function(l){
+        return l.replace(/^\$\s?/, '');
+      }).filter(function(l){
+        var t = l.trim();
+        return t !== '' && (t.indexOf('#!') === 0 || t.charAt(0) !== '#');
+      });
+      var text = lines.length ? lines.join('\n') : pre.innerText;
+      function ok(){
+        btn.textContent = 'copied';
+        btn.classList.add('ok');
+        setTimeout(function(){ btn.textContent='copy'; btn.classList.remove('ok'); }, 1400);
+      }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(ok).catch(function(){ fallback(); });
+      } else { fallback(); }
+      function fallback(){
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        try{ document.execCommand('copy'); ok(); }catch(e){}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+
+  /* ---------- search / filter ---------- */
+  var search = document.getElementById('search');
+  var countEl = document.getElementById('result-count');
+  var noRes = document.getElementById('no-results');
+  var recipes = Array.prototype.slice.call(document.querySelectorAll('.recipe'));
+  // pre-index searchable text
+  recipes.forEach(function(r){ r.dataset.idx = r.innerText.toLowerCase(); });
+  var total = recipes.length;
+
+  function applyFilter(){
+    var q = search.value.trim().toLowerCase();
+    var shown = 0;
+    recipes.forEach(function(r){
+      var hit = !q || r.dataset.idx.indexOf(q) !== -1;
+      r.classList.toggle('hidden', !hit);
+      if(hit) shown++;
+    });
+    // hide whole sections with no visible recipes
+    sections.forEach(function(sec, i){
+      var any = sec.querySelector('.recipe:not(.hidden)');
+      var vis = !q || !!any;
+      sec.style.display = vis ? '' : 'none';
+      winBtns[i].style.opacity = vis ? '' : '.35';
+    });
+    countEl.textContent = q ? (shown + '/' + total) : '';
+    noRes.style.display = (q && shown === 0) ? 'block' : 'none';
+  }
+  var debounce;
+  search.addEventListener('input', function(){
+    clearTimeout(debounce);
+    debounce = setTimeout(applyFilter, 90);
+  });
+
+  /* ---------- keyboard: / focuses search, Esc clears ---------- */
+  document.addEventListener('keydown', function(e){
+    if(e.key === '/' && document.activeElement !== search){
+      e.preventDefault(); search.focus();
+    } else if(e.key === 'Escape'){
+      search.value = ''; applyFilter(); search.blur();
+    }
+  });
+})();
+</script>
+</body>
+</html>

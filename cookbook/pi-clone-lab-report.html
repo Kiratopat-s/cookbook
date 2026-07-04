@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab Report — Pi 4 SD→SSD Clone: RTL9201 Bridge Failure</title>
+<meta name="description" content="Forensic troubleshooting report: Raspberry Pi 4 SD-to-SSD migration via rpi-clone failed 4 times; root cause isolated to a defective Realtek RTL9201 USB-SATA bridge. Includes timeline, evidence matrix, lessons, command cookbook, and machine-readable JSON at #agent-data.">
+<meta name="ai-hint" content="Structured machine-readable summary embedded in script#agent-data-json (application/json). All sections have stable id anchors.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1a2b24;        /* green-black text */
+  --paper:#f4f6f2;      /* cool lab off-white */
+  --card:#ffffff;
+  --pcb:#14493a;        /* solder-mask green */
+  --pcb-deep:#0d332a;
+  --copper:#b96a28;     /* copper trace */
+  --copper-lt:#e8c9a8;
+  --alarm:#b3372b;      /* failure red */
+  --alarm-bg:#fbeeec;
+  --ok:#2e7d4f;         /* healthy green */
+  --ok-bg:#ecf5ef;
+  --amber:#e0a458;      /* terminal phosphor */
+  --mute:#5c6b64;
+  --line:#d7ddd6;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6}
+a{color:var(--pcb)}
+code,pre,kbd{font-family:var(--mono)}
+code{background:#e7ece7;padding:.08em .35em;border-radius:3px;font-size:.88em}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px}
+
+/* ── Header: PCB dossier ─────────────────────────── */
+header{background:var(--pcb);color:#eef4ef;padding:40px 0 34px;position:relative;overflow:hidden;border-bottom:5px solid var(--copper)}
+header::before{content:"";position:absolute;inset:0;opacity:.12;
+  background-image:radial-gradient(circle at 2px 2px,#fff 1.2px,transparent 1.2px);
+  background-size:26px 26px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--copper-lt)}
+h1{font-family:var(--mono);font-weight:600;font-size:clamp(22px,3.6vw,32px);margin:10px 0 6px;line-height:1.25}
+.subtitle{color:#c4d4cb;max-width:640px;font-size:15px}
+.stamp{display:inline-block;margin-top:16px;padding:6px 14px;border:2px solid var(--alarm);color:#ffb4aa;
+  font-family:var(--mono);font-weight:600;font-size:13px;letter-spacing:.12em;transform:rotate(-2deg);
+  background:rgba(0,0,0,.25);border-radius:3px}
+.meta-row{display:flex;flex-wrap:wrap;gap:18px;margin-top:18px;font-family:var(--mono);font-size:12.5px;color:#a8bfb3}
+.meta-row b{color:#eef4ef;font-weight:500}
+
+/* ── Nav ─────────────────────────────────────────── */
+nav{background:var(--pcb-deep);position:sticky;top:0;z-index:20;border-bottom:1px solid #0a2a22}
+nav .wrap{display:flex;gap:4px;overflow-x:auto;padding:0 20px}
+nav a{color:#bcd2c6;text-decoration:none;font-family:var(--mono);font-size:12.5px;padding:10px 12px;white-space:nowrap;border-bottom:2px solid transparent}
+nav a:hover,nav a:focus-visible{color:#fff;border-bottom-color:var(--copper)}
+
+/* ── Sections ────────────────────────────────────── */
+main{padding:36px 0 70px}
+section{margin-bottom:52px}
+h2{font-family:var(--mono);font-size:19px;font-weight:600;display:flex;align-items:baseline;gap:10px;margin-bottom:16px;scroll-margin-top:64px}
+h2 .tag{font-size:11px;color:var(--copper);letter-spacing:.14em;font-weight:500}
+h3{font-size:15.5px;margin:18px 0 8px}
+p{margin-bottom:12px;max-width:74ch}
+ul,ol{margin:0 0 14px 22px;max-width:74ch}
+li{margin-bottom:6px}
+
+/* ── Signature: data-path diagram ────────────────── */
+.buspath{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:26px 18px 20px;overflow-x:auto}
+.buspath svg{display:block;min-width:640px;margin:0 auto}
+.buspath .caption{font-family:var(--mono);font-size:12px;color:var(--mute);text-align:center;margin-top:10px}
+
+/* ── Cards & tables ──────────────────────────────── */
+table{border-collapse:collapse;width:100%;font-size:14.5px;background:var(--card);border:1px solid var(--line)}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);background:#eef1ec}
+tr:last-child td{border-bottom:none}
+.v-ok{color:var(--ok);font-weight:600;font-family:var(--mono);font-size:13px}
+.v-bad{color:var(--alarm);font-weight:600;font-family:var(--mono);font-size:13px}
+
+/* ── Attempt timeline ────────────────────────────── */
+.attempt{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--alarm);border-radius:6px;margin-bottom:14px}
+.attempt summary{cursor:pointer;padding:13px 16px;font-family:var(--mono);font-size:14px;font-weight:600;list-style:none;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline}
+.attempt summary::-webkit-details-marker{display:none}
+.attempt summary::before{content:"▸";color:var(--copper);transition:transform .15s}
+.attempt[open] summary::before{transform:rotate(90deg)}
+.attempt .where{font-weight:400;color:var(--mute);font-size:12.5px}
+.attempt .body{padding:2px 18px 16px;border-top:1px dashed var(--line)}
+.badge{font-size:11px;padding:2px 8px;border-radius:10px;font-family:var(--mono);font-weight:500}
+.badge.fail{background:var(--alarm-bg);color:var(--alarm)}
+
+/* ── Log / terminal blocks ───────────────────────── */
+pre.log{background:#10201b;color:#cfe6d8;border-radius:6px;padding:14px 16px;font-size:12.8px;line-height:1.55;overflow-x:auto;margin:10px 0}
+pre.log .err{color:#ff9a8c}
+pre.log .warn{color:var(--amber)}
+pre.log .dim{color:#6f8a7e}
+
+/* ── Command cookbook ────────────────────────────── */
+.cmd{position:relative;margin:12px 0}
+.cmd pre{background:#10201b;color:#d8ead f;color:#d8eadf;border-radius:6px;padding:13px 92px 13px 16px;font-size:13px;line-height:1.55;overflow-x:auto}
+.cmd .label{font-family:var(--mono);font-size:12px;color:var(--mute);margin-bottom:4px}
+.cmd button{position:absolute;top:30px;right:10px;background:var(--pcb);color:#dfeee6;border:1px solid #2c6a56;
+  font-family:var(--mono);font-size:11.5px;padding:4px 10px;border-radius:4px;cursor:pointer}
+.cmd button:hover{background:#1b5d4a}
+.cmd button.done{background:var(--ok);border-color:var(--ok);color:#fff}
+
+/* ── Lessons ─────────────────────────────────────── */
+.lesson{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:13px 16px;margin-bottom:10px}
+.lesson b{font-family:var(--mono);font-size:13.5px;color:var(--pcb)}
+
+/* ── Status / verdict panels ─────────────────────── */
+.panel{border-radius:8px;padding:18px 20px;margin:14px 0}
+.panel.ok{background:var(--ok-bg);border:1px solid #bcd9c6}
+.panel.bad{background:var(--alarm-bg);border:1px solid #eac4bd}
+.panel h3{margin-top:0}
+
+/* ── Agent note ──────────────────────────────────── */
+.agent-note{font-family:var(--mono);font-size:12.5px;color:var(--mute);border:1px dashed var(--line);border-radius:6px;padding:10px 14px;background:#eef1ec}
+
+footer{background:var(--pcb-deep);color:#9db8ab;padding:22px 0;font-family:var(--mono);font-size:12px}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+@media(max-width:620px){
+  th,td{padding:7px 8px;font-size:13px}
+  .cmd pre{padding-right:16px;padding-bottom:38px}
+  .cmd button{top:auto;bottom:8px;right:8px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Hardware Forensics · Lab Report</div>
+    <h1>Raspberry Pi 4 — SD → SSD clone failure investigation</h1>
+    <p class="subtitle">Four controlled clone attempts, every software and power variable eliminated. Root cause isolated to a single component on the data path.</p>
+    <div class="stamp">VERDICT: RTL9201 USB-SATA BRIDGE — CONDEMNED</div>
+    <div class="meta-row">
+      <span>host <b>kira-desktop</b></span>
+      <span>board <b>Pi 4 · Cortex-A72</b></span>
+      <span>kernel <b>5.15.0-1103-raspi</b></span>
+      <span>source <b>mmcblk0 128&nbsp;GB SD (~67&nbsp;GB used)</b></span>
+      <span>target <b>/dev/sda 1&nbsp;TB SSD</b></span>
+    </div>
+  </div>
+</header>
+
+<nav aria-label="Sections">
+  <div class="wrap">
+    <a href="#path">data path</a>
+    <a href="#attempts">attempts A–D</a>
+    <a href="#evidence">evidence matrix</a>
+    <a href="#forensics">final forensics</a>
+    <a href="#lessons">lessons</a>
+    <a href="#cookbook">command cookbook</a>
+    <a href="#state">current state</a>
+    <a href="#next">next steps</a>
+    <a href="#agent-data">agent data</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- ══════════ DATA PATH ══════════ -->
+<section id="path">
+  <h2><span class="tag">01</span>The data path — one component failed</h2>
+  <div class="buspath">
+    <svg viewBox="0 0 760 190" role="img" aria-label="Data path diagram: SD card to Pi 4 to RTL9201 bridge to SSD; the bridge is marked condemned, everything else verified healthy">
+      <defs>
+        <marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L8,4 L0,8 z" fill="#b96a28"/>
+        </marker>
+      </defs>
+      <!-- copper traces -->
+      <line x1="168" y1="78" x2="222" y2="78" stroke="#b96a28" stroke-width="3" marker-end="url(#arr)"/>
+      <line x1="392" y1="78" x2="446" y2="78" stroke="#b96a28" stroke-width="3" marker-end="url(#arr)"/>
+      <line x1="600" y1="78" x2="654" y2="78" stroke="#b96a28" stroke-width="3" stroke-dasharray="6 5" marker-end="url(#arr)"/>
+      <!-- SD card -->
+      <g>
+        <rect x="28" y="44" width="140" height="68" rx="7" fill="#ecf5ef" stroke="#2e7d4f" stroke-width="2"/>
+        <text x="98" y="72" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="13" font-weight="600" fill="#1a2b24">SD card</text>
+        <text x="98" y="92" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#5c6b64">mmcblk0 · 128 GB</text>
+        <text x="98" y="134" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" font-weight="600" fill="#2e7d4f">✓ HEALTHY</text>
+      </g>
+      <!-- Pi -->
+      <g>
+        <rect x="224" y="44" width="168" height="68" rx="7" fill="#ecf5ef" stroke="#2e7d4f" stroke-width="2"/>
+        <text x="308" y="72" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="13" font-weight="600" fill="#1a2b24">Raspberry Pi 4</text>
+        <text x="308" y="92" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#5c6b64">USB 3.0 · power 0x0</text>
+        <text x="308" y="134" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" font-weight="600" fill="#2e7d4f">✓ POWER CLEAN</text>
+      </g>
+      <!-- Bridge (condemned) -->
+      <g>
+        <rect x="448" y="38" width="150" height="80" rx="7" fill="#fbeeec" stroke="#b3372b" stroke-width="3"/>
+        <text x="523" y="66" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="13" font-weight="600" fill="#b3372b">RTL9201 bridge</text>
+        <text x="523" y="86" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#8a5049">USB-SATA · 0bda:9201</text>
+        <text x="523" y="104" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10.5" fill="#8a5049">resets → bus drop</text>
+        <g transform="rotate(-6 523 140)">
+          <rect x="461" y="128" width="124" height="24" rx="3" fill="none" stroke="#b3372b" stroke-width="2"/>
+          <text x="523" y="145" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="600" fill="#b3372b" letter-spacing="2">CONDEMNED</text>
+        </g>
+      </g>
+      <!-- SSD -->
+      <g>
+        <rect x="656" y="44" width="94" height="68" rx="7" fill="#ecf5ef" stroke="#2e7d4f" stroke-width="2"/>
+        <text x="703" y="72" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="13" font-weight="600" fill="#1a2b24">SSD</text>
+        <text x="703" y="92" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#5c6b64">1 TB SATA</text>
+        <text x="703" y="134" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" font-weight="600" fill="#2e7d4f">✓ SMART PASS</text>
+      </g>
+      <!-- break mark on dashed trace -->
+      <text x="627" y="70" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="15" font-weight="700" fill="#b3372b">⚡</text>
+    </svg>
+    <div class="caption">Every node verified healthy except the bridge. SATA link: 0 CRC errors · media: 0 reallocated sectors · power: throttled=0x0 under load-free check.</div>
+  </div>
+</section>
+
+<!-- ══════════ HARDWARE ══════════ -->
+<section id="hardware">
+  <h2><span class="tag">02</span>Hardware under test</h2>
+  <table>
+    <thead><tr><th>Component</th><th>Detail</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr><td>Source disk</td><td><code>mmcblk0</code> — 128 GB SD, root <code>mmcblk0p2</code>, label <code>writable</code>, PARTUUID <code>b45a3eea-02</code></td><td class="v-ok">HEALTHY</td></tr>
+      <tr><td>Destination disk</td><td><code>/dev/sda</code> — 1 TB SATA SSD</td><td class="v-ok">HEALTHY (SMART PASS, 0 realloc, 0 CRC; fio clean)</td></tr>
+      <tr><td>USB-SATA bridge</td><td>Realtek <strong>RTL9201</strong>, USB ID <code>0bda:9201</code>, bcdDevice f2.00</td><td class="v-bad">CONDEMNED</td></tr>
+      <tr><td>Pi power</td><td><code>vcgencmd get_throttled</code> → <code>0x0</code>; no undervoltage lines in dmesg, ever</td><td class="v-ok">CLEAN</td></tr>
+      <tr><td>USB port used (final attempt)</td><td>USB 3.0 (blue), SSD as the only USB device</td><td class="v-ok">RULED OUT</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════ ATTEMPTS ══════════ -->
+<section id="attempts">
+  <h2><span class="tag">03</span>The four clone attempts</h2>
+  <p>All attempts used <code>rpi-clone</code> (partition → <code>mkfs.ext4</code> → rsync ~67 GB). Each retry removed another variable. Each failed anyway.</p>
+
+  <details class="attempt" open>
+    <summary>Attempt A <span class="badge fail">FAIL @ ~45 GB</span> <span class="where">ext4 forced read-only mid-rsync</span></summary>
+    <div class="body">
+      <p><code>df</code> froze at 45 G for ~30 min with zero live iostat activity. dmesg held the truth:</p>
+      <pre class="log"><span class="err">blk_update_request: I/O error, dev sda ... op WRITE</span>
+<span class="err">EXT4-fs (sda2): I/O error while writing superblock</span>
+<span class="warn">EXT4-fs (sda2): Remounting filesystem read-only</span>
+<span class="err">EXT4-fs error: comm rsync: Detected aborted journal</span></pre>
+      <p>Side effect: a reboot accidentally booted the incomplete SSD clone, because rpi-clone labeled the SSD root <code>writable</code> — colliding with the SD card's label while <code>cmdline.txt</code> used <code>root=LABEL=writable</code>. Recovered over SSH by pinning <code>root=PARTUUID=b45a3eea-02</code> and relabeling the SSD. Also produced the Docker <code>readlink overlay2</code> error — an overlay layer that was never fully copied.</p>
+    </div>
+  </details>
+
+  <details class="attempt">
+    <summary>Attempt B <span class="badge fail">FAIL — read-back corruption</span> <span class="where">after fio raw-device damage + forced clone</span></summary>
+    <div class="body">
+      <p><code>EXT4-fs error ... error -5 reading directory block</code> — freshly written blocks came back unreadable. Confounded by two self-inflicted wounds: <code>fio --filename=/dev/sda</code> had wiped the partition table with raw writes, and the clone was forced over that mess with <code>rpi-clone -f</code>.</p>
+    </div>
+  </details>
+
+  <details class="attempt">
+    <summary>Attempt C <span class="badge fail">FAIL @ mkfs</span> <span class="where">clean wipe · UAS quirk active · no -f</span></summary>
+    <div class="body">
+      <p>Disk wiped properly (<code>wipefs</code> + <code>sgdisk --zap-all</code>), UAS disabled via <code>usb-storage.quirks=0bda:9201:u</code> (confirmed active; throughput dropped ~3× as expected). Died before rsync even started:</p>
+      <pre class="log"><span class="warn">usb 2-2: reset SuperSpeed USB device ... (×6)</span>
+<span class="err">task mkfs.ext4 blocked for more than 120 seconds</span>
+<span class="err">sd 0:0:0:0: [sda] FAILED Result: hostbyte=DID_ABORT ... Write(10)</span>
+<span class="err">usb 2-2: USB disconnect, device number 2</span></pre>
+    </div>
+  </details>
+
+  <details class="attempt">
+    <summary>Attempt D <span class="badge fail">FAIL — bus departure</span> <span class="where">USB 3.0 port · solo device · Docker stopped · power verified 0x0</span></summary>
+    <div class="body">
+      <p>The controlled final run: only USB device, blue port, Docker + containerd stopped, quirk confirmed (<code>UAS is ignored ... using usb-storage instead</code>), power clean. The bridge reset <strong>24 seconds</strong> after enumerating, flooded ext4 with <code>error -5</code> read-back failures, then left the bus entirely — <code>sda</code> vanished from <code>lsblk</code> while rsync sprayed <code>mkdir ... Input/output error (5)</code> for every remaining directory.</p>
+      <pre class="log"><span class="dim">[452910.263] usb 2-2: new SuperSpeed USB device number 7 using xhci_hcd</span>
+<span class="dim">[452910.290] Product: RTL9201 · idVendor=0bda, idProduct=9201</span>
+<span class="warn">[452910.318] Enable of device-initiated U1 failed.</span>
+<span class="warn">[452910.319] Enable of device-initiated U2 failed.</span>
+<span class="dim">[452910.320] UAS is ignored for this device, using usb-storage instead</span>
+<span class="err">[452934.411] usb 2-2: reset SuperSpeed USB device number 7   ← +24 s</span>
+<span class="err">[452943.893] EXT4-fs warning (sda2): comm rsync: error -5 reading directory block</span>
+<span class="err">[452947.509] EXT4-fs error (sda2): __ext4_find_entry: reading directory lblock 0</span></pre>
+      <p>Bonus forensic detail: hours earlier, at boot-era timestamps, the same device had already logged <code>device not accepting address 6, error -71</code> (EPROTO) — protocol errors during plain enumeration, before any load. The bridge was never healthy.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ══════════ EVIDENCE MATRIX ══════════ -->
+<section id="evidence">
+  <h2><span class="tag">04</span>Evidence matrix — every variable eliminated</h2>
+  <table>
+    <thead><tr><th>Hypothesis</th><th>Test</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>Bad SSD media</td><td><code>smartctl -d sat -a</code></td><td class="v-ok">PASSED · 0 reallocated · 0 pending — eliminated</td></tr>
+      <tr><td>Bad SATA cable/link</td><td>SMART UDMA CRC error count</td><td class="v-ok">0 CRC errors — eliminated</td></tr>
+      <tr><td>UAS driver/protocol bug</td><td>Quirk <code>0bda:9201:u</code>; verified via sysfs, lsusb -t, dmesg</td><td class="v-ok">Active, still failed — eliminated</td></tr>
+      <tr><td>Dirty disk state / fio damage</td><td><code>wipefs -a</code> + <code>sgdisk --zap-all</code>, no <code>-f</code></td><td class="v-ok">Clean wipe, still failed — eliminated</td></tr>
+      <tr><td>Power brownout</td><td><code>vcgencmd get_throttled</code> = 0x0; zero undervoltage lines in dmesg across all attempts</td><td class="v-ok">Power exonerated — eliminated (a powered hub would NOT have helped)</td></tr>
+      <tr><td>USB port / bus contention</td><td>USB 3.0 port, SSD as only USB device</td><td class="v-ok">Still failed — eliminated</td></tr>
+      <tr><td>Competing I/O (Docker etc.)</td><td><code>systemctl stop docker docker.socket containerd</code></td><td class="v-ok">Still failed — eliminated</td></tr>
+      <tr><td><strong>Defective RTL9201 bridge</strong></td><td>The one constant in 4/4 failures; EPROTO at enumeration, U1/U2 negotiation failures, resets under load, bus departure</td><td class="v-bad">CONFIRMED — root cause</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════ FORENSICS ══════════ -->
+<section id="forensics">
+  <h2><span class="tag">05</span>Final forensic sequence (attempt D)</h2>
+  <ol>
+    <li><strong>Enumeration warnings:</strong> <code>U1/U2 device-initiated enable failed</code> — the bridge can't negotiate basic USB 3.0 link power states. Firmware broken at the protocol level.</li>
+    <li><strong>+24 s under write load:</strong> first <code>reset SuperSpeed USB device</code>.</li>
+    <li><strong>+33 s:</strong> ext4 read-back corruption — <code>error -5 reading directory block</code> on blocks rsync had just written.</li>
+    <li><strong>Terminal event:</strong> full USB disconnect; <code>sda</code> absent from <code>lsblk</code>; rsync generator fails every remaining <code>mkdir</code> with <code>EIO</code>; rpi-clone aborts at <code>mkfs</code>/mount of <code>sda1</code>.</li>
+    <li><strong>Prior history:</strong> <code>error -71</code> (EPROTO) enumeration failures logged long before the clone — pre-existing defect, not load-induced degradation alone.</li>
+  </ol>
+  <div class="panel bad">
+    <h3>Root cause</h3>
+    <p style="margin:0">The Realtek RTL9201 USB-SATA bridge resets and disconnects under sustained write load, and shows USB protocol errors even at idle enumeration. No software setting fixes hardware that physically leaves the bus. <strong>Fix: replace the adapter</strong> (ASMedia ASM1153E/ASM1351 or JMicron recommended; avoid Realtek).</p>
+  </div>
+</section>
+
+<!-- ══════════ LESSONS ══════════ -->
+<section id="lessons">
+  <h2><span class="tag">06</span>Key technical lessons</h2>
+  <div class="lesson"><b>btop "Sleeping" vs "Waiting":</b> <code>S</code> = idle/normal (tmux server lives here forever — red herring). <code>D</code> = uninterruptible I/O sleep — means "busy writing" <em>only if the device is healthy</em>; on a dead device it means "blocked forever." Always cross-check dmesg.</div>
+  <div class="lesson"><b>High load average + low CPU%</b> = I/O-bound. The normal signature of a disk-to-disk copy, not a hung system.</div>
+  <div class="lesson"><b>rsync forks into three PIDs</b> (generator / sender / receiver) — three rsync processes is normal, not a runaway.</div>
+  <div class="lesson"><b><code>iostat -x N N</code>:</b> block 1 = since-boot averages (polluted by e.g. the one-time mkfs TRIM), block 2 = the live window. Trust block 2 for "right now."</div>
+  <div class="lesson"><b>Flat <code>df</code> + zero live iostat for minutes</b> ≠ "slow small-files phase." Check dmesg for device errors immediately — don't wait 30 minutes.</div>
+  <div class="lesson"><b>Never run <code>fio --filename=/dev/sdX</code></b> against a real device — raw writes destroy the partition table. Use a file path on a mounted filesystem or read-only mode.</div>
+  <div class="lesson"><b>Never use <code>rpi-clone -f</code></b> to bulldoze past "unrecognised disk label." Wipe properly first: <code>wipefs -a</code> → <code>sgdisk --zap-all</code> → <code>partprobe</code>.</div>
+  <div class="lesson"><b>Label collisions boot the wrong disk.</b> Two partitions labeled <code>writable</code> + <code>root=LABEL=writable</code> = firmware picks whichever it likes. Pin root by <code>PARTUUID</code>.</div>
+  <div class="lesson"><b>Stop Docker before cloning a live system</b> (<code>docker docker.socket containerd</code>) — overlay2's thousands of small files and layer symlinks clone half-consistent while containers write.</div>
+  <div class="lesson"><b><code>vcgencmd</code> "VCHI initialization failed"</b> = permissions (needs sudo or the <code>video</code> group), not a real failure. Fallback: kernel hwmon <code>rpi_volt</code> or <code>dmesg | grep -i voltage</code>.</div>
+  <div class="lesson"><b>Isolating a bridge fault:</b> SMART clean (media + CRC) + fio clean + power 0x0 + failures persisting across UAS quirk, port, and load changes = the USB-SATA bridge, by elimination. USB <code>reset</code>/<code>disconnect</code>/<code>error -71</code> lines are its fingerprints.</div>
+  <div class="lesson"><b>UAS quirk tradeoff:</b> <code>usb-storage.quirks=VID:PID:u</code> serializes I/O — expect ~3× slower (observed: read 40→13 MiB/s, write 17→5.7 MiB/s). Fine for a one-time clone; good bridges don't need it.</div>
+  <div class="lesson"><b>USB 2.0 vs 3.0 on Pi 4:</b> real-world ~30–40 MB/s vs ~200–350 MB/s. Always use the blue ports for storage; both 3.0 ports share one controller.</div>
+</section>
+
+<!-- ══════════ COOKBOOK ══════════ -->
+<section id="cookbook">
+  <h2><span class="tag">07</span>Command cookbook</h2>
+
+  <div class="cmd"><div class="label"># Identify disks, labels, UUIDs, PARTUUIDs</div>
+  <pre>lsblk
+sudo blkid</pre><button data-copy>copy</button></div>
+
+  <div class="cmd"><div class="label"># SMART health through a USB bridge</div>
+  <pre>sudo smartctl -d sat -a /dev/sda | grep -iE 'health|realloc|pending|error'</pre><button data-copy>copy</button></div>
+
+  <div class="cmd"><div class="label"># Properly wipe a disk to factory-blank (NOT fio, NOT rpi-clone -f)</div>
+  <pre>sudo wipefs -a /dev/sda
+sudo sgdisk --zap-all /dev/sda
+sudo partprobe /dev/sda</pre><button data-copy>copy</button></div>
+
+  <div class="cmd"><div class="label"># Stop Docker before cloning a live system (and restart after)</div>
+  <pre>sudo systemctl stop docker docker.socket containerd
+# ... clone ...
+sudo systemctl start docker</pre><button data-copy>copy</button></div>
+
+  <div class="cmd"><div class="label"># tmux pane 1 — the clone (no -f)</div>
+  <pre>sudo rpi-clone sda</pre><button data-copy>copy</button></div>
+
+  <div class="cmd"><div class="label"># tmux pane 2 — error watchdog (must stay SILENT; catches bridge + power)</div>
+  <pre>sudo dmesg -w | grep -iE 'sda|I/O error|EXT4|reset|disconnect|voltage'</pre><button data-copy>copy</button></div>
+
+  <div class="cmd"><div class="label"># tmux pane 3 — progress + power</div>
+  <pre>watch -n5 'df -h /mnt/clone 2>/dev/null; echo; vcgencmd get_throttled'</pre><button data-copy>copy</button></div>
+
+  <div class="cmd"><div class="label"># Power / undervoltage checks (0x0 = clean; 0x50005 = undervoltage NOW)</div>
+  <pre>sudo vcgencmd get_throttled
+dmesg | grep -iE 'voltage|throttl'
+cat /sys/class/hwmon/hwmon*/name           # look for rpi_volt
+cat /sys/class/hwmon/hwmon*/in0_lcrit_alarm  # 1 = undervoltage now</pre><button data-copy>copy</button></div>
+
+  <div class="cmd"><div class="label"># Confirm UAS quirk applied (Realtek bridge only)</div>
+  <pre>cat /sys/module/usb_storage/parameters/quirks   # expect 0bda:9201:u
+lsusb -t                                         # expect Driver=usb-storage</pre><button data-copy>copy</button></div>
+
+  <div class="cmd"><div class="label"># Verify which partition firmware boots / where root is</div>
+  <pre>findmnt /boot/firmware   # mmcblk0p1 = SD boot
+findmnt /                # mmcblk0p2 = running on SD</pre><button data-copy>copy</button></div>
+
+  <div class="cmd"><div class="label"># Live disk throughput</div>
+  <pre>iostat -x 2 2 | grep -E "Device|sda|mmcblk"   # 2nd block = live window
+iostat -x 0.1 | grep --line-buffered -E "Device|sda|mmcblk"</pre><button data-copy>copy</button></div>
+</section>
+
+<!-- ══════════ STATE ══════════ -->
+<section id="state">
+  <h2><span class="tag">08</span>Current system state</h2>
+  <div class="panel ok">
+    <h3>The SD-card system was never at risk</h3>
+    <ul style="margin-bottom:0">
+      <li>Booted and running on <code>mmcblk0p2</code> — healthy, stable, in normal use.</li>
+      <li>Boot pinned to the SD card: <code>cmdline.txt</code> uses <code>root=PARTUUID=b45a3eea-02</code> (immune to label collisions).</li>
+      <li>SSD root was relabeled <code>ssd-clone-bad</code> during recovery; SSD now holds only a garbage half-clone / partial state — disposable.</li>
+      <li>UAS quirk <code>usb-storage.quirks=0bda:9201:u</code> remains in cmdline.txt — harmless; keyed only to the Realtek's USB ID, ignored by any other adapter.</li>
+      <li>Docker may need restarting after the last attempt: <code>sudo systemctl start docker</code>.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════ NEXT ══════════ -->
+<section id="next">
+  <h2><span class="tag">09</span>Next steps — with the replacement adapter</h2>
+  <ol>
+    <li><strong>Buy an ASMedia (ASM1153E / ASM1351) or JMicron USB-SATA adapter.</strong> Avoid Realtek. External power / powered enclosure is nice-to-have, not required — power was exonerated on this Pi.</li>
+    <li>Plug in SSD via the new adapter → <code>lsusb -t</code>: expect a new USB ID and <code>Driver=uas</code> (good bridges don't need the quirk; the old quirk won't match and can stay).</li>
+    <li>Wipe the SSD blank: <code>wipefs -a</code> → <code>sgdisk --zap-all</code> → <code>partprobe</code>.</li>
+    <li>Stop Docker: <code>sudo systemctl stop docker docker.socket containerd</code>.</li>
+    <li>Run the 3-pane tmux setup (clone / dmesg watchdog / df+power watch) → <code>sudo rpi-clone sda</code>, no <code>-f</code>.</li>
+    <li><strong>Success criteria:</strong> <code>df</code> climbs past the old 45 GB failure point to ~67 GB with a silent watchdog. With UAS working, expect minutes, not hours.</li>
+    <li>Before switching boot to the SSD: verify labels with <code>sudo blkid</code>; keep root pinning unambiguous (PARTUUID) on whichever disk boots; restart Docker.</li>
+  </ol>
+</section>
+
+<!-- ══════════ AGENT DATA ══════════ -->
+<section id="agent-data">
+  <h2><span class="tag">10</span>Machine-readable summary</h2>
+  <p class="agent-note">AI agents: a structured JSON snapshot of this entire report is embedded below in <code>&lt;script type="application/json" id="agent-data-json"&gt;</code>. Parse it directly instead of scraping the prose. All human-readable sections carry stable <code>id</code> anchors.</p>
+</section>
+
+<script type="application/json" id="agent-data-json">
+{
+  "report": "raspberry-pi-sd-to-ssd-clone-failure-investigation",
+  "date_closed": "2026-07-04",
+  "system": {
+    "hostname": "kira-desktop",
+    "board": "Raspberry Pi 4 (Cortex-A72)",
+    "os": "Ubuntu-based",
+    "kernel": "5.15.0-1103-raspi",
+    "source_disk": {"device": "mmcblk0", "size_gb": 128, "used_gb": 67, "root_partition": "mmcblk0p2", "label": "writable", "partuuid": "b45a3eea-02", "health": "healthy"},
+    "target_disk": {"device": "/dev/sda", "size_tb": 1, "media_health": "healthy", "evidence": ["SMART PASSED", "0 reallocated sectors", "0 pending sectors", "0 UDMA CRC errors", "fio random I/O clean"]},
+    "usb_sata_bridge": {"chip": "Realtek RTL9201", "usb_id": "0bda:9201", "bcdDevice": "f2.00", "verdict": "condemned", "failure_mode": "resets and disconnects from USB bus under sustained write load; USB protocol errors (error -71 EPROTO) even at idle enumeration; U1/U2 link power negotiation fails"}
+  },
+  "goal": "Clone running OS + data from 128GB SD card to 1TB USB SSD using rpi-clone",
+  "outcome": "NOT COMPLETED after 4 attempts. Root cause: defective RTL9201 USB-SATA bridge. SD-card system healthy and in use throughout. Migration deferred until adapter replacement.",
+  "root_cause": "Realtek RTL9201 USB-SATA bridge is defective: it fails USB 3.0 U1/U2 link negotiation, throws EPROTO (-71) enumeration errors at idle, resets within ~24s of sustained write load, returns corrupt data on read-back of freshly written blocks, and ultimately disconnects from the USB bus. Not fixable in software.",
+  "attempts": [
+    {"id": "A", "conditions": "default (UAS active)", "failure": "ext4 remounted read-only at ~45GB of 67GB; 'I/O error dev sda op WRITE', 'aborted journal'", "side_effects": ["accidental boot from incomplete SSD clone due to duplicate label 'writable' + root=LABEL=writable", "docker overlay2 readlink error from partially copied layer"]},
+    {"id": "B", "conditions": "after fio raw-device writes destroyed partition table; rpi-clone -f forced over it", "failure": "EXT4 error -5 reading directory block: read-back corruption of freshly written blocks"},
+    {"id": "C", "conditions": "clean wipe (wipefs + sgdisk --zap-all), UAS quirk 0bda:9201:u active, no -f", "failure": "died during mkfs.ext4 before rsync: 6x 'reset SuperSpeed USB device', mkfs blocked >120s, DID_ABORT, full USB disconnect"},
+    {"id": "D", "conditions": "USB 3.0 blue port, SSD only USB device, docker+containerd stopped, quirk confirmed active, power verified throttled=0x0", "failure": "bridge reset 24s after enumeration, ext4 error -5 flood, device left bus entirely (sda absent from lsblk), rsync EIO on every mkdir, rpi-clone aborted", "forensic_extras": ["U1/U2 device-initiated enable failed at enumeration", "prior 'device not accepting address 6, error -71' (EPROTO) logged before any clone load"]}
+  ],
+  "eliminated_variables": [
+    {"hypothesis": "bad SSD media", "test": "smartctl -d sat", "result": "eliminated: PASSED, 0 realloc, 0 pending"},
+    {"hypothesis": "bad SATA cable/link", "test": "SMART UDMA CRC count", "result": "eliminated: 0 CRC errors"},
+    {"hypothesis": "UAS protocol bug", "test": "usb-storage.quirks=0bda:9201:u verified via sysfs + lsusb -t + dmesg", "result": "eliminated: quirk active, still failed; cost ~3x throughput (write 17->5.7 MiB/s)"},
+    {"hypothesis": "dirty disk state / fio damage", "test": "wipefs -a + sgdisk --zap-all, no -f", "result": "eliminated"},
+    {"hypothesis": "power brownout", "test": "vcgencmd get_throttled = 0x0; zero undervoltage lines in dmesg across all attempts", "result": "eliminated: power exonerated; powered hub would NOT have helped"},
+    {"hypothesis": "USB port / bus contention", "test": "USB 3.0 port, solo device", "result": "eliminated"},
+    {"hypothesis": "competing I/O", "test": "docker, docker.socket, containerd stopped", "result": "eliminated"}
+  ],
+  "current_state": {
+    "booted_from": "mmcblk0p2 (SD card), healthy",
+    "boot_pinning": "cmdline.txt root=PARTUUID=b45a3eea-02",
+    "ssd_state": "holds garbage partial clone; root had been relabeled ssd-clone-bad earlier; disposable",
+    "uas_quirk": "usb-storage.quirks=0bda:9201:u still in cmdline.txt; harmless, keyed to Realtek USB ID only",
+    "docker": "may need: sudo systemctl start docker"
+  },
+  "next_steps": [
+    "Replace adapter with ASMedia ASM1153E/ASM1351 or JMicron bridge; avoid Realtek",
+    "Verify new bridge: lsusb -t shows new USB ID and Driver=uas (no quirk needed)",
+    "Wipe SSD: wipefs -a /dev/sda; sgdisk --zap-all /dev/sda; partprobe /dev/sda",
+    "Stop docker docker.socket containerd",
+    "Run sudo rpi-clone sda (no -f) with dmesg watchdog pane: dmesg -w | grep -iE 'sda|I/O error|EXT4|reset|disconnect|voltage'",
+    "Success = df passes 45GB failure point to ~67GB with silent watchdog; expect minutes with working UAS",
+    "Before booting SSD: check blkid for label collisions; keep PARTUUID root pinning; restart docker"
+  ],
+  "key_lessons": [
+    "Process state S = idle; D = uninterruptible I/O sleep — 'busy' only if device healthy, 'blocked forever' if device dead; cross-check dmesg",
+    "High load average + low CPU% = I/O bound (normal for disk copy)",
+    "rsync runs as 3 PIDs (generator/sender/receiver) — normal",
+    "iostat -x N N: block 1 = since-boot average, block 2 = live window",
+    "Flat df + zero live iostat for minutes => check dmesg immediately, not a slow-files phase",
+    "Never fio --filename=/dev/sdX on a real device (destroys partition table)",
+    "Never rpi-clone -f past label warnings; wipe properly instead",
+    "Pin root by PARTUUID to avoid label-collision boots",
+    "Stop docker/containerd before cloning a live system (overlay2 clones half-consistent)",
+    "vcgencmd 'VCHI initialization failed' = permissions (sudo / video group), not a fault; fallback: hwmon rpi_volt or dmesg voltage grep",
+    "Bridge-fault fingerprints in dmesg: reset SuperSpeed, USB disconnect, error -71 EPROTO, U1/U2 enable failed",
+    "Pi 4 USB real-world: 2.0 ~30-40 MB/s vs 3.0 ~200-350 MB/s; both 3.0 ports share one controller"
+  ]
+}
+</script>
+
+<footer>
+  <div class="wrap">
+    <span>lab report · kira-desktop · case closed 2026-07-04</span>
+    <span>replacement pending: ASMedia / JMicron bridge</span>
+  </div>
+</footer>
+
+</main>
+
+<script>
+// Copy-to-clipboard for command blocks
+document.querySelectorAll('.cmd button[data-copy]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const pre=btn.parentElement.querySelector('pre');
+    const text=pre.innerText;
+    const done=()=>{btn.textContent='copied ✓';btn.classList.add('done');
+      setTimeout(()=>{btn.textContent='copy';btn.classList.remove('done');},1600);};
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(()=>fallback());
+    }else{fallback();}
+    function fallback(){
+      const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+      document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');done();}catch(e){btn.textContent='ctrl+c';}
+      document.body.removeChild(ta);
+    }
+  });
+});
+</script>
+</body>
+</html>

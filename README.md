@@ -5,8 +5,9 @@ Each `.html` file is a complete, self-contained page.
 
 ## Structure
 
-- `index.html` is the cookbook index.
-- New pages should use lowercase kebab-case filenames.
+- `index.html` is the landing page and knowledge browser.
+- `cookbook/` contains the standalone knowledge pages.
+- New pages should live in `cookbook/` and use lowercase kebab-case filenames.
 - Each page should contain its own content and page-specific styling.
 - Pages can document tools, CLI commands, CI/CD workflows, cloud security checks, Kubernetes operations, detection logic, hardening steps, and troubleshooting playbooks.
 
