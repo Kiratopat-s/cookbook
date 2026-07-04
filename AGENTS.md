@@ -1,6 +1,6 @@
 # Project Instructions
 
-This repository is a personal cookbook knowledge site published with GitHub Pages.
+This repository is a personal DevSecOps cookbook knowledge site published with GitHub Pages.
 
 ## Site Shape
 
@@ -13,9 +13,11 @@ This repository is a personal cookbook knowledge site published with GitHub Page
 ## Content Conventions
 
 - Treat `index.html` as the table of contents for the cookbook.
-- Use lowercase kebab-case filenames for new pages, for example `tomato-fried-rice.html`.
-- Recipe pages should include enough detail to stand alone: title, context, ingredients, steps, timing, serving notes, substitutions, and storage notes when relevant.
-- Knowledge pages can cover techniques, ingredient notes, menus, or experiments, but should still be complete on their own.
+- Use lowercase kebab-case filenames for new pages, for example `trivy-container-scan.html`, `kubectl-debugging.html`, or `github-actions-oidc.html`.
+- Treat each page as a complete DevSecOps recipe or note: title, context, when to use it, prerequisites, commands, expected output, gotchas, troubleshooting, and references when relevant.
+- Knowledge pages can cover tools, CLI usage, security checks, CI/CD workflows, cloud identity, Kubernetes, secrets handling, threat modeling, incident response, or experiments, but should still be complete on their own.
+- Prefer copy-pasteable command examples with placeholders clearly marked, for example `<image>`, `<namespace>`, or `<account-id>`.
+- Include safety notes for destructive commands, credential handling, production changes, and scans that may affect systems.
 - Avoid splitting recipe content into external data files or partials.
 
 ## Quality Bar

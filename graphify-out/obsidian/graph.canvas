@@ -1,0 +1,793 @@
+{
+  "nodes": [
+    {
+      "id": "g0",
+      "type": "group",
+      "label": "DevSecOps Topics",
+      "x": 0,
+      "y": 0,
+      "width": 660,
+      "height": 420,
+      "color": "1"
+    },
+    {
+      "id": "n_index_ci_cd",
+      "type": "file",
+      "file": "CICD.md",
+      "x": 20,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_cli_usage",
+      "type": "file",
+      "file": "CLI Usage.md",
+      "x": 220,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_cloud_identity",
+      "type": "file",
+      "file": "Cloud Identity.md",
+      "x": 420,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_cookbook_topics",
+      "type": "file",
+      "file": "Cookbook Topics.md",
+      "x": 20,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_agents_devsecops_topic_scope",
+      "type": "file",
+      "file": "DevSecOps Topic Scope.md",
+      "x": 220,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_readme_devsecops_topic_scope",
+      "type": "file",
+      "file": "DevSecOps Topic Scope_1.md",
+      "x": 420,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_kubernetes",
+      "type": "file",
+      "file": "Kubernetes.md",
+      "x": 20,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_security_scanning",
+      "type": "file",
+      "file": "Security Scanning.md",
+      "x": 220,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g1",
+      "type": "group",
+      "label": "Site Instructions",
+      "x": 740,
+      "y": 0,
+      "width": 660,
+      "height": 420,
+      "color": "2"
+    },
+    {
+      "id": "n_agents_devsecops_cookbook_knowledge_site",
+      "type": "file",
+      "file": "DevSecOps Cookbook Knowledge Site.md",
+      "x": 760,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_agents_lowercase_kebab_case_filenames",
+      "type": "file",
+      "file": "Lowercase Kebab-Case Filenames.md",
+      "x": 960,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_agents_no_build_system_or_shared_runtime",
+      "type": "file",
+      "file": "No Build System Or Shared Runtime.md",
+      "x": 1160,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_agents_project_instructions",
+      "type": "file",
+      "file": "Project Instructions.md",
+      "x": 760,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_agents_relative_links",
+      "type": "file",
+      "file": "Relative Links.md",
+      "x": 960,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_agents_safety_notes",
+      "type": "file",
+      "file": "Safety Notes.md",
+      "x": 1160,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_agents_static_github_pages_site",
+      "type": "file",
+      "file": "Static GitHub Pages Site.md",
+      "x": 760,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g2",
+      "type": "group",
+      "label": "Standalone Site Experience",
+      "x": 1480,
+      "y": 0,
+      "width": 660,
+      "height": 420,
+      "color": "3"
+    },
+    {
+      "id": "n_index_devsecops_cookbook",
+      "type": "file",
+      "file": "DevSecOps Cookbook.md",
+      "x": 1500,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_devsecops_field_notes",
+      "type": "file",
+      "file": "DevSecOps Field Notes.md",
+      "x": 1700,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_practical_recipe_library",
+      "type": "file",
+      "file": "Practical Recipe Library.md",
+      "x": 1900,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_responsive_accessible_layout",
+      "type": "file",
+      "file": "Responsive Accessible Layout.md",
+      "x": 1500,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_readme_self_contained_html_pages",
+      "type": "file",
+      "file": "Self-Contained HTML Pages.md",
+      "x": 1700,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_standalone_html_page",
+      "type": "file",
+      "file": "Standalone HTML Page.md",
+      "x": 1900,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_agents_standalone_html_pages",
+      "type": "file",
+      "file": "Standalone HTML Pages.md",
+      "x": 1500,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g3",
+      "type": "group",
+      "label": "CLI Tool Examples",
+      "x": 0,
+      "y": 500,
+      "width": 660,
+      "height": 420,
+      "color": "4"
+    },
+    {
+      "id": "n_index_example_devsecops_commands",
+      "type": "file",
+      "file": "Example DevSecOps Commands.md",
+      "x": 20,
+      "y": 580,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_gitleaks",
+      "type": "file",
+      "file": "Gitleaks.md",
+      "x": 220,
+      "y": 580,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_gitleaks_secret_search_before_commit",
+      "type": "file",
+      "file": "Gitleaks Secret Search Before Commit.md",
+      "x": 420,
+      "y": 580,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_trivy",
+      "type": "file",
+      "file": "Trivy.md",
+      "x": 20,
+      "y": 660,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_trivy_container_scan_recipe",
+      "type": "file",
+      "file": "Trivy Container Scan Recipe.md",
+      "x": 220,
+      "y": 660,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_kubectl",
+      "type": "file",
+      "file": "kubectl.md",
+      "x": 420,
+      "y": 660,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_kubectl_cluster_context_check",
+      "type": "file",
+      "file": "kubectl Cluster Context Check.md",
+      "x": 20,
+      "y": 740,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g4",
+      "type": "group",
+      "label": "Recipe Patterns",
+      "x": 740,
+      "y": 500,
+      "width": 660,
+      "height": 400,
+      "color": "5"
+    },
+    {
+      "id": "n_index_command_patterns",
+      "type": "file",
+      "file": "Command Patterns.md",
+      "x": 760,
+      "y": 580,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_cookbook_entries",
+      "type": "file",
+      "file": "Cookbook Entries.md",
+      "x": 960,
+      "y": 580,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_agents_copy_pasteable_commands",
+      "type": "file",
+      "file": "Copy-Pasteable Commands.md",
+      "x": 1160,
+      "y": 580,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_agents_devsecops_recipe_page_structure",
+      "type": "file",
+      "file": "DevSecOps Recipe Page Structure.md",
+      "x": 760,
+      "y": 660,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_tool_recipes",
+      "type": "file",
+      "file": "Tool Recipes.md",
+      "x": 960,
+      "y": 660,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_workflow_playbooks",
+      "type": "file",
+      "file": "Workflow Playbooks.md",
+      "x": 1160,
+      "y": 660,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g5",
+      "type": "group",
+      "label": "Publishing Index",
+      "x": 1480,
+      "y": 500,
+      "width": 660,
+      "height": 400,
+      "color": "6"
+    },
+    {
+      "id": "n_readme_devsecops_cookbook_knowledge",
+      "type": "file",
+      "file": "DevSecOps Cookbook Knowledge.md",
+      "x": 1500,
+      "y": 580,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_readme_no_build_step_required",
+      "type": "file",
+      "file": "No Build Step Required.md",
+      "x": 1700,
+      "y": 580,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_readme_static_github_pages_cookbook",
+      "type": "file",
+      "file": "Static GitHub Pages Cookbook.md",
+      "x": 1900,
+      "y": 580,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_readme_index_html_cookbook_index",
+      "type": "file",
+      "file": "index.html Cookbook Index.md",
+      "x": 1500,
+      "y": 660,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_agents_index_html_table_of_contents",
+      "type": "file",
+      "file": "index.html Table Of Contents.md",
+      "x": 1700,
+      "y": 660,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g6",
+      "type": "group",
+      "label": "Page Styling",
+      "x": 0,
+      "y": 1000,
+      "width": 600,
+      "height": 400,
+      "color": "1"
+    },
+    {
+      "id": "n_index_inline_page_specific_css",
+      "type": "file",
+      "file": "Inline Page-Specific CSS.md",
+      "x": 20,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_readme_page_specific_styling",
+      "type": "file",
+      "file": "Page-Specific Styling.md",
+      "x": 220,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_agents_plain_semantic_html",
+      "type": "file",
+      "file": "Plain Semantic HTML.md",
+      "x": 420,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_agents_project_instructions_agents_copy_pasteable_commands",
+      "fromNode": "n_agents_project_instructions",
+      "toNode": "n_agents_copy_pasteable_commands",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_agents_project_instructions_agents_devsecops_cookbook_knowledge_site",
+      "fromNode": "n_agents_project_instructions",
+      "toNode": "n_agents_devsecops_cookbook_knowledge_site",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_agents_project_instructions_agents_devsecops_recipe_page_structure",
+      "fromNode": "n_agents_project_instructions",
+      "toNode": "n_agents_devsecops_recipe_page_structure",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_agents_project_instructions_agents_devsecops_topic_scope",
+      "fromNode": "n_agents_project_instructions",
+      "toNode": "n_agents_devsecops_topic_scope",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_agents_project_instructions_agents_index_html_table_of_contents",
+      "fromNode": "n_agents_project_instructions",
+      "toNode": "n_agents_index_html_table_of_contents",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_agents_project_instructions_agents_lowercase_kebab_case_filenames",
+      "fromNode": "n_agents_project_instructions",
+      "toNode": "n_agents_lowercase_kebab_case_filenames",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_agents_project_instructions_agents_no_build_system_or_shared_runtime",
+      "fromNode": "n_agents_project_instructions",
+      "toNode": "n_agents_no_build_system_or_shared_runtime",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_agents_project_instructions_agents_plain_semantic_html",
+      "fromNode": "n_agents_project_instructions",
+      "toNode": "n_agents_plain_semantic_html",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_agents_project_instructions_agents_relative_links",
+      "fromNode": "n_agents_project_instructions",
+      "toNode": "n_agents_relative_links",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_agents_project_instructions_agents_safety_notes",
+      "fromNode": "n_agents_project_instructions",
+      "toNode": "n_agents_safety_notes",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_agents_project_instructions_agents_standalone_html_pages",
+      "fromNode": "n_agents_project_instructions",
+      "toNode": "n_agents_standalone_html_pages",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_agents_project_instructions_agents_static_github_pages_site",
+      "fromNode": "n_agents_project_instructions",
+      "toNode": "n_agents_static_github_pages_site",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_agents_static_github_pages_site_agents_no_build_system_or_shared_runtime",
+      "fromNode": "n_agents_static_github_pages_site",
+      "toNode": "n_agents_no_build_system_or_shared_runtime",
+      "label": "rationale_for [INFERRED]"
+    },
+    {
+      "id": "e_agents_static_github_pages_site_readme_static_github_pages_cookbook",
+      "fromNode": "n_agents_static_github_pages_site",
+      "toNode": "n_readme_static_github_pages_cookbook",
+      "label": "semantically_similar_to [INFERRED]"
+    },
+    {
+      "id": "e_agents_standalone_html_pages_readme_self_contained_html_pages",
+      "fromNode": "n_agents_standalone_html_pages",
+      "toNode": "n_readme_self_contained_html_pages",
+      "label": "semantically_similar_to [INFERRED]"
+    },
+    {
+      "id": "e_agents_standalone_html_pages_index_standalone_html_page",
+      "fromNode": "n_agents_standalone_html_pages",
+      "toNode": "n_index_standalone_html_page",
+      "label": "implements [INFERRED]"
+    },
+    {
+      "id": "e_agents_plain_semantic_html_index_inline_page_specific_css",
+      "fromNode": "n_agents_plain_semantic_html",
+      "toNode": "n_index_inline_page_specific_css",
+      "label": "conceptually_related_to [INFERRED]"
+    },
+    {
+      "id": "e_agents_index_html_table_of_contents_readme_index_html_cookbook_index",
+      "fromNode": "n_agents_index_html_table_of_contents",
+      "toNode": "n_readme_index_html_cookbook_index",
+      "label": "semantically_similar_to [INFERRED]"
+    },
+    {
+      "id": "e_agents_devsecops_recipe_page_structure_index_tool_recipes",
+      "fromNode": "n_agents_devsecops_recipe_page_structure",
+      "toNode": "n_index_tool_recipes",
+      "label": "conceptually_related_to [INFERRED]"
+    },
+    {
+      "id": "e_agents_devsecops_recipe_page_structure_index_workflow_playbooks",
+      "fromNode": "n_agents_devsecops_recipe_page_structure",
+      "toNode": "n_index_workflow_playbooks",
+      "label": "conceptually_related_to [INFERRED]"
+    },
+    {
+      "id": "e_agents_copy_pasteable_commands_index_command_patterns",
+      "fromNode": "n_agents_copy_pasteable_commands",
+      "toNode": "n_index_command_patterns",
+      "label": "semantically_similar_to [INFERRED]"
+    },
+    {
+      "id": "e_agents_devsecops_topic_scope_index_cookbook_topics",
+      "fromNode": "n_agents_devsecops_topic_scope",
+      "toNode": "n_index_cookbook_topics",
+      "label": "semantically_similar_to [INFERRED]"
+    },
+    {
+      "id": "e_agents_devsecops_topic_scope_readme_devsecops_topic_scope",
+      "fromNode": "n_agents_devsecops_topic_scope",
+      "toNode": "n_readme_devsecops_topic_scope",
+      "label": "semantically_similar_to [INFERRED]"
+    },
+    {
+      "id": "e_readme_devsecops_cookbook_knowledge_index_devsecops_cookbook",
+      "fromNode": "n_readme_devsecops_cookbook_knowledge",
+      "toNode": "n_index_devsecops_cookbook",
+      "label": "semantically_similar_to [INFERRED]"
+    },
+    {
+      "id": "e_readme_devsecops_cookbook_knowledge_readme_devsecops_topic_scope",
+      "fromNode": "n_readme_devsecops_cookbook_knowledge",
+      "toNode": "n_readme_devsecops_topic_scope",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_readme_devsecops_cookbook_knowledge_readme_index_html_cookbook_index",
+      "fromNode": "n_readme_devsecops_cookbook_knowledge",
+      "toNode": "n_readme_index_html_cookbook_index",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_readme_devsecops_cookbook_knowledge_readme_no_build_step_required",
+      "fromNode": "n_readme_devsecops_cookbook_knowledge",
+      "toNode": "n_readme_no_build_step_required",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_readme_devsecops_cookbook_knowledge_readme_page_specific_styling",
+      "fromNode": "n_readme_devsecops_cookbook_knowledge",
+      "toNode": "n_readme_page_specific_styling",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_readme_devsecops_cookbook_knowledge_readme_self_contained_html_pages",
+      "fromNode": "n_readme_devsecops_cookbook_knowledge",
+      "toNode": "n_readme_self_contained_html_pages",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_readme_devsecops_cookbook_knowledge_readme_static_github_pages_cookbook",
+      "fromNode": "n_readme_devsecops_cookbook_knowledge",
+      "toNode": "n_readme_static_github_pages_cookbook",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_readme_static_github_pages_cookbook_readme_no_build_step_required",
+      "fromNode": "n_readme_static_github_pages_cookbook",
+      "toNode": "n_readme_no_build_step_required",
+      "label": "rationale_for [EXTRACTED]"
+    },
+    {
+      "id": "e_readme_page_specific_styling_index_inline_page_specific_css",
+      "fromNode": "n_readme_page_specific_styling",
+      "toNode": "n_index_inline_page_specific_css",
+      "label": "implements [INFERRED]"
+    },
+    {
+      "id": "e_readme_devsecops_topic_scope_index_cookbook_topics",
+      "fromNode": "n_readme_devsecops_topic_scope",
+      "toNode": "n_index_cookbook_topics",
+      "label": "semantically_similar_to [INFERRED]"
+    },
+    {
+      "id": "e_index_devsecops_cookbook_index_cookbook_entries",
+      "fromNode": "n_index_devsecops_cookbook",
+      "toNode": "n_index_cookbook_entries",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_index_devsecops_cookbook_index_cookbook_topics",
+      "fromNode": "n_index_devsecops_cookbook",
+      "toNode": "n_index_cookbook_topics",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_index_devsecops_cookbook_index_devsecops_field_notes",
+      "fromNode": "n_index_devsecops_cookbook",
+      "toNode": "n_index_devsecops_field_notes",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_index_devsecops_cookbook_index_example_devsecops_commands",
+      "fromNode": "n_index_devsecops_cookbook",
+      "toNode": "n_index_example_devsecops_commands",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_index_devsecops_cookbook_index_inline_page_specific_css",
+      "fromNode": "n_index_devsecops_cookbook",
+      "toNode": "n_index_inline_page_specific_css",
+      "label": "implements [EXTRACTED]"
+    },
+    {
+      "id": "e_index_devsecops_cookbook_index_practical_recipe_library",
+      "fromNode": "n_index_devsecops_cookbook",
+      "toNode": "n_index_practical_recipe_library",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_index_devsecops_cookbook_index_responsive_accessible_layout",
+      "fromNode": "n_index_devsecops_cookbook",
+      "toNode": "n_index_responsive_accessible_layout",
+      "label": "implements [EXTRACTED]"
+    },
+    {
+      "id": "e_index_devsecops_cookbook_index_standalone_html_page",
+      "fromNode": "n_index_devsecops_cookbook",
+      "toNode": "n_index_standalone_html_page",
+      "label": "implements [EXTRACTED]"
+    },
+    {
+      "id": "e_index_cookbook_topics_index_ci_cd",
+      "fromNode": "n_index_cookbook_topics",
+      "toNode": "n_index_ci_cd",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_index_cookbook_topics_index_cli_usage",
+      "fromNode": "n_index_cookbook_topics",
+      "toNode": "n_index_cli_usage",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_index_cookbook_topics_index_cloud_identity",
+      "fromNode": "n_index_cookbook_topics",
+      "toNode": "n_index_cloud_identity",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_index_cookbook_topics_index_kubernetes",
+      "fromNode": "n_index_cookbook_topics",
+      "toNode": "n_index_kubernetes",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_index_cookbook_topics_index_security_scanning",
+      "fromNode": "n_index_cookbook_topics",
+      "toNode": "n_index_security_scanning",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_index_example_devsecops_commands_index_gitleaks_secret_search_before_commit",
+      "fromNode": "n_index_example_devsecops_commands",
+      "toNode": "n_index_gitleaks_secret_search_before_commit",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_index_example_devsecops_commands_index_kubectl_cluster_context_check",
+      "fromNode": "n_index_example_devsecops_commands",
+      "toNode": "n_index_kubectl_cluster_context_check",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_index_example_devsecops_commands_index_trivy_container_scan_recipe",
+      "fromNode": "n_index_example_devsecops_commands",
+      "toNode": "n_index_trivy_container_scan_recipe",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_index_trivy_index_trivy_container_scan_recipe",
+      "fromNode": "n_index_trivy",
+      "toNode": "n_index_trivy_container_scan_recipe",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_index_kubectl_index_kubectl_cluster_context_check",
+      "fromNode": "n_index_kubectl",
+      "toNode": "n_index_kubectl_cluster_context_check",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_index_gitleaks_index_gitleaks_secret_search_before_commit",
+      "fromNode": "n_index_gitleaks",
+      "toNode": "n_index_gitleaks_secret_search_before_commit",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_index_cookbook_entries_index_command_patterns",
+      "fromNode": "n_index_cookbook_entries",
+      "toNode": "n_index_command_patterns",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_index_cookbook_entries_index_tool_recipes",
+      "fromNode": "n_index_cookbook_entries",
+      "toNode": "n_index_tool_recipes",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_index_cookbook_entries_index_workflow_playbooks",
+      "fromNode": "n_index_cookbook_entries",
+      "toNode": "n_index_workflow_playbooks",
+      "label": "references [EXTRACTED]"
+    }
+  ]
+}
