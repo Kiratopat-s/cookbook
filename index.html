@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cookbook Knowledge</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #23211f;
+        --muted: #6c6257;
+        --paper: #fffdf8;
+        --panel: #f6f1e8;
+        --accent: #0f766e;
+        --accent-dark: #134e4a;
+        --line: #ded4c4;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(15, 118, 110, 0.15), transparent 32rem),
+          linear-gradient(135deg, #fffaf0 0%, #f4efe4 55%, #e9f2ee 100%);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.5;
+      }
+
+      main {
+        width: min(1040px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 48px 0;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+        gap: 32px;
+        align-items: stretch;
+        min-height: 64vh;
+      }
+
+      .intro {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 24px 0;
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+        color: var(--accent-dark);
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        max-width: 12ch;
+        margin: 0;
+        font-size: clamp(3rem, 8vw, 6.8rem);
+        line-height: 0.92;
+        letter-spacing: 0;
+      }
+
+      .lead {
+        max-width: 620px;
+        margin: 24px 0 0;
+        color: var(--muted);
+        font-size: clamp(1.05rem, 2vw, 1.25rem);
+      }
+
+      .cover {
+        position: relative;
+        min-height: 430px;
+        overflow: hidden;
+        border: 1px solid rgba(35, 33, 31, 0.14);
+        border-radius: 8px;
+        background:
+          linear-gradient(160deg, rgba(15, 118, 110, 0.92), rgba(19, 78, 74, 0.95)),
+          repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.13) 0 1px, transparent 1px 36px);
+        box-shadow: 0 24px 80px rgba(52, 46, 38, 0.18);
+      }
+
+      .cover::before,
+      .cover::after {
+        position: absolute;
+        content: "";
+        border-radius: 50%;
+        background: rgba(255, 253, 248, 0.78);
+      }
+
+      .cover::before {
+        width: 260px;
+        height: 260px;
+        right: -84px;
+        top: -72px;
+      }
+
+      .cover::after {
+        width: 180px;
+        height: 180px;
+        left: -72px;
+        bottom: -54px;
+      }
+
+      .cover-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        min-height: 100%;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 28px;
+        color: #fffdf8;
+      }
+
+      .cover-title {
+        max-width: 8ch;
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(2.6rem, 5vw, 4.8rem);
+        line-height: 0.95;
+        letter-spacing: 0;
+      }
+
+      .cover-meta {
+        display: grid;
+        gap: 10px;
+        margin: 0;
+        font-size: 0.95rem;
+      }
+
+      .section {
+        margin-top: 40px;
+        padding-top: 32px;
+        border-top: 1px solid var(--line);
+      }
+
+      .section h2 {
+        margin: 0 0 18px;
+        font-size: clamp(1.5rem, 3vw, 2.15rem);
+        letter-spacing: 0;
+      }
+
+      .recipe-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .recipe-list li {
+        min-height: 120px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 253, 248, 0.72);
+      }
+
+      .recipe-list strong {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 1.05rem;
+      }
+
+      .recipe-list span {
+        color: var(--muted);
+      }
+
+      a {
+        color: var(--accent-dark);
+        text-decoration-thickness: 0.08em;
+        text-underline-offset: 0.18em;
+      }
+
+      @media (max-width: 760px) {
+        main {
+          width: min(100% - 24px, 1040px);
+          padding: 28px 0;
+        }
+
+        .hero {
+          grid-template-columns: 1fr;
+          min-height: auto;
+        }
+
+        .cover {
+          min-height: 320px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero" aria-labelledby="site-title">
+        <div class="intro">
+          <p class="eyebrow">Personal cooking notes</p>
+          <h1 id="site-title">Cookbook Knowledge</h1>
+          <p class="lead">
+            A growing shelf of recipes, ingredient notes, cooking experiments, and menu ideas.
+            Every page is written to stand on its own.
+          </p>
+        </div>
+
+        <aside class="cover" aria-label="Cookbook cover">
+          <div class="cover-content">
+            <p class="cover-title">Kitchen Field Notes</p>
+            <p class="cover-meta">
+              <span>Recipes</span>
+              <span>Techniques</span>
+              <span>Pantry Notes</span>
+            </p>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section" aria-labelledby="recipes-title">
+        <h2 id="recipes-title">Recipes</h2>
+        <ul class="recipe-list">
+          <li>
+            <strong>Coming soon</strong>
+            <span>The first recipe page can be linked here once it is added.</span>
+          </li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>
