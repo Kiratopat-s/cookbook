@@ -1,0 +1,2124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A standalone MQTT and message broker cookbook covering protocol internals, Mosquitto, EMQX, HiveMQ, security, CLI operations, and DevSecOps observability.">
+  <title>MQTT &amp; Message Broker Cookbook</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080b0f;
+      --bg-2: #0d1218;
+      --panel: #111821;
+      --panel-2: #151f2a;
+      --panel-3: #0b1016;
+      --line: #26323e;
+      --line-strong: #384958;
+      --ink: #edf7f3;
+      --muted: #a1b0ad;
+      --faint: #71817e;
+      --accent: #38e8c6;
+      --accent-2: #b5f44a;
+      --amber: #f7c66a;
+      --rose: #ff7b91;
+      --blue: #77b7ff;
+      --good: #41d78b;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --code: #070b10;
+      --shadow: 0 18px 54px rgba(0, 0, 0, 0.34);
+      --sidebar: 318px;
+      --topbar: 58px;
+      --content: 1010px;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 22px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(56, 232, 198, 0.04) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(181, 244, 74, 0.025) 1px, transparent 1px),
+        var(--bg);
+      background-size: 42px 42px, 42px 42px, auto;
+      font-family: var(--sans);
+      line-height: 1.65;
+    }
+
+    a {
+      color: var(--accent);
+      text-underline-offset: 0.22em;
+    }
+
+    code,
+    pre,
+    kbd {
+      font-family: var(--mono);
+    }
+
+    code {
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: #0f1720;
+      color: #dffdf3;
+      font-size: 0.88em;
+      padding: 0.08em 0.36em;
+      word-break: break-word;
+    }
+
+    pre code {
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      word-break: normal;
+    }
+
+    .skip-link {
+      position: fixed;
+      z-index: 1000;
+      top: 12px;
+      left: 12px;
+      transform: translateY(-150%);
+      border-radius: 8px;
+      background: var(--accent);
+      color: #03211d;
+      font-weight: 850;
+      padding: 10px 14px;
+    }
+
+    .skip-link:focus {
+      transform: translateY(0);
+    }
+
+    .mobile-bar {
+      display: none;
+      position: sticky;
+      top: 0;
+      z-index: 35;
+      min-height: var(--topbar);
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(8, 11, 15, 0.94);
+      padding: 10px 14px;
+      backdrop-filter: blur(14px);
+    }
+
+    .mobile-title {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 850;
+    }
+
+    .icon-button {
+      display: inline-grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      color: var(--ink);
+      background: var(--panel);
+      cursor: pointer;
+    }
+
+    .icon-button:hover,
+    .icon-button:focus {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 30;
+      width: var(--sidebar);
+      overflow-y: auto;
+      border-right: 1px solid var(--line);
+      background: rgba(8, 11, 15, 0.97);
+      backdrop-filter: blur(18px);
+      scrollbar-width: thin;
+    }
+
+    .brand {
+      border-bottom: 1px solid var(--line);
+      padding: 24px 22px 20px;
+    }
+
+    .brand-kicker {
+      margin: 0 0 9px;
+      color: var(--accent-2);
+      font-size: 0.74rem;
+      font-weight: 850;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.45rem;
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    .brand p {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 0.91rem;
+    }
+
+    .home-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      margin-top: 14px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: var(--panel-3);
+      color: var(--ink);
+      font-size: 0.82rem;
+      font-weight: 800;
+      padding: 7px 10px;
+      text-decoration: none;
+    }
+
+    .home-link:hover,
+    .home-link:focus {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .sidebar-tools {
+      border-bottom: 1px solid var(--line);
+      padding: 16px 18px;
+    }
+
+    .sidebar-tools label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .sidebar-tools input {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: #0a1117;
+      color: var(--ink);
+      padding: 0 12px;
+      font: inherit;
+    }
+
+    .sidebar-tools input:focus {
+      outline: 2px solid rgba(56, 232, 198, 0.36);
+      outline-offset: 2px;
+    }
+
+    .result-count {
+      min-height: 18px;
+      margin: 7px 1px 0;
+      color: var(--faint);
+      font: 0.72rem var(--mono);
+    }
+
+    .toc {
+      padding: 14px 12px 26px;
+    }
+
+    .toc-title {
+      margin: 16px 10px 6px;
+      color: var(--faint);
+      font: 700 0.68rem var(--mono);
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .toc a {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      min-height: 42px;
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 760;
+      line-height: 1.35;
+      padding: 8px 10px;
+      text-decoration: none;
+    }
+
+    .toc a:hover,
+    .toc a:focus,
+    .toc a.active {
+      color: var(--ink);
+      background: rgba(56, 232, 198, 0.1);
+    }
+
+    .toc a.active .nav-index {
+      border-color: var(--accent);
+      color: var(--accent-2);
+    }
+
+    .nav-index {
+      display: inline-grid;
+      flex: 0 0 auto;
+      place-items: center;
+      min-width: 28px;
+      height: 28px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      color: var(--accent);
+      font: 800 0.78rem var(--mono);
+    }
+
+    .page {
+      min-height: 100vh;
+      margin-left: var(--sidebar);
+    }
+
+    main {
+      width: min(100%, var(--content));
+      margin: 0 auto;
+      padding: 42px clamp(18px, 4vw, 54px) 88px;
+    }
+
+    .hero {
+      padding: 18px 0 20px;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--accent-2);
+      font-size: 0.78rem;
+      font-weight: 850;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .hero h2 {
+      max-width: 820px;
+      margin: 0;
+      font-size: clamp(2.35rem, 6vw, 4.9rem);
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 78ch;
+      margin: 22px 0 0;
+      color: var(--muted);
+      font-size: clamp(1rem, 1.8vw, 1.2rem);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 13px;
+      margin-top: 28px;
+    }
+
+    .metric-card,
+    .note-card,
+    .broker-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(21, 31, 42, 0.94), rgba(12, 17, 23, 0.94));
+      box-shadow: var(--shadow);
+      padding: 15px 16px;
+    }
+
+    .metric-card strong,
+    .broker-card strong {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--ink);
+      font-size: 0.94rem;
+    }
+
+    .metric-card span,
+    .broker-card span {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .quick-context {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin: 26px 0 10px;
+    }
+
+    .note-card h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .note-card ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .note-card li {
+      margin: 5px 0;
+    }
+
+    section.practice {
+      margin-top: 42px;
+      border-top: 1px solid var(--line);
+      padding-top: 42px;
+    }
+
+    .practice header h2 {
+      margin: 8px 0 10px;
+      font-size: clamp(1.72rem, 3.3vw, 2.55rem);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .practice header p {
+      max-width: 82ch;
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .section-label {
+      color: var(--accent);
+      font: 850 0.78rem var(--mono);
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .block {
+      margin: 32px 0;
+    }
+
+    .block h3 {
+      margin: 0 0 10px;
+      font-size: 1.28rem;
+      line-height: 1.18;
+      scroll-margin-top: 18px;
+    }
+
+    .block h4 {
+      margin: 24px 0 8px;
+      font-size: 1rem;
+      color: var(--ink);
+    }
+
+    .block p {
+      max-width: 82ch;
+      margin: 10px 0;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .grid-2,
+    .grid-3 {
+      display: grid;
+      gap: 13px;
+      margin: 15px 0;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .broker-card {
+      box-shadow: none;
+    }
+
+    .broker-card .tag {
+      display: inline-block;
+      margin-bottom: 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      color: var(--accent-2);
+      background: rgba(181, 244, 74, 0.08);
+      font: 750 0.69rem var(--mono);
+      padding: 3px 8px;
+      text-transform: uppercase;
+    }
+
+    .callout {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      margin: 16px 0;
+      border: 1px solid var(--line);
+      border-left-width: 4px;
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 13px 15px;
+    }
+
+    .callout .label {
+      height: fit-content;
+      border-radius: 6px;
+      font: 850 0.68rem var(--mono);
+      padding: 3px 8px;
+      text-transform: uppercase;
+    }
+
+    .callout p {
+      margin: 3px 0;
+    }
+
+    .callout.info {
+      border-left-color: var(--accent);
+    }
+
+    .callout.info .label {
+      background: rgba(56, 232, 198, 0.1);
+      color: var(--accent);
+    }
+
+    .callout.warn {
+      border-left-color: var(--warn);
+    }
+
+    .callout.warn .label {
+      background: rgba(245, 158, 11, 0.12);
+      color: var(--amber);
+    }
+
+    .callout.danger {
+      border-left-color: var(--danger);
+    }
+
+    .callout.danger .label {
+      background: rgba(239, 68, 68, 0.12);
+      color: #ff9ca8;
+    }
+
+    .callout.good {
+      border-left-color: var(--good);
+    }
+
+    .callout.good .label {
+      background: rgba(65, 215, 139, 0.12);
+      color: var(--good);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin: 15px 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    table {
+      width: 100%;
+      min-width: 650px;
+      border-collapse: collapse;
+      font-size: 0.91rem;
+    }
+
+    th {
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--muted);
+      font: 850 0.72rem var(--mono);
+      letter-spacing: 0;
+      padding: 10px 12px;
+      text-align: left;
+      text-transform: uppercase;
+    }
+
+    td {
+      border-bottom: 1px solid rgba(38, 50, 62, 0.72);
+      padding: 10px 12px;
+      vertical-align: top;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .codeblock {
+      overflow: hidden;
+      margin: 15px 0;
+      border: 1px solid #1d2a36;
+      border-radius: 8px;
+      background: var(--code);
+      box-shadow: var(--shadow);
+    }
+
+    .codebar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 36px;
+      border-bottom: 1px solid #1d2a36;
+      background: rgba(255, 255, 255, 0.025);
+      padding: 7px 10px;
+    }
+
+    .code-lang {
+      flex: 0 0 auto;
+      color: var(--accent-2);
+      font: 850 0.68rem var(--mono);
+      text-transform: uppercase;
+    }
+
+    .code-title {
+      min-width: 0;
+      overflow: hidden;
+      color: #9db0be;
+      font: 0.76rem var(--mono);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .copy-btn {
+      flex: 0 0 auto;
+      margin-left: auto;
+      border: 1px solid #2b3b48;
+      border-radius: 7px;
+      background: transparent;
+      color: #a9bac7;
+      cursor: pointer;
+      font: 800 0.72rem var(--mono);
+      padding: 4px 9px;
+    }
+
+    .copy-btn:hover,
+    .copy-btn:focus {
+      border-color: var(--accent);
+      color: var(--ink);
+    }
+
+    .copy-btn.ok {
+      border-color: var(--good);
+      color: var(--good);
+    }
+
+    pre {
+      margin: 0;
+      overflow-x: auto;
+      padding: 14px 16px;
+    }
+
+    pre code {
+      display: block;
+      color: #dbe9f1;
+      font-size: 0.8rem;
+      line-height: 1.66;
+      white-space: pre;
+    }
+
+    .tok-comment {
+      color: #6f8291;
+      font-style: italic;
+    }
+
+    .tok-key {
+      color: #75c8ff;
+      font-weight: 750;
+    }
+
+    .tok-str {
+      color: #b5f44a;
+    }
+
+    .tok-flag {
+      color: #f7c66a;
+    }
+
+    .tok-var {
+      color: #ff9dac;
+    }
+
+    .tok-prompt {
+      color: var(--accent);
+      font-weight: 850;
+    }
+
+    .tok-dim {
+      color: #7d91a0;
+    }
+
+    details.accordion {
+      margin: 16px 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    details.accordion summary {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      color: var(--ink);
+      font-weight: 850;
+      list-style: none;
+      padding: 13px 15px;
+    }
+
+    details.accordion summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details.accordion summary::before {
+      content: "+";
+      display: inline-grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      color: var(--accent);
+      font: 850 0.86rem var(--mono);
+    }
+
+    details.accordion[open] summary::before {
+      content: "-";
+    }
+
+    .accordion-body {
+      border-top: 1px solid var(--line);
+      padding: 14px 16px 16px;
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .pill-list li {
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.025);
+      font: 0.78rem var(--mono);
+      padding: 5px 9px;
+    }
+
+    .flow {
+      display: grid;
+      gap: 9px;
+      margin: 16px 0;
+      padding: 0;
+      list-style: none;
+      counter-reset: step;
+    }
+
+    .flow li {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(17, 24, 33, 0.82);
+      padding: 12px 14px;
+      counter-increment: step;
+    }
+
+    .flow li::before {
+      content: counter(step);
+      display: inline-grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      color: var(--accent-2);
+      font: 850 0.78rem var(--mono);
+    }
+
+    .refs {
+      margin-top: 50px;
+      border-top: 1px solid var(--line);
+      padding-top: 30px;
+    }
+
+    .refs ul {
+      columns: 2;
+      gap: 28px;
+      margin: 14px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .refs li {
+      break-inside: avoid;
+      margin: 7px 0;
+    }
+
+    .hidden-by-search {
+      display: none !important;
+    }
+
+    @media (max-width: 980px) {
+      .mobile-bar {
+        display: flex;
+      }
+
+      .sidebar {
+        transform: translateX(-102%);
+        transition: transform 0.2s ease;
+      }
+
+      body.nav-open .sidebar {
+        transform: translateX(0);
+      }
+
+      .page {
+        margin-left: 0;
+      }
+
+      main {
+        padding-top: 28px;
+      }
+
+      .hero-grid,
+      .quick-context,
+      .grid-2,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .refs ul {
+        columns: 1;
+      }
+    }
+
+    @media (max-width: 620px) {
+      :root {
+        --sidebar: min(92vw, 318px);
+      }
+
+      main {
+        padding-inline: 16px;
+      }
+
+      .hero h2 {
+        font-size: 2.34rem;
+      }
+
+      .callout {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        min-width: 590px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="mobile-bar">
+    <button class="icon-button" id="navToggle" type="button" aria-label="Open navigation" aria-expanded="false">
+      <span aria-hidden="true">==</span>
+    </button>
+    <div class="mobile-title">MQTT &amp; Message Broker Cookbook</div>
+    <a class="home-link" href="../index.html">Home</a>
+  </div>
+
+  <aside class="sidebar" aria-label="Cookbook navigation">
+    <div class="brand">
+      <p class="brand-kicker">DevSecOps Cookbook</p>
+      <h1>MQTT &amp; Message Broker Cookbook</h1>
+      <p>Protocol mechanics, broker internals, secure operations, and production observability for event-driven IoT systems.</p>
+      <a class="home-link" href="../index.html">Back to index</a>
+    </div>
+    <div class="sidebar-tools">
+      <label for="search">Filter page</label>
+      <input id="search" type="search" placeholder="Search MQTT, QoS, EMQX, TLS..." autocomplete="off">
+      <div class="result-count" id="resultCount" aria-live="polite"></div>
+    </div>
+    <nav class="toc" aria-label="Table of contents">
+      <div class="toc-title">Practices</div>
+      <a href="#protocol"><span class="nav-index">01</span><span>Protocol Architecture &amp; Message Lifecycle</span></a>
+      <a href="#mosquitto"><span class="nav-index">02</span><span>Broker Internals &amp; Single-Node Mosquitto</span></a>
+      <a href="#clustering"><span class="nav-index">03</span><span>Enterprise Clustering with EMQX &amp; HiveMQ</span></a>
+      <a href="#security"><span class="nav-index">04</span><span>Production Security</span></a>
+      <a href="#cli"><span class="nav-index">05</span><span>Day-to-Day CLI Operations &amp; Testing</span></a>
+      <a href="#observability"><span class="nav-index">06</span><span>DevSecOps Observability</span></a>
+      <div class="toc-title">Appendix</div>
+      <a href="#runbooks"><span class="nav-index">R</span><span>Incident Runbooks</span></a>
+      <a href="#references"><span class="nav-index">S</span><span>References</span></a>
+    </nav>
+  </aside>
+
+  <div class="page">
+    <main id="main">
+      <section class="hero" id="top">
+        <p class="eyebrow">Event-driven IoT architecture field manual</p>
+        <h2>MQTT &amp; Message Broker Cookbook</h2>
+        <p class="lead">A single-file operational cookbook for MQTT 3.1.1, MQTT 5.0, Mosquitto, EMQX, HiveMQ, secure broker access, CLI testing, Kubernetes orchestration, Prometheus telemetry, and the failure modes that show up at 03:17 when devices start flapping.</p>
+
+        <div class="hero-grid" aria-label="Cookbook scope">
+          <div class="metric-card"><strong>Atomic layer</strong><span>Packets, sessions, topic matching, inflight queues, retained state, wills, keep-alive, and WebSocket transport.</span></div>
+          <div class="metric-card"><strong>Broker layer</strong><span>Mosquitto single-node patterns, EMQX Erlang clustering, HiveMQ Java platform operations, and broker bridges.</span></div>
+          <div class="metric-card"><strong>DevSecOps layer</strong><span>TLS, mTLS, ACLs, OIDC/JWT, Docker Compose, Kubernetes operators, metrics, logs, and runbooks.</span></div>
+        </div>
+
+        <div class="quick-context">
+          <div class="note-card">
+            <h3>When to use this</h3>
+            <ul>
+              <li>You need a broker topology for IoT telemetry, command/control, fleet state, or factory event streams.</li>
+              <li>You are debugging QoS, duplicate delivery, retained-state surprises, LWT status, or keep-alive disconnects.</li>
+              <li>You are choosing between lightweight Mosquitto and clustered enterprise brokers such as EMQX or HiveMQ.</li>
+            </ul>
+          </div>
+          <div class="note-card">
+            <h3>Prerequisites</h3>
+            <ul>
+              <li>Shell access with Docker, Docker Compose, <code>kubectl</code>, and optionally Helm.</li>
+              <li>MQTT clients: <code>mosquitto_pub</code>, <code>mosquitto_sub</code>, and <code>mqtt</code> from MQTT CLI.</li>
+              <li>A private CA, DNS names, and separate staging/prod broker endpoints for security testing.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout danger">
+          <span class="label">Safety</span>
+          <div>
+            <p>Never test destructive retained-message cleanup, ACL changes, bridge loops, or cluster leave commands against production without a named rollback. MQTT state is small, but a bad wildcard or retained delete can change the behavior of every device that reconnects.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="practice searchable" id="protocol">
+        <header>
+          <span class="section-label">Practice 1</span>
+          <h2>Protocol Architecture &amp; Message Lifecycle</h2>
+          <p>MQTT is a client-server publish/subscribe protocol over an ordered, lossless, bidirectional transport. The broker is not just a relay: it owns topic matching, retained records, session state, inflight packet identifiers, offline queues, and abnormal-disconnect signaling.</p>
+        </header>
+
+        <div class="block">
+          <h3>Atomic ground base architecture</h3>
+          <ol class="flow">
+            <li><div><strong>Transport accept.</strong> A TCP, TLS, or WebSocket listener accepts the socket. The broker reads the first MQTT control packet from the stream and decodes fixed header, remaining length, variable header, properties, and payload.</div></li>
+            <li><div><strong>CONNECT handshake.</strong> The broker validates protocol version, client ID, clean session or clean start flags, keep-alive, credentials, optional will, and MQTT 5 properties such as session expiry and receive maximum.</div></li>
+            <li><div><strong>Session attach.</strong> The broker either creates a fresh session or resumes an existing one. If another socket already owns the same client ID, the older connection is usually taken over and disconnected.</div></li>
+            <li><div><strong>Publish ingress.</strong> A PUBLISH packet is authorized, decoded, assigned a packet identifier for QoS 1 or 2, optionally stored as retained state, then routed through the topic tree.</div></li>
+            <li><div><strong>Topic match.</strong> The broker compares the publish topic against subscription filters, including <code>+</code> single-level and <code>#</code> multi-level wildcards. Shared subscriptions add a load-balancing group after the match.</div></li>
+            <li><div><strong>Delivery egress.</strong> Each subscriber gets a packet at the negotiated QoS, capped by receive maximum, queue limits, ACL checks, and session expiry. QoS 1 and 2 messages live in inflight state until acknowledged.</div></li>
+          </ol>
+
+          <div class="codeblock" data-lang="text" data-title="publisher to subscriber packet path"><pre><code>publisher socket
+ CONNECT(client_id=device-17, clean_start=false, keep_alive=60)
+ PUBLISH(topic=plant/line1/temp, qos=1, packet_id=42, payload=21.8)
+ PUBACK(packet_id=42)
+
+ broker core
+ authenticate -> authorize publish -> store retained? -> match topic tree
+ update inflight table -> enqueue subscriber delivery -> track ack timeout
+
+ subscriber socket
+ SUBSCRIBE(topic=plant/+/temp, qos=1)
+ PUBLISH(topic=plant/line1/temp, qos=1, packet_id=9, payload=21.8)
+ PUBACK(packet_id=9)</code></pre></div>
+        </div>
+
+        <div class="block">
+          <h3>QoS levels and inflight state</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>QoS</th><th>Contract</th><th>Packet exchange</th><th>Operational cost</th><th>Use it for</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>0</code></td><td>At most once. No retry, no broker acknowledgement.</td><td><code>PUBLISH</code></td><td>Lowest CPU, memory, wire chatter.</td><td>High-rate sensor readings where the next sample supersedes the last.</td></tr>
+                <tr><td><code>1</code></td><td>At least once. Delivery is retried until acknowledged, so duplicates are possible.</td><td><code>PUBLISH -> PUBACK</code></td><td>Packet identifier plus retransmit timer on each sender.</td><td>Commands, state changes, alerts, and most production telemetry.</td></tr>
+                <tr><td><code>2</code></td><td>Exactly once between a client and the broker session.</td><td><code>PUBLISH -> PUBREC -> PUBREL -> PUBCOMP</code></td><td>Highest latency and session state on both sides.</td><td>Billing-like operations where duplicate processing is worse than latency.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <details class="accordion" open>
+            <summary>Inflight mechanics and duplicate behavior</summary>
+            <div class="accordion-body">
+              <p>Inflight state is indexed by packet identifier per client session, not globally. For QoS 1, a sender keeps the PUBLISH until PUBACK arrives. For QoS 2, both sides hold state across the four-step handshake. If a socket drops before completion and the session persists, retransmission resumes on reconnect with the DUP flag set.</p>
+              <div class="codeblock" data-lang="text" data-title="QoS 2 state machine"><pre><code>client outbound inflight[77] = PUBLISH(payload_hash=9b2a, state=await_pubrec)
+ send PUBLISH qos=2 id=77
+ receive PUBREC id=77
+ state = await_pubcomp
+ send PUBREL id=77
+ receive PUBCOMP id=77
+ delete inflight[77]
+
+ broker inbound inflight[77] = received_not_released
+ receive PUBLISH id=77
+ send PUBREC id=77
+ receive PUBREL id=77
+ deliver once to subscriptions
+ send PUBCOMP id=77
+ delete inflight[77]</code></pre></div>
+              <div class="callout info">
+                <span class="label">Design</span>
+                <div><p>QoS 2 gives exactly-once processing for the MQTT hop. It does not make your downstream database or webhook idempotent. Add an application message ID when an action must be globally deduplicated.</p></div>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <div class="block">
+          <h3>MQTT 3.1.1 vs MQTT 5.0 session behavior</h3>
+          <div class="grid-2">
+            <div class="broker-card">
+              <span class="tag">MQTT 3.1.1</span>
+              <strong>Clean Session</strong>
+              <span><code>clean_session=true</code> means delete old session state and discard state on disconnect. <code>false</code> means keep subscriptions and queued QoS 1/2 messages for that client ID.</span>
+            </div>
+            <div class="broker-card">
+              <span class="tag">MQTT 5.0</span>
+              <strong>Clean Start + Session Expiry</strong>
+              <span><code>clean_start=true</code> controls the start of the connection. <code>session_expiry_interval</code> controls how long the broker keeps state after disconnect, including <code>0</code> for immediate expiry.</span>
+            </div>
+          </div>
+
+          <p><strong>Session Present</strong> appears in CONNACK. It tells the client whether the broker resumed an existing session. A reconnecting durable subscriber should treat <code>session_present=false</code> as a signal to resubscribe because the broker no longer has its subscriptions.</p>
+          <div class="codeblock" data-lang="bash" data-title="durable subscriber with MQTT 5 session expiry"><pre><code>$ mosquitto_sub -h broker.example.net -p 8883 \
+  --cafile ca.pem -u device17 -P "$MQTT_PASSWORD" \
+  -V mqttv5 -i device-17-shadow -x 86400 -c \
+  -q 1 -t 'plant/line1/commands/#' -d</code></pre></div>
+          <div class="codeblock" data-lang="output" data-title="debug output to confirm session reuse"><pre><code>Client device-17-shadow sending CONNECT
+Client device-17-shadow received CONNACK (0)
+Client device-17-shadow sending SUBSCRIBE (Mid: 1, Topic: plant/line1/commands/#, QoS: 1)
+Client device-17-shadow received SUBACK
+Client device-17-shadow sending PINGREQ
+Client device-17-shadow received PINGRESP</code></pre></div>
+        </div>
+
+        <div class="block">
+          <h3>Retained messages, LWT, wildcards, keep-alive, and WebSockets</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Feature</th><th>Broker state</th><th>Common failure</th><th>Mitigation</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Retained message</td><td>One retained record per topic. New subscribers immediately receive the latest retained value.</td><td>Old retained config wakes a new device with stale command state.</td><td>Retain only desired state and birth/death markers. Clear by publishing a zero-length retained payload.</td></tr>
+                <tr><td>Last Will and Testament</td><td>Will topic, payload, QoS, retain flag, and MQTT 5 will delay stored in session until graceful DISCONNECT or timeout.</td><td>Flaky mobile links create false offline alarms.</td><td>Use MQTT 5 will delay and device birth messages to debounce.</td></tr>
+                <tr><td><code>+</code> wildcard</td><td>Matches exactly one topic level.</td><td><code>plant/+/temp</code> misses <code>plant/a/b/temp</code>.</td><td>Use topic taxonomy reviews and test filters with CLI before deploy.</td></tr>
+                <tr><td><code>#</code> wildcard</td><td>Matches this level and all descendants; must be last.</td><td>Subscribing to <code>#</code> on prod floods logs and downstream sinks.</td><td>Scope with tenant prefixes and enforce ACLs that deny broad wildcards to devices.</td></tr>
+                <tr><td>Keep Alive</td><td>Maximum client silence interval. Broker disconnects after it has not seen control packets in the allowed window.</td><td>NAT or load balancer idle timeout is shorter than keep-alive.</td><td>Set keep-alive below the smallest idle timeout, usually 30-60 seconds for mobile or NAT-heavy paths.</td></tr>
+                <tr><td>MQTT over WebSockets</td><td>MQTT frames ride inside HTTP Upgrade traffic, often on <code>/mqtt</code> behind reverse proxies.</td><td>Proxy strips Upgrade headers or has a short idle timeout.</td><td>Forward <code>Connection: upgrade</code>, tune idle timeout, and test with browser and CLI clients.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="grid-2">
+            <div class="codeblock" data-lang="bash" data-title="retained birth/death state"><pre><code>$ mosquitto_pub -h broker.example.net -t 'devices/device-17/status' \
+  -q 1 -r -m '{"state":"online","ts":"2026-07-05T02:15:00Z"}'
+
+$ mosquitto_pub -h broker.example.net -t 'devices/device-17/status' \
+  -q 1 -r -n
+# -r retains; -n sends a zero-length payload and clears retained state.</code></pre></div>
+            <div class="codeblock" data-lang="bash" data-title="will message and websocket transport"><pre><code>$ mqtt sub -h broker.example.net -p 443 -ws -ws:path /mqtt \
+  -V 5 -t 'devices/+/status' --show-topics
+
+$ mqtt pub -h broker.example.net -p 443 -ws -ws:path /mqtt \
+  -V 5 -i device-17 \
+  -Wt 'devices/device-17/status' -Wm '{"state":"offline"}' -Wq 1 -Wr \
+  -t 'devices/device-17/telemetry' -m '{"temp":21.8}' -q 1</code></pre></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="practice searchable" id="mosquitto">
+        <header>
+          <span class="section-label">Practice 2</span>
+          <h2>Broker Internals &amp; Single-Node Setups</h2>
+          <p>Eclipse Mosquitto is the sharp, small-footprint broker to use for labs, gateways, edge nodes, single-host services, and bridge patterns. Its constraints are useful: explicit listeners, clear config files, simple persistence, and Unix-friendly operations.</p>
+        </header>
+
+        <div class="block">
+          <h3>Mosquitto execution model</h3>
+          <div class="grid-3">
+            <div class="broker-card"><span class="tag">Socket</span><strong>Listener loop</strong><span>Accepts TCP/TLS/WebSocket clients, decodes control packets, applies max connection and per-listener policy.</span></div>
+            <div class="broker-card"><span class="tag">State</span><strong>In-memory database</strong><span>Tracks sessions, subscriptions, retained messages, queued QoS 1/2 messages, and inflight records.</span></div>
+            <div class="broker-card"><span class="tag">Disk</span><strong>Persistence file</strong><span>When enabled, writes session and retained state to disk on autosave or shutdown so broker restarts do not wipe retained or durable state.</span></div>
+          </div>
+
+          <div class="codeblock" data-lang="text" data-title="single-node routing path"><pre><code>socket read -> parse MQTT packet -> authenticate -> authorize
+           -> update session table
+           -> update subscription trie or retained tree
+           -> match topic filters
+           -> enqueue to subscriber outbound queues
+           -> socket write / retry / persistence checkpoint</code></pre></div>
+        </div>
+
+        <div class="block">
+          <h3>Docker Compose topology</h3>
+          <p>This Compose file runs Mosquitto with plain MQTT for local lab clients, TLS/mTLS for production-like clients, and WebSockets for browser clients. It keeps config, data, and logs separate so Git can track config without storing broker state.</p>
+          <div class="codeblock" data-lang="yaml" data-title="compose.yaml"><pre><code>services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: mqtt-mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "8883:8883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config:ro
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -h 127.0.0.1 -p 1883 -u health -P \"$${MQTT_HEALTH_PASSWORD}\" -t '$$SYS/broker/uptime' -C 1 -W 5 >/dev/null"]
+      interval: 20s
+      timeout: 8s
+      retries: 3
+    environment:
+      MQTT_HEALTH_PASSWORD: ${MQTT_HEALTH_PASSWORD}</code></pre></div>
+
+          <details class="accordion" open>
+            <summary>Complete Mosquitto configuration</summary>
+            <div class="accordion-body">
+              <div class="codeblock" data-lang="conf" data-title="mosquitto/config/mosquitto.conf"><pre><code>per_listener_settings true
+
+persistence true
+persistence_location /mosquitto/data/
+persistence_file mosquitto.db
+autosave_interval 60
+autosave_on_changes true
+
+log_dest stdout
+log_timestamp true
+log_timestamp_format %Y-%m-%dT%H:%M:%S
+connection_messages true
+log_type error
+log_type warning
+log_type notice
+log_type information
+
+listener 1883 0.0.0.0
+allow_anonymous false
+password_file /mosquitto/config/passwd
+acl_file /mosquitto/config/aclfile
+max_connections 2000
+max_inflight_messages 20
+max_queued_messages 1000
+
+listener 8883 0.0.0.0
+allow_anonymous false
+cafile /mosquitto/config/certs/ca.pem
+certfile /mosquitto/config/certs/server.pem
+keyfile /mosquitto/config/certs/server-key.pem
+require_certificate true
+use_identity_as_username true
+acl_file /mosquitto/config/aclfile
+
+listener 9001 0.0.0.0
+protocol websockets
+allow_anonymous false
+password_file /mosquitto/config/passwd
+acl_file /mosquitto/config/aclfile
+http_dir /mosquitto/config/www</code></pre></div>
+
+              <div class="codeblock" data-lang="conf" data-title="mosquitto/config/aclfile"><pre><code># Shared read-only operational topics.
+topic read $SYS/broker/uptime
+topic read $SYS/broker/load/#
+
+# Per-user device namespace. %u is username, %c is client ID.
+pattern readwrite tenants/%u/devices/%c/#
+
+# Bridge status messages are intentionally narrow.
+pattern write $SYS/broker/connection/%c/state
+
+user health
+topic read $SYS/broker/uptime
+
+user ops
+topic read $SYS/#
+topic readwrite tenants/#</code></pre></div>
+
+              <div class="codeblock" data-lang="bash" data-title="create password file and start"><pre><code>$ mkdir -p mosquitto/config/certs mosquitto/data mosquitto/log
+$ mosquitto_passwd -c mosquitto/config/passwd ops
+$ mosquitto_passwd mosquitto/config/passwd health
+$ export MQTT_HEALTH_PASSWORD='change-me-in-a-secret-store'
+$ docker compose up -d
+$ docker logs -f mqtt-mosquitto</code></pre></div>
+            </div>
+          </details>
+        </div>
+
+        <div class="block">
+          <h3>Bridge architecture</h3>
+          <p>A Mosquitto bridge is a broker-to-broker client connection. It subscribes and republishes across topic prefixes, usually from constrained edge networks into a regional broker or cloud broker. The failure mode to fear is a loop: the same message is bridged out, renamed, then bridged back as a new publish.</p>
+          <div class="codeblock" data-lang="conf" data-title="mosquitto/config/bridge-east.conf"><pre><code>connection plant-east-to-core
+address core-broker.example.net:8883
+bridge_protocol_version mqttv50
+try_private false
+start_type automatic
+cleansession false
+local_clientid bridge-plant-east
+remote_clientid bridge-plant-east
+keepalive_interval 45
+restart_timeout 10 120
+
+remote_username bridge-plant-east
+remote_password ${BRIDGE_PASSWORD}
+bridge_cafile /mosquitto/config/certs/ca.pem
+bridge_certfile /mosquitto/config/certs/plant-east.pem
+bridge_keyfile /mosquitto/config/certs/plant-east-key.pem
+bridge_insecure false
+
+notifications true
+notification_topic $SYS/broker/connection/plant-east-to-core/state
+
+# Send local telemetry to the core broker.
+topic telemetry/# out 1 tenants/plant-east/ tenants/plant-east/
+
+# Pull cloud commands back to the edge broker.
+topic commands/# in 1 tenants/plant-east/ tenants/plant-east/</code></pre></div>
+
+          <div class="callout warn">
+            <span class="label">Bridge loop</span>
+            <div><p>Do not bridge <code># both</code> between two brokers unless you have deliberate topic rewriting that prevents loops. Prefer one directional telemetry path and one narrow command path.</p></div>
+          </div>
+        </div>
+
+        <div class="block">
+          <h3>Mosquitto logs and troubleshooting</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Log string to search</th><th>Likely cause</th><th>Mitigation</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>Client &lt;unknown&gt; disconnected due to protocol error.</code></td><td>Non-MQTT traffic hit the listener, wrong protocol version, broken WebSocket proxy, or malformed client packet.</td><td>Confirm listener port, use <code>mosquitto_sub -d</code>, and packet-capture only in staging.</td></tr>
+                <tr><td><code>Sending CONNACK to &lt;client&gt; (0, 5)</code></td><td>MQTT 3 authorization failure, often bad username/password.</td><td>Recreate password entry, verify client username, and check ACL plugin order.</td></tr>
+                <tr><td><code>Client &lt;client&gt; has exceeded timeout, disconnecting.</code></td><td>Keep-alive expired. Device stopped sending control packets, NAT dropped the path, or event loop is blocked.</td><td>Lower keep-alive below network idle timeout, add reconnect jitter, and monitor broker CPU.</td></tr>
+                <tr><td><code>Socket error on client &lt;client&gt;, disconnecting.</code></td><td>Peer reset, TLS close, mobile network churn, or load balancer termination.</td><td>Correlate with LB logs, tune idle timeouts, and check TLS chain.</td></tr>
+                <tr><td><code>Denied PUBLISH from &lt;client&gt;</code></td><td>ACL rejected the publish topic.</td><td>Test the exact username/client ID against the ACL pattern; do not broaden to <code>#</code> as a quick fix.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="codeblock" data-lang="bash" data-title="increase logging then reload"><pre><code>$ printf '%s\n' 'log_type debug' >> mosquitto/config/debug.conf
+$ docker kill --signal=HUP mqtt-mosquitto
+$ docker logs --since 5m mqtt-mosquitto | grep -Ei 'denied|timeout|protocol|socket|connack'
+
+# Remove debug.conf after the incident. Debug logging can expose topic names and payload-adjacent metadata.</code></pre></div>
+        </div>
+      </section>
+
+      <section class="practice searchable" id="clustering">
+        <header>
+          <span class="section-label">Practice 3</span>
+          <h2>Enterprise Clustering &amp; High Availability</h2>
+          <p>Clustered brokers add distributed routing tables, membership protocols, load balancers, rolling upgrades, operator reconciliation, and back-pressure controls. The hard part is not accepting a million sockets; it is keeping session state, routing metadata, and downstream integrations predictable during churn.</p>
+        </header>
+
+        <div class="block">
+          <h3>EMQX internals: Erlang, Mria, Ekka, and the rule engine</h3>
+          <p>EMQX is built on Erlang/OTP. Each broker node is an Erlang node such as <code>emqx@emqx1</code>, authenticated with a shared cookie. In EMQX 5 and later, large clusters use core and replicant roles: core nodes own writes to cluster metadata, replicants serve client sessions and receive replicated routing metadata through the RLOG/Mria path.</p>
+          <div class="grid-3">
+            <div class="broker-card"><span class="tag">Mria</span><strong>Metadata replication</strong><span>Provides the replicated table layer used for routing metadata, durable state, and core-to-replicant replication patterns.</span></div>
+            <div class="broker-card"><span class="tag">Ekka</span><strong>Cluster membership</strong><span>Supplies Erlang clustering and discovery plumbing historically used across EMQX node membership flows.</span></div>
+            <div class="broker-card"><span class="tag">Rule engine</span><strong>SQL over broker events</strong><span>Filters MQTT events and messages, transforms fields, then executes actions such as republish, webhook, Kafka, PostgreSQL, S3, or other sinks.</span></div>
+          </div>
+
+          <div class="codeblock" data-lang="text" data-title="EMQX distributed publish path"><pre><code>client on emqx2 publishes tenants/a/devices/17/temp
+emqx2 checks local ACL and receive maximum
+emqx2 matches topic tree replicated from core nodes
+routing table says subscribers live on emqx1 and emqx3
+emqx2 forwards delivery work to emqx1 and emqx3
+each target node checks its local subscription table
+each target node writes to its own connected subscriber sockets</code></pre></div>
+        </div>
+
+        <div class="block">
+          <h3>EMQX Docker Compose cluster</h3>
+          <div class="codeblock" data-lang="yaml" data-title="compose.emqx.yaml"><pre><code>services:
+  emqx1:
+    image: emqx/emqx:6.2.1
+    hostname: emqx1
+    environment:
+      EMQX_NODE__NAME: emqx@emqx1
+      EMQX_NODE__COOKIE: "replace-with-a-long-random-cookie"
+      EMQX_CLUSTER__DISCOVERY_STRATEGY: static
+      EMQX_CLUSTER__STATIC__SEEDS: "emqx@emqx1,emqx@emqx2,emqx@emqx3"
+      EMQX_DASHBOARD__DEFAULT_USERNAME: admin
+      EMQX_DASHBOARD__DEFAULT_PASSWORD: "change-me-now"
+    ports:
+      - "1883:1883"
+      - "8883:8883"
+      - "18083:18083"
+    volumes:
+      - emqx1-data:/opt/emqx/data
+
+  emqx2:
+    image: emqx/emqx:6.2.1
+    hostname: emqx2
+    environment:
+      EMQX_NODE__NAME: emqx@emqx2
+      EMQX_NODE__COOKIE: "replace-with-a-long-random-cookie"
+      EMQX_CLUSTER__DISCOVERY_STRATEGY: static
+      EMQX_CLUSTER__STATIC__SEEDS: "emqx@emqx1,emqx@emqx2,emqx@emqx3"
+    volumes:
+      - emqx2-data:/opt/emqx/data
+
+  emqx3:
+    image: emqx/emqx:6.2.1
+    hostname: emqx3
+    environment:
+      EMQX_NODE__NAME: emqx@emqx3
+      EMQX_NODE__COOKIE: "replace-with-a-long-random-cookie"
+      EMQX_CLUSTER__DISCOVERY_STRATEGY: static
+      EMQX_CLUSTER__STATIC__SEEDS: "emqx@emqx1,emqx@emqx2,emqx@emqx3"
+    volumes:
+      - emqx3-data:/opt/emqx/data
+
+volumes:
+  emqx1-data:
+  emqx2-data:
+  emqx3-data:</code></pre></div>
+
+          <div class="codeblock" data-lang="bash" data-title="EMQX cluster checks"><pre><code>$ docker compose -f compose.emqx.yaml up -d
+$ docker exec emqx-emqx1-1 emqx ctl cluster status
+
+Cluster status: #{running_nodes =&gt; ['emqx@emqx1','emqx@emqx2','emqx@emqx3'],
+                  stopped_nodes =&gt; []}
+
+$ docker exec emqx-emqx1-1 emqx ctl listeners
+$ docker exec emqx-emqx1-1 emqx ctl clients list --limit 5
+$ docker exec emqx-emqx1-1 emqx ctl log set-level debug</code></pre></div>
+        </div>
+
+        <div class="block">
+          <h3>EMQX rule engine and data integration</h3>
+          <p>Rules should be treated like production code: version them, review SQL, alert on action failures, and never let an external sink back-pressure device ingestion without an explicit queue strategy.</p>
+          <div class="codeblock" data-lang="sql" data-title="Rule SQL: filter hot telemetry"><pre><code>SELECT
+  clientid,
+  topic,
+  payload.temp as temperature,
+  timestamp as broker_ts
+FROM
+  "tenants/+/devices/+/telemetry"
+WHERE
+  payload.temp &gt; 80</code></pre></div>
+          <div class="codeblock" data-lang="bash" data-title="create a rule via EMQX HTTP API"><pre><code>$ curl -u "$EMQX_API_KEY:$EMQX_API_SECRET" \
+  -H 'content-type: application/json' \
+  -X POST http://127.0.0.1:18083/api/v5/rules \
+  -d '{
+    "id": "hot_telemetry_to_ops",
+    "sql": "SELECT clientid, topic, payload.temp as temperature, timestamp as broker_ts FROM \"tenants/+/devices/+/telemetry\" WHERE payload.temp &gt; 80",
+    "actions": [
+      {
+        "function": "republish",
+        "args": {
+          "topic": "ops/alerts/hot-telemetry",
+          "qos": 1,
+          "retain": false,
+          "payload": "${payload}"
+        }
+      }
+    ],
+    "enable": true
+  }'</code></pre></div>
+        </div>
+
+        <div class="block">
+          <h3>EMQX Operator custom resource</h3>
+          <div class="codeblock" data-lang="yaml" data-title="emqx-cluster.yaml"><pre><code>apiVersion: apps.emqx.io/v2
+kind: EMQX
+metadata:
+  name: emqx-prod
+  namespace: mqtt
+spec:
+  image: emqx/emqx:6.2.1
+  config:
+    data: |
+      dashboard {
+        listeners.http.bind = 18083
+      }
+      listeners.tcp.default {
+        bind = "0.0.0.0:1883"
+        max_connections = 200000
+      }
+      listeners.ssl.default {
+        bind = "0.0.0.0:8883"
+        ssl_options {
+          cacertfile = "/mounted/certs/ca.pem"
+          certfile = "/mounted/certs/server.pem"
+          keyfile = "/mounted/certs/server-key.pem"
+          verify = verify_peer
+          fail_if_no_peer_cert = true
+        }
+      }
+  coreTemplate:
+    spec:
+      replicas: 3
+      volumeClaimTemplates:
+        storageClassName: fast-ssd
+        resources:
+          requests:
+            storage: 20Gi
+  replicantTemplate:
+    spec:
+      replicas: 6
+      resources:
+        requests:
+          cpu: "2"
+          memory: 4Gi
+        limits:
+          cpu: "4"
+          memory: 8Gi</code></pre></div>
+          <div class="codeblock" data-lang="bash" data-title="apply and verify EMQX Operator deployment"><pre><code>$ kubectl create namespace mqtt
+$ kubectl apply -f emqx-cluster.yaml
+$ kubectl -n mqtt get emqx emqx-prod
+$ kubectl -n mqtt get pods -l apps.emqx.io/instance=emqx-prod
+$ kubectl -n mqtt logs deploy/emqx-operator-controller-manager --tail 100</code></pre></div>
+        </div>
+
+        <div class="block">
+          <h3>HiveMQ architecture and extension framework</h3>
+          <p>HiveMQ is a Java-based enterprise broker. The operational mental model is a non-blocking network path backed by JVM worker pools, persistence, distributed cluster replication, and an extension framework. The "thread-per-core" lesson is that broker throughput comes from event loops and bounded worker pools sized around available cores, not from one thread per MQTT connection.</p>
+          <div class="grid-3">
+            <div class="broker-card"><span class="tag">Network</span><strong>Event-loop oriented I/O</strong><span>Long-lived sockets are multiplexed through broker I/O threads. Slow extension code must not block the hot path.</span></div>
+            <div class="broker-card"><span class="tag">Extension SDK</span><strong>Interceptors and services</strong><span>Extensions authenticate, authorize, intercept publish/subscribe events, add metrics, and integrate systems.</span></div>
+            <div class="broker-card"><span class="tag">Cluster</span><strong>Shared broker state</strong><span>Cluster discovery, replication, and health checks keep sessions and routing available across broker nodes.</span></div>
+          </div>
+
+          <div class="codeblock" data-lang="xml" data-title="hivemq/config.xml"><pre><code>&lt;hivemq&gt;
+  &lt;listeners&gt;
+    &lt;tcp-listener&gt;
+      &lt;port&gt;1883&lt;/port&gt;
+      &lt;bind-address&gt;0.0.0.0&lt;/bind-address&gt;
+    &lt;/tcp-listener&gt;
+    &lt;tls-tcp-listener&gt;
+      &lt;port&gt;8883&lt;/port&gt;
+      &lt;bind-address&gt;0.0.0.0&lt;/bind-address&gt;
+      &lt;tls&gt;
+        &lt;keystore&gt;
+          &lt;path&gt;/opt/hivemq/conf/certs/server-keystore.jks&lt;/path&gt;
+          &lt;password&gt;changeit&lt;/password&gt;
+          &lt;private-key-password&gt;changeit&lt;/private-key-password&gt;
+        &lt;/keystore&gt;
+        &lt;client-authentication-mode&gt;REQUIRED&lt;/client-authentication-mode&gt;
+        &lt;truststore&gt;
+          &lt;path&gt;/opt/hivemq/conf/certs/client-truststore.jks&lt;/path&gt;
+          &lt;password&gt;changeit&lt;/password&gt;
+        &lt;/truststore&gt;
+      &lt;/tls&gt;
+    &lt;/tls-tcp-listener&gt;
+    &lt;websocket-listener&gt;
+      &lt;port&gt;8000&lt;/port&gt;
+      &lt;bind-address&gt;0.0.0.0&lt;/bind-address&gt;
+      &lt;path&gt;/mqtt&lt;/path&gt;
+    &lt;/websocket-listener&gt;
+  &lt;/listeners&gt;
+
+  &lt;cluster&gt;
+    &lt;enabled&gt;true&lt;/enabled&gt;
+    &lt;transport&gt;
+      &lt;tcp&gt;
+        &lt;bind-address&gt;0.0.0.0&lt;/bind-address&gt;
+        &lt;bind-port&gt;7800&lt;/bind-port&gt;
+      &lt;/tcp&gt;
+    &lt;/transport&gt;
+    &lt;discovery&gt;
+      &lt;static&gt;
+        &lt;node&gt;&lt;host&gt;hivemq-1&lt;/host&gt;&lt;port&gt;7800&lt;/port&gt;&lt;/node&gt;
+        &lt;node&gt;&lt;host&gt;hivemq-2&lt;/host&gt;&lt;port&gt;7800&lt;/port&gt;&lt;/node&gt;
+        &lt;node&gt;&lt;host&gt;hivemq-3&lt;/host&gt;&lt;port&gt;7800&lt;/port&gt;&lt;/node&gt;
+      &lt;/static&gt;
+    &lt;/discovery&gt;
+  &lt;/cluster&gt;
+&lt;/hivemq&gt;</code></pre></div>
+        </div>
+
+        <div class="block">
+          <h3>HiveMQ Operator and Helm-based orchestration</h3>
+          <p>The current HiveMQ Platform Operator is installed with Helm and reconciles HiveMQ platform deployments. Use separate namespaces for operator and broker environments in production, set resource requests explicitly, and watch Kubernetes events during upgrades.</p>
+          <div class="codeblock" data-lang="bash" data-title="install HiveMQ Platform Operator and platform"><pre><code>$ helm repo add hivemq https://hivemq.github.io/helm-charts
+$ helm repo update
+
+$ kubectl create namespace hivemq-operator
+$ kubectl create namespace hivemq-prod
+
+$ helm install hivemq-operator hivemq/hivemq-platform-operator \
+  --namespace hivemq-operator \
+  --rollback-on-failure
+
+$ helm install hivemq-prod hivemq/hivemq-platform \
+  --namespace hivemq-prod \
+  --set nodes.replicaCount=3 \
+  --set hivemq.resources.requests.cpu=4 \
+  --set hivemq.resources.requests.memory=4Gi \
+  --set hivemq.resources.limits.memory=8Gi \
+  --rollback-on-failure</code></pre></div>
+          <div class="codeblock" data-lang="bash" data-title="verify HiveMQ platform state"><pre><code>$ helm -n hivemq-operator status hivemq-operator
+$ helm -n hivemq-prod status hivemq-prod
+$ kubectl -n hivemq-prod get pods,svc
+$ kubectl -n hivemq-prod describe pod -l app.kubernetes.io/name=hivemq-platform | sed -n '/Events:/,$p'</code></pre></div>
+        </div>
+
+        <div class="block">
+          <h3>Cluster troubleshooting strings</h3>
+          <div class="codeblock" data-lang="log" data-title="cluster log needles"><pre><code># EMQX
+cluster_call_failed
+mria_rlog_sync_failed
+message_queue_too_long
+authorization_permission_denied
+clientid_conflict
+keepalive timeout
+
+# HiveMQ
+Cluster state changed
+Node joined cluster
+Node left cluster
+Client ID already connected
+Not authorized to PUBLISH
+KEEP_ALIVE_TIMEOUT
+Extension failed to start</code></pre></div>
+        </div>
+      </section>
+
+      <section class="practice searchable" id="security">
+        <header>
+          <span class="section-label">Practice 4</span>
+          <h2>Production Security</h2>
+          <p>MQTT security is layered: network segmentation, TLS, identity, authorization, message design, broker limits, and auditability. The best policy is boring: authenticate every client, authorize by tenant and client ID, deny broad wildcards, rotate credentials, and make abnormal disconnects visible.</p>
+        </header>
+
+        <div class="block">
+          <h3>TLS and mutual TLS</h3>
+          <p>Use TLS on every untrusted network. Use mTLS for device identity when you can provision client certificates. Use username/password or JWT only over TLS. Never put long-lived broker passwords in process command lines in shared systems; prefer config files, secret mounts, or prompt-based CLI flows.</p>
+          <div class="codeblock" data-lang="bash" data-title="create a private CA and broker certificate for a lab"><pre><code>$ openssl genrsa -out ca.key 4096
+$ openssl req -x509 -new -nodes -key ca.key -sha256 -days 3650 \
+  -subj "/CN=MQTT Lab Root CA" -out ca.pem
+
+$ openssl genrsa -out server-key.pem 4096
+$ openssl req -new -key server-key.pem \
+  -subj "/CN=broker.example.net" -out server.csr
+
+$ cat &gt; server-ext.cnf &lt;&lt;'EOF'
+subjectAltName = DNS:broker.example.net,DNS:localhost,IP:127.0.0.1
+extendedKeyUsage = serverAuth
+EOF
+
+$ openssl x509 -req -in server.csr -CA ca.pem -CAkey ca.key -CAcreateserial \
+  -out server.pem -days 825 -sha256 -extfile server-ext.cnf</code></pre></div>
+
+          <div class="codeblock" data-lang="bash" data-title="create a client certificate whose CN becomes identity"><pre><code>$ openssl genrsa -out device-17-key.pem 2048
+$ openssl req -new -key device-17-key.pem \
+  -subj "/CN=device-17" -out device-17.csr
+
+$ cat &gt; client-ext.cnf &lt;&lt;'EOF'
+extendedKeyUsage = clientAuth
+EOF
+
+$ openssl x509 -req -in device-17.csr -CA ca.pem -CAkey ca.key -CAcreateserial \
+  -out device-17.pem -days 365 -sha256 -extfile client-ext.cnf</code></pre></div>
+        </div>
+
+        <div class="block">
+          <h3>ACL policy patterns</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Policy</th><th>Good pattern</th><th>Anti-pattern</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Tenant isolation</td><td><code>tenants/%u/devices/%c/#</code></td><td><code>devices/#</code> shared across tenants.</td></tr>
+                <tr><td>Device telemetry</td><td>Device writes telemetry and reads only its command topics.</td><td>Device can subscribe to another device's telemetry.</td></tr>
+                <tr><td>Operator access</td><td>Human or service account has read access plus audited command publish paths.</td><td>Using the broker admin account in apps.</td></tr>
+                <tr><td>Wildcards</td><td>Backends may read narrow wildcard trees. Devices usually cannot use <code>#</code>.</td><td>Allowing <code>#</code> subscribe for all authenticated clients.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="codeblock" data-lang="conf" data-title="Mosquitto ACL with tenant and client binding"><pre><code># Device account username is the tenant. Client ID is the device ID.
+pattern write tenants/%u/devices/%c/telemetry
+pattern read tenants/%u/devices/%c/commands/#
+pattern readwrite tenants/%u/devices/%c/shadow
+
+user ops-api
+topic read tenants/+/devices/+/telemetry
+topic read tenants/+/devices/+/shadow
+topic write tenants/+/devices/+/commands/#
+
+user audit
+topic read $SYS/#</code></pre></div>
+        </div>
+
+        <div class="block">
+          <h3>OAuth2 and OIDC integration</h3>
+          <p>MQTT has no built-in OAuth handshake. Brokers integrate OAuth2/OIDC by validating bearer tokens passed through username/password fields, enhanced authentication, custom extensions, or a broker-specific JWT/OIDC authenticator. Treat access tokens as credentials: short TTL, TLS only, narrow claims, no logs.</p>
+
+          <details class="accordion" open>
+            <summary>EMQX JWT/JWKS authentication</summary>
+            <div class="accordion-body">
+              <div class="codeblock" data-lang="conf" data-title="emqx jwt authentication concept"><pre><code>authentication = [
+  {
+    mechanism = jwt
+    backend = jwks
+    endpoint = "https://idp.example.com/.well-known/jwks.json"
+    refresh_interval = 300s
+    from = password
+    verify_claims = {
+      aud = "mqtt-prod"
+      iss = "https://idp.example.com/"
+    }
+    acl_claim_name = "mqtt_acl"
+  }
+]</code></pre></div>
+              <div class="codeblock" data-lang="bash" data-title="publish with OIDC access token as MQTT password"><pre><code>$ export ACCESS_TOKEN="$(oidc-token-command print-token)"
+$ mosquitto_pub -h broker.example.net -p 8883 --cafile ca.pem \
+  -u device-17 -P "$ACCESS_TOKEN" \
+  -t 'tenants/acme/devices/device-17/telemetry' \
+  -q 1 -m '{"temp":21.8}'</code></pre></div>
+            </div>
+          </details>
+
+          <details class="accordion">
+            <summary>HiveMQ extension-based token validation</summary>
+            <div class="accordion-body">
+              <p>Use the HiveMQ Enterprise Security Extension or a custom Extension SDK authenticator to validate JWTs against an IdP JWKS endpoint. Keep the authenticator asynchronous or cached so token validation cannot block broker I/O threads.</p>
+              <div class="codeblock" data-lang="text" data-title="extension flow"><pre><code>CONNECT username=device-17 password=&lt;access-token&gt;
+extension authenticator extracts token
+extension validates signature using cached JWKS
+extension checks iss, aud, exp, tenant, device_id claims
+extension grants permissions:
+  publish tenants/acme/devices/device-17/telemetry
+  subscribe tenants/acme/devices/device-17/commands/#</code></pre></div>
+            </div>
+          </details>
+        </div>
+
+        <div class="block">
+          <h3>Security failure logs</h3>
+          <div class="codeblock" data-lang="log" data-title="auth and authorization log analysis"><pre><code># Mosquitto
+Sending CONNACK to device-17 (0, 5)
+Denied PUBLISH from device-17
+OpenSSL Error: error:0A000086:SSL routines::certificate verify failed
+
+# EMQX
+authentication_failed
+authorization_permission_denied
+packets.connack.auth_error
+JWT verification failed
+
+# HiveMQ
+Client authentication failed
+Not authorized to subscribe
+SSLHandshakeException
+No valid license found for extension</code></pre></div>
+          <div class="callout danger">
+            <span class="label">Credential handling</span>
+            <div><p>Do not paste real tokens, passwords, private keys, or client certificates into chat, issue trackers, or logs. When you need reproducible diagnostics, use a synthetic token signed by a staging key and a broker endpoint that cannot reach production devices.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="practice searchable" id="cli">
+        <header>
+          <span class="section-label">Practice 5</span>
+          <h2>Day-to-Day CLI Operations &amp; Testing</h2>
+          <p>CLI tools are the fastest way to prove whether a broker issue is protocol, network, authentication, authorization, session, or application logic. Every incident should produce a small command that reproduces the symptom in staging.</p>
+        </header>
+
+        <div class="block">
+          <h3>mosquitto_pub and mosquitto_sub recipes</h3>
+          <div class="grid-2">
+            <div class="codeblock" data-lang="bash" data-title="subscribe with verbose topics and TLS"><pre><code>$ mosquitto_sub -h broker.example.net -p 8883 \
+  --cafile ca.pem \
+  -u ops -P "$MQTT_PASSWORD" \
+  -t 'tenants/acme/devices/+/telemetry' \
+  -q 1 -v -d</code></pre></div>
+            <div class="codeblock" data-lang="bash" data-title="publish MQTT 5 payload with properties"><pre><code>$ mosquitto_pub -h broker.example.net -p 8883 \
+  --cafile ca.pem \
+  -V mqttv5 \
+  -u device-17 -P "$MQTT_PASSWORD" \
+  -t 'tenants/acme/devices/device-17/telemetry' \
+  -q 1 \
+  -D PUBLISH content-type application/json \
+  -D PUBLISH payload-format-indicator 1 \
+  -m '{"temp":21.8,"unit":"c"}'</code></pre></div>
+          </div>
+
+          <details class="accordion" open>
+            <summary>Flag cheat sheet</summary>
+            <div class="accordion-body">
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Flag</th><th>Tool</th><th>Meaning</th><th>Why it matters</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>-h</code>, <code>-p</code></td><td>both</td><td>Host and port.</td><td>Separates DNS/LB problems from broker problems.</td></tr>
+                    <tr><td><code>-t</code></td><td>both</td><td>Topic or subscription filter.</td><td>Use quotes around wildcards so the shell does not expand them.</td></tr>
+                    <tr><td><code>-q</code></td><td>both</td><td>Requested QoS.</td><td>Tests broker maximum QoS, receive maximum, and inflight behavior.</td></tr>
+                    <tr><td><code>-r</code></td><td>pub</td><td>Retain flag.</td><td>Writes the retained record for that topic.</td></tr>
+                    <tr><td><code>-n</code></td><td>pub</td><td>Null payload.</td><td>With <code>-r</code>, clears retained state.</td></tr>
+                    <tr><td><code>-c</code></td><td>sub</td><td>Disable clean session.</td><td>Creates a durable session; must set a stable client ID.</td></tr>
+                    <tr><td><code>-x</code></td><td>sub</td><td>MQTT 5 session expiry seconds.</td><td>Controls how long offline state survives.</td></tr>
+                    <tr><td><code>--will-topic</code></td><td>sub/pub</td><td>Register a will.</td><td>Tests abnormal disconnect status behavior.</td></tr>
+                    <tr><td><code>--ws</code></td><td>both</td><td>Use WebSockets.</td><td>Validates reverse proxy and browser-compatible paths.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <div class="block">
+          <h3>MQTT CLI recipes</h3>
+          <p>MQTT CLI supports MQTT 3.1.1 and 5.0, shell mode, broker tests, TLS options, WebSockets, and HiveMQ API operations. It is especially good when you want JSON output or multiple simultaneous clients.</p>
+          <div class="grid-2">
+            <div class="codeblock" data-lang="bash" data-title="install and run MQTT CLI"><pre><code>$ brew install hivemq/mqtt-cli/mqtt-cli
+$ mqtt --version
+$ mqtt test -h broker.example.net -p 8883 -s --cafile ca.pem</code></pre></div>
+            <div class="codeblock" data-lang="bash" data-title="subscribe with JSON output"><pre><code>$ mqtt sub -h broker.example.net -p 8883 -s --cafile ca.pem \
+  -V 5 -i ops-watch-1 \
+  -t 'tenants/acme/devices/+/telemetry' \
+  -q 1 --json-output --show-topics</code></pre></div>
+          </div>
+
+          <div class="codeblock" data-lang="bash" data-title="persistent session replay test"><pre><code># Terminal 1: initialize durable subscription and exit after SUBACK.
+$ mosquitto_sub -h broker.example.net -i replay-test -c -q 1 \
+  -t 'lab/replay' -E
+
+# Terminal 2: publish while subscriber is offline.
+$ mosquitto_pub -h broker.example.net -q 1 -t 'lab/replay' -m 'queued while offline'
+
+# Terminal 1: reconnect with same client ID and no clean session.
+$ mosquitto_sub -h broker.example.net -i replay-test -c -q 1 \
+  -t 'lab/replay' -C 1 -v
+lab/replay queued while offline</code></pre></div>
+        </div>
+
+        <div class="block">
+          <h3>emqx ctl admin operations</h3>
+          <div class="codeblock" data-lang="bash" data-title="common EMQX operational commands"><pre><code>$ emqx ctl status
+$ emqx ctl cluster status
+$ emqx ctl listeners
+$ emqx ctl clients list --limit 20
+$ emqx ctl clients show device-17
+$ emqx ctl subscriptions show device-17
+$ emqx ctl routes list
+$ emqx ctl log set-level debug
+$ emqx ctl log set-level info</code></pre></div>
+          <div class="callout warn">
+            <span class="label">Admin</span>
+            <div><p>Commands that disconnect clients, delete sessions, reset rules, or remove nodes are production changes. Capture current cluster status, client ID, and expected blast radius before running them.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="practice searchable" id="observability">
+        <header>
+          <span class="section-label">Practice 6</span>
+          <h2>DevSecOps Observability</h2>
+          <p>Broker telemetry should answer four questions quickly: who is connected, how much data is moving, what is being dropped, and whether security controls are rejecting expected or unexpected clients.</p>
+        </header>
+
+        <div class="block">
+          <h3>Metrics to alert on</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Signal</th><th>EMQX counter family</th><th>Mosquitto source</th><th>HiveMQ metric family</th><th>Alert intuition</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Connections</td><td><code>client.connected</code>, <code>client.disconnected</code></td><td><code>$SYS/broker/clients/connected</code></td><td><code>com.hivemq.networking.connections.current</code></td><td>Sudden drops or churn indicate LB, network, auth, or device fleet failure.</td></tr>
+                <tr><td>Bytes</td><td><code>bytes.received</code>, <code>bytes.sent</code></td><td><code>$SYS/broker/bytes/received</code>, <code>$SYS/broker/bytes/sent</code></td><td>Standard HiveMQ bytes/networking meters</td><td>Spike without matching message count can mean oversized payloads or loops.</td></tr>
+                <tr><td>Dropped messages</td><td><code>messages.dropped</code>, <code>delivery.dropped.queue_full</code></td><td>Exporter or log-derived metric</td><td>Dropped messages topic / metrics</td><td>Any sustained non-zero value deserves investigation.</td></tr>
+                <tr><td>Auth failures</td><td><code>packets.connack.auth_error</code>, <code>authorization.deny</code></td><td>Log count of denied auth and ACL lines</td><td>Auth extension and REST API auth counters</td><td>Spikes can be expired credentials, attack traffic, or broken rollout.</td></tr>
+                <tr><td>Keep-alive timeouts</td><td>Disconnect reason and log counters</td><td><code>exceeded timeout</code> log count</td><td><code>KEEP_ALIVE_TIMEOUT</code> disconnect reason</td><td>Correlate with NAT, LB idle timeout, broker CPU, and client release.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="block">
+          <h3>Prometheus scrape configuration</h3>
+          <div class="codeblock" data-lang="yaml" data-title="prometheus.yml"><pre><code>global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: emqx_stats
+    metrics_path: /api/v5/prometheus/stats
+    scheme: http
+    static_configs:
+      - targets: ["emqx1:18083", "emqx2:18083", "emqx3:18083"]
+    basic_auth:
+      username: "${EMQX_API_KEY}"
+      password: "${EMQX_API_SECRET}"
+
+  - job_name: emqx_auth
+    metrics_path: /api/v5/prometheus/auth
+    scheme: http
+    static_configs:
+      - targets: ["emqx1:18083", "emqx2:18083", "emqx3:18083"]
+    basic_auth:
+      username: "${EMQX_API_KEY}"
+      password: "${EMQX_API_SECRET}"
+
+  - job_name: hivemq
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["hivemq-1:9399", "hivemq-2:9399", "hivemq-3:9399"]
+
+  - job_name: mosquitto_exporter
+    static_configs:
+      - targets: ["mosquitto-exporter:9234"]</code></pre></div>
+
+          <div class="codeblock" data-lang="conf" data-title="Telegraf bridge from Mosquitto $SYS to Prometheus"><pre><code>[[inputs.mqtt_consumer]]
+  servers = ["tcp://mosquitto:1883"]
+  topics = [
+    "$SYS/broker/clients/connected",
+    "$SYS/broker/bytes/received",
+    "$SYS/broker/bytes/sent",
+    "$SYS/broker/messages/received",
+    "$SYS/broker/messages/sent"
+  ]
+  username = "metrics"
+  password = "$MQTT_METRICS_PASSWORD"
+  data_format = "value"
+  data_type = "integer"
+
+[[outputs.prometheus_client]]
+  listen = ":9273"
+  metric_version = 2</code></pre></div>
+        </div>
+
+        <div class="block">
+          <h3>Grafana and PromQL starter panels</h3>
+          <p>Prometheus exporters normalize names differently. Start from these patterns, then confirm exact labels and names from the live <code>/metrics</code> endpoint before putting an alert in production.</p>
+          <div class="codeblock" data-lang="promql" data-title="PromQL patterns"><pre><code># Connected clients by broker node.
+sum by (instance) (emqx_client_connected)
+
+# Bytes received per second.
+sum(rate(emqx_bytes_received[5m]))
+
+# Drops by reason over 10 minutes.
+sum by (reason) (increase(emqx_messages_dropped[10m]))
+sum(increase(emqx_delivery_dropped_queue_full[10m]))
+
+# Authentication or authorization failure spike.
+sum(increase(emqx_packets_connack_auth_error[5m]))
+sum(increase(emqx_authorization_deny[5m]))
+
+# HiveMQ JVM pressure and threads.
+max(com_hivemq_jvm_memory_total_used)
+max(com_hivemq_jvm_threads_blocked_count)</code></pre></div>
+        </div>
+
+        <div class="block">
+          <h3>Dynamic log verbosity and log analysis</h3>
+          <div class="grid-2">
+            <div class="codeblock" data-lang="bash" data-title="EMQX log level during incident"><pre><code>$ emqx ctl log set-level debug
+$ grep -Ei 'auth|acl|keepalive|timeout|dropped|mria|cluster' /opt/emqx/log/emqx.log | tail -200
+$ emqx ctl log set-level info</code></pre></div>
+            <div class="codeblock" data-lang="bash" data-title="Kubernetes log stream across brokers"><pre><code>$ kubectl -n mqtt logs -l apps.emqx.io/instance=emqx-prod \
+  --since=15m --all-containers=true \
+  | grep -Ei 'auth|acl|timeout|dropped|cluster|mria'
+
+$ kubectl -n hivemq-prod logs -l app.kubernetes.io/name=hivemq-platform \
+  --since=15m \
+  | grep -Ei 'auth|not authorized|keep_alive|cluster|extension'</code></pre></div>
+          </div>
+
+          <div class="codeblock" data-lang="bash" data-title="HiveMQ runtime log level through Logback JMX when enabled"><pre><code># Enable authenticated JMX only on trusted admin networks.
+$ java -jar jmxterm.jar -l localhost:9010
+&gt; bean ch.qos.logback.classic:Name=default,Type=ch.qos.logback.classic.jmx.JMXConfigurator
+&gt; run setLoggerLevel ROOT DEBUG
+&gt; run setLoggerLevel ROOT INFO</code></pre></div>
+        </div>
+      </section>
+
+      <section class="practice searchable" id="runbooks">
+        <header>
+          <span class="section-label">Runbooks</span>
+          <h2>Incident Runbooks</h2>
+          <p>These are short paths for the ugly cases: auth storms, timeout storms, queue buildup, bridge loops, and missing retained state.</p>
+        </header>
+
+        <div class="block">
+          <h3>Auth failure storm</h3>
+          <ol class="flow">
+            <li><div>Check whether failures are isolated to one tenant, one app release, one certificate CA, or every client behind a load balancer.</div></li>
+            <li><div>Inspect broker logs for <code>CONNACK</code> reason codes, <code>authentication_failed</code>, <code>authorization_permission_denied</code>, or TLS verify failures.</div></li>
+            <li><div>Run a known-good CLI connection from the same network path as the failing clients.</div></li>
+            <li><div>If OIDC/JWKS is involved, confirm IdP health, JWKS rotation, clock skew, token audience, issuer, and expiry.</div></li>
+          </ol>
+          <div class="codeblock" data-lang="bash" data-title="known-good auth probe"><pre><code>$ mosquitto_sub -h broker.example.net -p 8883 --cafile ca.pem \
+  -u ops-probe -P "$MQTT_PASSWORD" \
+  -t '$SYS/broker/uptime' -C 1 -W 5 -d</code></pre></div>
+        </div>
+
+        <div class="block">
+          <h3>Keep-alive timeout storm</h3>
+          <ol class="flow">
+            <li><div>Compare client keep-alive values with load balancer, firewall, NAT, and WebSocket proxy idle timeouts.</div></li>
+            <li><div>Check broker CPU, garbage collection, Erlang scheduler utilization, JVM blocked threads, and disk I/O.</div></li>
+            <li><div>Confirm reconnect jitter. Synchronized reconnect loops can look like broker failure while being a client rollout bug.</div></li>
+          </ol>
+          <div class="codeblock" data-lang="bash" data-title="probe keep-alive path"><pre><code>$ mqtt sub -h broker.example.net -p 8883 -s --cafile ca.pem \
+  -i keepalive-probe -k 30 \
+  -t '$SYS/broker/uptime' -q 0 -d</code></pre></div>
+        </div>
+
+        <div class="block">
+          <h3>Bridge loop or message flood</h3>
+          <ol class="flow">
+            <li><div>Temporarily disable bridge egress for the suspected connection, not the whole broker, if your config and change process allow it.</div></li>
+            <li><div>Look for the same payload moving across rewritten topics repeatedly.</div></li>
+            <li><div>Check retained state and rules that republish to a topic matched by their own input filter.</div></li>
+            <li><div>Restore with asymmetric topic prefixes and explicit <code>in</code>/<code>out</code> bridge rules.</div></li>
+          </ol>
+          <div class="codeblock" data-lang="bash" data-title="find repeated messages by topic"><pre><code>$ mosquitto_sub -h broker.example.net -t 'tenants/acme/#' -v -W 20 \
+  | awk '{print $1}' \
+  | sort \
+  | uniq -c \
+  | sort -nr \
+  | head</code></pre></div>
+        </div>
+      </section>
+
+      <section class="refs searchable" id="references">
+        <span class="section-label">Sources</span>
+        <h2>Primary references checked</h2>
+        <p class="muted">These references are linked for deeper verification and version-specific details. Broker releases move; production runbooks should pin docs to the broker version you operate.</p>
+        <ul>
+          <li><a href="https://mqtt.org/mqtt-specification/">MQTT.org specification index</a></li>
+          <li><a href="https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.pdf">OASIS MQTT Version 5.0 specification</a></li>
+          <li><a href="https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.pdf">OASIS MQTT Version 3.1.1 specification</a></li>
+          <li><a href="https://mosquitto.org/man/mosquitto-conf-5.html">Eclipse Mosquitto mosquitto.conf man page</a></li>
+          <li><a href="https://mosquitto.org/man/mosquitto_pub-1.html">Eclipse Mosquitto mosquitto_pub man page</a></li>
+          <li><a href="https://mosquitto.org/man/mosquitto_sub-1.html">Eclipse Mosquitto mosquitto_sub man page</a></li>
+          <li><a href="https://docs.emqx.com/en/emqx/latest/deploy/cluster/introduction.html">EMQX clustering docs</a></li>
+          <li><a href="https://docs.emqx.com/en/emqx/latest/data-integration/rules.html">EMQX rule engine docs</a></li>
+          <li><a href="https://docs.emqx.com/en/emqx/latest/observability/prometheus.html">EMQX Prometheus integration docs</a></li>
+          <li><a href="https://docs.emqx.com/en/emqx/latest/admin/cli.html">EMQX command line interface docs</a></li>
+          <li><a href="https://docs.hivemq.com/hivemq/latest/user-guide/cluster.html">HiveMQ broker cluster docs</a></li>
+          <li><a href="https://docs.hivemq.com/hivemq/latest/extensions/index.html">HiveMQ extension development docs</a></li>
+          <li><a href="https://docs.hivemq.com/hivemq-platform-operator/index.html">HiveMQ Platform Operator docs</a></li>
+          <li><a href="https://hivemq.github.io/mqtt-cli/">MQTT CLI documentation</a></li>
+        </ul>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var $$ = function (selector, root) {
+        return Array.prototype.slice.call((root || document).querySelectorAll(selector));
+      };
+      var $ = function (selector, root) {
+        return (root || document).querySelector(selector);
+      };
+      var esc = function (value) {
+        return value
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      };
+
+      function highlight(code, lang) {
+        var text = code.textContent;
+        var html = esc(text);
+        if (lang === "bash" || lang === "sh") {
+          html = html
+            .replace(/^(\$|&gt;)(?=\s)/gm, '<span class="tok-prompt">$1</span>')
+            .replace(/(^|\s)(--?[a-zA-Z0-9][a-zA-Z0-9:-]*)/g, '$1<span class="tok-flag">$2</span>')
+            .replace(/(\$[{(]?[A-Za-z_][A-Za-z0-9_]*[)}]?)/g, '<span class="tok-var">$1</span>')
+            .replace(/(#.*)$/gm, '<span class="tok-comment">$1</span>');
+        } else if (lang === "yaml" || lang === "yml") {
+          html = html
+            .replace(/^(\s*)([A-Za-z0-9_.-]+):/gm, '$1<span class="tok-key">$2</span>:')
+            .replace(/(#.*)$/gm, '<span class="tok-comment">$1</span>')
+            .replace(/(&quot;[^&]*?&quot;|'[^']*?')/g, '<span class="tok-str">$1</span>');
+        } else if (lang === "conf" || lang === "properties") {
+          html = html
+            .replace(/^(\s*)([A-Za-z0-9_.-]+)(?=\s|=)/gm, '$1<span class="tok-key">$2</span>')
+            .replace(/(#.*)$/gm, '<span class="tok-comment">$1</span>')
+            .replace(/(&quot;[^&]*?&quot;)/g, '<span class="tok-str">$1</span>');
+        } else if (lang === "xml") {
+          html = html
+            .replace(/(&lt;\/?[^&]*?&gt;)/g, '<span class="tok-key">$1</span>')
+            .replace(/(&quot;[^&]*?&quot;)/g, '<span class="tok-str">$1</span>');
+        } else if (lang === "log" || lang === "output") {
+          html = html
+            .replace(/(error|failed|denied|timeout|disconnect|dropped|DOWN|SSLHandshakeException)/gi, '<span class="tok-var">$1</span>')
+            .replace(/(debug|info|notice|warning)/gi, '<span class="tok-key">$1</span>');
+        } else if (lang === "sql" || lang === "promql") {
+          html = html
+            .replace(/\b(SELECT|FROM|WHERE|AND|OR|sum|by|rate|increase|max)\b/g, '<span class="tok-key">$1</span>')
+            .replace(/(&quot;[^&]*?&quot;|'[^']*?')/g, '<span class="tok-str">$1</span>');
+        }
+        code.innerHTML = html;
+      }
+
+      function copyText(text, button) {
+        function done(label) {
+          button.textContent = label;
+          button.classList.add("ok");
+          window.setTimeout(function () {
+            button.textContent = "copy";
+            button.classList.remove("ok");
+          }, 1400);
+        }
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () {
+            done("copied");
+          }).catch(function () {
+            fallbackCopy(text, button, done);
+          });
+        } else {
+          fallbackCopy(text, button, done);
+        }
+      }
+
+      function fallbackCopy(text, button, done) {
+        var area = document.createElement("textarea");
+        area.value = text;
+        area.setAttribute("readonly", "");
+        area.style.position = "fixed";
+        area.style.top = "-1000px";
+        document.body.appendChild(area);
+        area.select();
+        try {
+          document.execCommand("copy");
+          done("copied");
+        } catch (err) {
+          button.textContent = "select";
+        }
+        document.body.removeChild(area);
+      }
+
+      $$(".codeblock").forEach(function (block) {
+        var code = $("pre code", block);
+        var lang = block.getAttribute("data-lang") || "text";
+        var title = block.getAttribute("data-title") || "snippet";
+        var bar = document.createElement("div");
+        bar.className = "codebar";
+        bar.innerHTML = '<span class="code-lang">' + esc(lang) + '</span><span class="code-title">' + esc(title) + '</span><button class="copy-btn" type="button" aria-label="Copy code block">copy</button>';
+        block.insertBefore(bar, block.firstChild);
+        if (code) {
+          highlight(code, lang);
+        }
+      });
+
+      document.addEventListener("click", function (event) {
+        var button = event.target.closest(".copy-btn");
+        if (!button) return;
+        var block = button.closest(".codeblock");
+        var code = $("pre code", block);
+        if (code) copyText(code.textContent, button);
+      });
+
+      var navToggle = $("#navToggle");
+      if (navToggle) {
+        navToggle.addEventListener("click", function () {
+          var open = !document.body.classList.contains("nav-open");
+          document.body.classList.toggle("nav-open", open);
+          navToggle.setAttribute("aria-expanded", String(open));
+          navToggle.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
+        });
+      }
+
+      var links = $$(".toc a[href^='#']");
+      var targets = links.map(function (link) {
+        return $(link.getAttribute("href"));
+      }).filter(Boolean);
+
+      links.forEach(function (link) {
+        link.addEventListener("click", function (event) {
+          var target = $(link.getAttribute("href"));
+          if (!target) return;
+          event.preventDefault();
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+          history.replaceState(null, "", link.getAttribute("href"));
+          document.body.classList.remove("nav-open");
+          if (navToggle) navToggle.setAttribute("aria-expanded", "false");
+        });
+      });
+
+      if ("IntersectionObserver" in window) {
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            links.forEach(function (link) {
+              link.classList.toggle("active", link.getAttribute("href") === "#" + entry.target.id);
+            });
+          });
+        }, { rootMargin: "-20% 0px -70% 0px", threshold: 0.01 });
+        targets.forEach(function (target) { observer.observe(target); });
+      }
+
+      var search = $("#search");
+      var resultCount = $("#resultCount");
+      var searchable = $$(".searchable");
+      if (search) {
+        search.addEventListener("input", function () {
+          var query = search.value.trim().toLowerCase();
+          var shown = 0;
+          searchable.forEach(function (section) {
+            var match = !query || section.textContent.toLowerCase().indexOf(query) !== -1;
+            section.classList.toggle("hidden-by-search", !match);
+            if (match) shown += 1;
+          });
+          if (resultCount) {
+            resultCount.textContent = query ? shown + " matching sections" : "";
+          }
+        });
+      }
+    }());
+  </script>
+</body>
+</html>

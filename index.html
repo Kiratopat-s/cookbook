@@ -685,10 +685,11 @@
           <h1 id="page-title">Browse the cookbook shelf.</h1>
           <p class="lead">
             Each page in this repo is a complete, self-contained HTML field manual: DevSecOps platforms,
-            container runtime fundamentals, terminal operations, and hands-on lab investigations.
+            Ubuntu systems administration, container runtime fundamentals, event streaming and message broker platforms,
+            terminal operations, and hands-on lab investigations.
           </p>
           <div class="stats" aria-label="Cookbook summary">
-            <span class="stat"><strong>4</strong> standalone pages</span>
+            <span class="stat"><strong>7</strong> standalone pages</span>
             <span class="stat"><strong>0</strong> build steps</span>
             <span class="stat"><strong>local</strong> and GitHub Pages ready</span>
           </div>
@@ -709,7 +710,7 @@
             <h2 id="knowledge-title">Knowledge Pages</h2>
             <p>Search or filter the catalog, then open the standalone manual you need.</p>
           </div>
-          <span class="count" id="result-count" aria-live="polite">4 of 4 pages</span>
+          <span class="count" id="result-count" aria-live="polite">7 of 7 pages</span>
         </div>
 
         <div class="toolbar">
@@ -720,7 +721,9 @@
           <div class="filters" role="group" aria-label="Filter knowledge pages">
             <button class="filter-btn is-active" type="button" data-filter="all" aria-pressed="true">All</button>
             <button class="filter-btn" type="button" data-filter="devsecops" aria-pressed="false">DevSecOps</button>
+            <button class="filter-btn" type="button" data-filter="systems" aria-pressed="false">Systems</button>
             <button class="filter-btn" type="button" data-filter="containers" aria-pressed="false">Containers</button>
+            <button class="filter-btn" type="button" data-filter="streaming" aria-pressed="false">Streaming</button>
             <button class="filter-btn" type="button" data-filter="terminal" aria-pressed="false">Terminal</button>
             <button class="filter-btn" type="button" data-filter="lab" aria-pressed="false">Labs</button>
           </div>
@@ -752,6 +755,31 @@
             </div>
           </article>
 
+          <article class="entry-card" data-category="systems" data-search="ubuntu linux systems devops kernel user space boot grub initramfs systemd apt dpkg snap ppa netplan iproute2 systemd-resolved dns ufw apparmor openssh ssh sudo posix permissions acl lvm fstab ext4 zfs fdisk parted journalctl rsyslog top htop ps sysstat iostat vmstat prometheus node exporter cloud-init bash cli troubleshooting">
+            <div class="card-top">
+              <span class="category">Linux systems</span>
+              <span class="status">Operations cookbook</span>
+            </div>
+            <h3><a href="cookbook/ubuntu-systems-devops-cookbook.html">Ubuntu Systems &amp; DevOps Cookbook</a></h3>
+            <p>Ubuntu from kernel and boot internals to production operations: systemd, apt/dpkg, Netplan, DNS, UFW, AppArmor, SSH, LVM, filesystems, logs, metrics, cloud-init, and daily CLI triage.</p>
+            <dl class="card-facts">
+              <div><dt>Scope</dt><dd>7 practices</dd></div>
+              <div><dt>Tools</dt><dd>Core Ubuntu</dd></div>
+              <div><dt>Use</dt><dd>Operate hosts</dd></div>
+            </dl>
+            <div class="tags" aria-label="Topics">
+              <span class="tag">systemd</span>
+              <span class="tag">Netplan</span>
+              <span class="tag">UFW</span>
+              <span class="tag">LVM</span>
+              <span class="tag">cloud-init</span>
+            </div>
+            <div class="card-actions">
+              <a class="open-link" href="cookbook/ubuntu-systems-devops-cookbook.html">Open page</a>
+              <a class="open-link secondary" href="cookbook/ubuntu-systems-devops-cookbook.html#practice-1">Boot and systemd</a>
+            </div>
+          </article>
+
           <article class="entry-card" data-category="containers" data-search="docker field manual container linux kernel namespaces cgroups overlayfs capabilities dockerfile image registry build run inspect compose networking storage volumes debugging">
             <div class="card-top">
               <span class="category">Containers</span>
@@ -774,6 +802,56 @@
             <div class="card-actions">
               <a class="open-link" href="cookbook/docker-cookbook.html">Open page</a>
               <a class="open-link secondary" href="cookbook/docker-cookbook.html#ch-kernel">Atomic layer</a>
+            </div>
+          </article>
+
+          <article class="entry-card" data-category="streaming" data-search="apache kafka event streaming streams kraft zookeeper brokers topics partitions replicas offsets producers consumers consumer groups strimzi kubernetes kafka connect schema registry avro protobuf json schema ksqldb jmx prometheus grafana kafdrop ui cli kafka-topics kafka-console-producer kafka-console-consumer kafka-consumer-groups">
+            <div class="card-top">
+              <span class="category">Event streaming</span>
+              <span class="status">Architecture cookbook</span>
+            </div>
+            <h3><a href="cookbook/apache-kafka-cookbook.html">Apache Kafka Cookbook</a></h3>
+            <p>Kafka from append-only log internals to production operations: KRaft, ZooKeeper legacy, Strimzi, CLI recipes, Connect, Schema Registry, stream processing, metrics, and troubleshooting.</p>
+            <dl class="card-facts">
+              <div><dt>Scope</dt><dd>5 practices</dd></div>
+              <div><dt>Tools</dt><dd>Kafka ecosystem</dd></div>
+              <div><dt>Use</dt><dd>Operate streams</dd></div>
+            </dl>
+            <div class="tags" aria-label="Topics">
+              <span class="tag">Kafka</span>
+              <span class="tag">KRaft</span>
+              <span class="tag">Strimzi</span>
+              <span class="tag">Connect</span>
+              <span class="tag">Schema Registry</span>
+            </div>
+            <div class="card-actions">
+              <a class="open-link" href="cookbook/apache-kafka-cookbook.html">Open page</a>
+              <a class="open-link secondary" href="cookbook/apache-kafka-cookbook.html#practice-cli">CLI operations</a>
+            </div>
+          </article>
+
+          <article class="entry-card" data-category="streaming" data-search="mqtt message broker brokers iot pub sub publish subscribe qos retained messages last will testament lwt clean session clean start session expiry mosquitto emqx hivemq mqtt-cli mosquitto_pub mosquitto_sub emqx ctl websockets tls mtls acl oidc oauth prometheus grafana kubernetes operator observability">
+            <div class="card-top">
+              <span class="category">Message brokers</span>
+              <span class="status">MQTT cookbook</span>
+            </div>
+            <h3><a href="cookbook/mqtt-message-broker-cookbook.html">MQTT &amp; Message Broker Cookbook</a></h3>
+            <p>MQTT from packet lifecycle to production broker operations: QoS, retained state, wills, Mosquitto, EMQX, HiveMQ, TLS/mTLS, OAuth/OIDC, CLI testing, Kubernetes, Prometheus, and troubleshooting.</p>
+            <dl class="card-facts">
+              <div><dt>Scope</dt><dd>6 practices</dd></div>
+              <div><dt>Tools</dt><dd>MQTT ecosystem</dd></div>
+              <div><dt>Use</dt><dd>Operate brokers</dd></div>
+            </dl>
+            <div class="tags" aria-label="Topics">
+              <span class="tag">MQTT</span>
+              <span class="tag">Mosquitto</span>
+              <span class="tag">EMQX</span>
+              <span class="tag">HiveMQ</span>
+              <span class="tag">mTLS</span>
+            </div>
+            <div class="card-actions">
+              <a class="open-link" href="cookbook/mqtt-message-broker-cookbook.html">Open page</a>
+              <a class="open-link secondary" href="cookbook/mqtt-message-broker-cookbook.html#cli">CLI operations</a>
             </div>
           </article>
 
@@ -829,7 +907,7 @@
         </div>
 
         <div class="no-results" id="no-results" hidden>
-          No matching pages found. Try a shorter search term such as <code>kubernetes</code>, <code>docker</code>, <code>tmux</code>, or <code>pi</code>.
+          No matching pages found. Try a shorter search term such as <code>ubuntu</code>, <code>systemd</code>, <code>kubernetes</code>, <code>docker</code>, <code>mqtt</code>, <code>kafka</code>, <code>tmux</code>, or <code>pi</code>.
         </div>
       </section>
 
@@ -857,9 +935,25 @@
             <strong>Monitoring and logging</strong>
             <span>Prometheus, Grafana, Loki, Promtail, Alloy, alerts, and log collection.</span>
           </a>
+          <a class="path-link" href="cookbook/ubuntu-systems-devops-cookbook.html#practice-1">
+            <strong>Ubuntu boot and systemd</strong>
+            <span>Kernel boundaries, GRUB, initramfs, units, targets, service state, and failed boot triage.</span>
+          </a>
+          <a class="path-link" href="cookbook/ubuntu-systems-devops-cookbook.html#practice-6">
+            <strong>Ubuntu host observability</strong>
+            <span>journalctl, rsyslog, process monitoring, sysstat, iostat, vmstat, OOM analysis, and Node Exporter.</span>
+          </a>
           <a class="path-link" href="cookbook/docker-cookbook.html#ch-run">
             <strong>Docker daily operations</strong>
             <span>Build, run, inspect, debug, network, volume, and Compose commands.</span>
+          </a>
+          <a class="path-link" href="cookbook/apache-kafka-cookbook.html#practice-cli">
+            <strong>Kafka daily operations</strong>
+            <span>Topics, producers, consumers, groups, offset resets, reassignments, and KRaft loggers.</span>
+          </a>
+          <a class="path-link" href="cookbook/mqtt-message-broker-cookbook.html#cli">
+            <strong>MQTT broker operations</strong>
+            <span>Publish, subscribe, QoS, retained state, sessions, EMQX admin commands, and broker debugging.</span>
           </a>
           <a class="path-link" href="cookbook/tmux-cookbook.html#panes">
             <strong>Terminal pane control</strong>

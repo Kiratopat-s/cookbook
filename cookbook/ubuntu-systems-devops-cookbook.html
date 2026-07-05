@@ -1,0 +1,2765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Ubuntu Systems and DevOps Cookbook covering Linux architecture, boot, systemd, apt, networking, security, storage, observability, cloud-init, bash, and daily CLI operations.">
+  <title>Ubuntu Systems &amp; DevOps Cookbook</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07090c;
+      --panel: #0e141a;
+      --panel-2: #121a22;
+      --panel-3: #0a0f14;
+      --line: #26323d;
+      --line-strong: #3a4a57;
+      --ink: #e7f1ee;
+      --muted: #9caeaa;
+      --faint: #6f807c;
+      --teal: #2dd4bf;
+      --blue: #60a5fa;
+      --amber: #fbbf24;
+      --green: #34d399;
+      --red: #fb7185;
+      --violet: #a78bfa;
+      --code: #05080c;
+      --code-line: #1b2631;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+      --sidebar: 312px;
+      --topbar: 58px;
+      --content: 1040px;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 24px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(90deg, rgba(45, 212, 191, 0.045) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(96, 165, 250, 0.035) 1px, transparent 1px),
+        var(--bg);
+      background-size: 44px 44px;
+      color: var(--ink);
+      font-family: var(--sans);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body.nav-open {
+      overflow: hidden;
+    }
+
+    a {
+      color: var(--teal);
+      text-decoration-thickness: 0.08em;
+      text-underline-offset: 0.2em;
+    }
+
+    code,
+    pre,
+    kbd {
+      font-family: var(--mono);
+    }
+
+    code {
+      padding: 0.12rem 0.35rem;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #111923;
+      color: #dce9ff;
+      font-size: 0.88em;
+      word-break: break-word;
+    }
+
+    kbd {
+      display: inline-block;
+      padding: 0.1rem 0.42rem;
+      border: 1px solid var(--line-strong);
+      border-bottom-width: 2px;
+      border-radius: 5px;
+      background: var(--panel-3);
+      color: var(--amber);
+      font-size: 0.78em;
+      font-weight: 700;
+    }
+
+    ::selection {
+      background: var(--teal);
+      color: #031411;
+    }
+
+    .skip-link {
+      position: fixed;
+      z-index: 1000;
+      top: 12px;
+      left: 12px;
+      transform: translateY(-160%);
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: var(--teal);
+      color: #021512;
+      font-weight: 900;
+    }
+
+    .skip-link:focus {
+      transform: translateY(0);
+    }
+
+    .topbar {
+      display: none;
+    }
+
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: var(--sidebar);
+      overflow-y: auto;
+      border-right: 1px solid var(--line);
+      background: rgba(7, 9, 12, 0.96);
+      backdrop-filter: blur(16px);
+      z-index: 40;
+      scrollbar-width: thin;
+      scrollbar-color: var(--line-strong) transparent;
+    }
+
+    .brand {
+      padding: 24px 22px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand .eyebrow {
+      margin: 0 0 8px;
+      color: var(--teal);
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .brand h1 {
+      margin: 0;
+      color: #f2faf7;
+      font-size: 1.34rem;
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    .brand p {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .home-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      margin-top: 14px;
+      padding: 7px 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: var(--panel-3);
+      color: var(--ink);
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .home-link:hover,
+    .home-link:focus {
+      border-color: var(--teal);
+      color: var(--teal);
+    }
+
+    .search {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .search label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--faint);
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .search input {
+      width: 100%;
+      min-height: 42px;
+      padding: 0 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: #0b1117;
+      color: var(--ink);
+      font: inherit;
+    }
+
+    .search input:focus {
+      outline: 2px solid rgba(45, 212, 191, 0.45);
+      outline-offset: 2px;
+    }
+
+    .nav {
+      padding: 14px 12px 28px;
+    }
+
+    .nav-group {
+      margin: 18px 10px 8px;
+      color: var(--faint);
+      font-family: var(--mono);
+      font-size: 0.67rem;
+      font-weight: 800;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .nav a {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 9px;
+      align-items: center;
+      min-height: 40px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 750;
+      text-decoration: none;
+    }
+
+    .nav a:hover,
+    .nav a:focus,
+    .nav a.is-active {
+      background: rgba(45, 212, 191, 0.1);
+      color: var(--ink);
+    }
+
+    .nav .num {
+      display: inline-grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border: 1px solid var(--line-strong);
+      border-radius: 7px;
+      color: var(--teal);
+      font-family: var(--mono);
+      font-size: 0.72rem;
+    }
+
+    .main {
+      margin-left: var(--sidebar);
+      min-height: 100vh;
+      padding: 42px clamp(22px, 4vw, 68px) 90px;
+    }
+
+    .wrap {
+      max-width: var(--content);
+      margin: 0 auto;
+    }
+
+    .hero {
+      padding: 10px 0 28px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero .label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      color: var(--teal);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .hero .label::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 6px rgba(52, 211, 153, 0.11);
+    }
+
+    .hero h2 {
+      margin: 0;
+      max-width: 900px;
+      color: #f5fbf9;
+      font-size: clamp(2.1rem, 5.5vw, 4.9rem);
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 75ch;
+      margin: 20px 0 0;
+      color: var(--muted);
+      font-size: 1.08rem;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .terminal-card,
+    .info-panel,
+    .matrix,
+    .reference-grid article,
+    .checklist {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(14, 20, 26, 0.94);
+      box-shadow: var(--shadow);
+    }
+
+    .terminal-card {
+      overflow: hidden;
+    }
+
+    .terminal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--faint);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+    }
+
+    .dots {
+      display: flex;
+      gap: 7px;
+    }
+
+    .dots i {
+      display: block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--faint);
+      opacity: 0.8;
+    }
+
+    .dots i:nth-child(1) {
+      background: var(--red);
+    }
+
+    .dots i:nth-child(2) {
+      background: var(--amber);
+    }
+
+    .dots i:nth-child(3) {
+      background: var(--green);
+    }
+
+    .terminal-body {
+      padding: 18px;
+      color: #d8e7e3;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    .prompt {
+      color: var(--green);
+      user-select: none;
+    }
+
+    .cmd {
+      color: var(--amber);
+    }
+
+    .path {
+      color: var(--blue);
+    }
+
+    .comment {
+      color: var(--faint);
+      font-style: italic;
+    }
+
+    .info-panel {
+      padding: 18px;
+    }
+
+    .info-panel h3 {
+      margin: 0 0 12px;
+      color: #f1f8f6;
+      font-size: 1rem;
+    }
+
+    .info-panel ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .info-panel li {
+      margin: 7px 0;
+    }
+
+    .practice {
+      padding: 54px 0 8px;
+      border-top: 1px solid var(--line);
+    }
+
+    .practice:first-of-type {
+      border-top: 0;
+    }
+
+    .practice header {
+      margin-bottom: 24px;
+    }
+
+    .practice .kicker {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--teal);
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      font-weight: 850;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .practice h2 {
+      margin: 0;
+      color: #f1faf7;
+      font-size: clamp(1.8rem, 3.8vw, 2.9rem);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .practice .summary {
+      max-width: 80ch;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .topic {
+      margin: 30px 0;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(14, 20, 26, 0.82);
+    }
+
+    .topic h3 {
+      margin: 0 0 10px;
+      color: #f2faf7;
+      font-size: 1.32rem;
+      line-height: 1.25;
+    }
+
+    .topic h4 {
+      margin: 24px 0 8px;
+      color: #f7faf9;
+      font-size: 1rem;
+    }
+
+    .topic p {
+      max-width: 82ch;
+      margin: 10px 0;
+      color: var(--muted);
+    }
+
+    .topic ul,
+    .topic ol {
+      max-width: 82ch;
+      margin: 10px 0;
+      padding-left: 22px;
+      color: var(--muted);
+    }
+
+    .topic li {
+      margin: 6px 0;
+    }
+
+    .topic strong,
+    .callout strong,
+    .matrix strong {
+      color: var(--ink);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin: 16px 0;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin: 16px 0;
+    }
+
+    .mini {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-3);
+    }
+
+    .mini h4,
+    .mini h5 {
+      margin: 0 0 6px;
+      color: var(--ink);
+      font-size: 0.94rem;
+    }
+
+    .mini p,
+    .mini ul {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .callout {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      margin: 16px 0;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-left-width: 4px;
+      border-radius: 8px;
+      background: #0c1218;
+    }
+
+    .callout .tag {
+      align-self: start;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      font-weight: 850;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .callout p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .callout.safe {
+      border-left-color: var(--green);
+    }
+
+    .callout.safe .tag {
+      background: rgba(52, 211, 153, 0.12);
+      color: var(--green);
+    }
+
+    .callout.warn {
+      border-left-color: var(--amber);
+    }
+
+    .callout.warn .tag {
+      background: rgba(251, 191, 36, 0.12);
+      color: var(--amber);
+    }
+
+    .callout.danger {
+      border-left-color: var(--red);
+    }
+
+    .callout.danger .tag {
+      background: rgba(251, 113, 133, 0.13);
+      color: var(--red);
+    }
+
+    .callout.info {
+      border-left-color: var(--blue);
+    }
+
+    .callout.info .tag {
+      background: rgba(96, 165, 250, 0.13);
+      color: var(--blue);
+    }
+
+    .accordion {
+      margin: 18px 0 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--panel-3);
+    }
+
+    .accordion-item + .accordion-item {
+      border-top: 1px solid var(--line);
+    }
+
+    .accordion-trigger {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      min-height: 48px;
+      padding: 12px 16px;
+      border: 0;
+      background: var(--panel-2);
+      color: var(--ink);
+      cursor: pointer;
+      font: 800 0.92rem var(--sans);
+      text-align: left;
+    }
+
+    .accordion-trigger:hover,
+    .accordion-trigger:focus {
+      color: var(--teal);
+    }
+
+    .accordion-trigger::after {
+      content: "+";
+      color: var(--teal);
+      font-family: var(--mono);
+      font-size: 1.05rem;
+      font-weight: 900;
+    }
+
+    .accordion-trigger[aria-expanded="true"]::after {
+      content: "-";
+    }
+
+    .accordion-panel {
+      padding: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .matrix {
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+
+    table {
+      width: 100%;
+      min-width: 650px;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th,
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: var(--panel-2);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      font-weight: 850;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    td {
+      color: var(--muted);
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .code-block {
+      position: relative;
+      margin: 15px 0;
+      border: 1px solid var(--code-line);
+      border-radius: 8px;
+      background: var(--code);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .code-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 38px;
+      padding: 7px 10px 7px 12px;
+      border-bottom: 1px solid var(--code-line);
+      background: #0b1118;
+      color: #7f95ad;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+    }
+
+    .code-toolbar .lang {
+      color: var(--teal);
+      font-weight: 850;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .code-toolbar .title {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .copy-btn {
+      min-height: 26px;
+      padding: 3px 9px;
+      border: 1px solid var(--code-line);
+      border-radius: 6px;
+      background: #0e151d;
+      color: #a7bacb;
+      cursor: pointer;
+      font: 800 0.72rem var(--mono);
+    }
+
+    .copy-btn:hover,
+    .copy-btn:focus {
+      border-color: var(--teal);
+      color: #fff;
+    }
+
+    .copy-btn.ok {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    pre {
+      margin: 0;
+      overflow-x: auto;
+      padding: 14px 16px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--line-strong) transparent;
+    }
+
+    pre code {
+      display: block;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: #d8e5f0;
+      font-size: 0.82rem;
+      line-height: 1.68;
+      white-space: pre;
+      word-break: normal;
+    }
+
+    .tok-comment {
+      color: #6d7f91;
+      font-style: italic;
+    }
+
+    .tok-string {
+      color: #a7f3d0;
+    }
+
+    .tok-key {
+      color: #60a5fa;
+      font-weight: 850;
+    }
+
+    .tok-flag {
+      color: #fbbf24;
+    }
+
+    .tok-var {
+      color: #a78bfa;
+    }
+
+    .tok-prompt {
+      color: #34d399;
+      font-weight: 900;
+    }
+
+    .tok-output {
+      color: #8396a7;
+    }
+
+    .tok-section {
+      color: #fb7185;
+      font-weight: 850;
+    }
+
+    .checklist {
+      padding: 16px;
+      margin: 16px 0;
+    }
+
+    .checklist h4 {
+      margin-top: 0;
+    }
+
+    .checklist ol {
+      margin-bottom: 0;
+    }
+
+    .reference-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .reference-grid article {
+      padding: 16px;
+    }
+
+    .reference-grid h3 {
+      margin: 0 0 8px;
+      color: var(--ink);
+      font-size: 1rem;
+    }
+
+    .reference-grid p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .no-results {
+      display: none;
+      margin: 40px 0;
+      padding: 22px;
+      border: 1px dashed var(--line-strong);
+      border-radius: 8px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    body.has-no-results .no-results {
+      display: block;
+    }
+
+    body.has-no-results .practice {
+      display: none;
+    }
+
+    .is-hidden {
+      display: none !important;
+    }
+
+    footer {
+      margin-top: 54px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      color: var(--faint);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 980px) {
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 60;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        min-height: var(--topbar);
+        padding: 0 16px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(7, 9, 12, 0.96);
+        backdrop-filter: blur(14px);
+      }
+
+      .topbar strong {
+        overflow: hidden;
+        color: var(--ink);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .menu-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 38px;
+        padding: 0 12px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: var(--panel);
+        color: var(--ink);
+        cursor: pointer;
+        font: 800 0.82rem var(--mono);
+      }
+
+      .sidebar {
+        transform: translateX(-100%);
+        width: min(88vw, 340px);
+        transition: transform 0.2s ease;
+      }
+
+      body.nav-open .sidebar {
+        transform: translateX(0);
+      }
+
+      .main {
+        margin-left: 0;
+        padding-top: 26px;
+      }
+
+      .hero-grid,
+      .grid-2,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .main {
+        padding-inline: 16px;
+      }
+
+      .topic {
+        padding: 18px;
+      }
+
+      .callout {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h2 {
+        font-size: clamp(2rem, 15vw, 3.3rem);
+      }
+
+      pre code {
+        font-size: 0.78rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <div class="topbar">
+    <button class="menu-btn" id="menu-button" type="button" aria-expanded="false" aria-controls="site-sidebar">Menu</button>
+    <strong>Ubuntu Systems &amp; DevOps Cookbook</strong>
+  </div>
+
+  <aside class="sidebar" id="site-sidebar" aria-label="Cookbook navigation">
+    <div class="brand">
+      <p class="eyebrow">Standalone cookbook</p>
+      <h1>Ubuntu Systems &amp; DevOps Cookbook</h1>
+      <p>Atomic Linux architecture, enterprise operations, command workflows, troubleshooting, and orchestration patterns.</p>
+      <a class="home-link" href="../index.html">Back to cookbook index</a>
+    </div>
+    <div class="search">
+      <label for="page-search">Filter page</label>
+      <input id="page-search" type="search" placeholder="Search systemd, LVM, DNS...">
+    </div>
+    <nav class="nav" aria-label="Page sections">
+      <div class="nav-group">Practices</div>
+      <a class="nav-link" href="#practice-1"><span class="num">01</span><span>Architecture, Boot &amp; systemd</span></a>
+      <a class="nav-link" href="#practice-2"><span class="num">02</span><span>Package Lifecycles</span></a>
+      <a class="nav-link" href="#practice-3"><span class="num">03</span><span>User, Security &amp; Access</span></a>
+      <a class="nav-link" href="#practice-4"><span class="num">04</span><span>Networking &amp; Firewall</span></a>
+      <a class="nav-link" href="#practice-5"><span class="num">05</span><span>Storage, LVM &amp; Filesystems</span></a>
+      <a class="nav-link" href="#practice-6"><span class="num">06</span><span>Observability &amp; Performance</span></a>
+      <a class="nav-link" href="#practice-7"><span class="num">07</span><span>Daily CLI Masterclass</span></a>
+      <a class="nav-link" href="#references"><span class="num">R</span><span>References</span></a>
+    </nav>
+  </aside>
+
+  <main class="main" id="main-content">
+    <div class="wrap">
+      <section class="hero" aria-labelledby="page-title">
+        <span class="label">Ubuntu operations field manual</span>
+        <h2 id="page-title">Ubuntu Systems &amp; DevOps Cookbook</h2>
+        <p class="lead">A deep, single-file reference for operating Ubuntu as a production Linux platform: boot chain, systemd, packages, users, security controls, networking, storage, observability, cloud-init, bash automation, and daily CLI incident response.</p>
+        <div class="hero-grid">
+          <div class="terminal-card" aria-label="Operating model terminal">
+            <div class="terminal-head">
+              <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span>mental-model.sh</span>
+            </div>
+            <div class="terminal-body">
+              <div><span class="prompt">$</span> <span class="cmd">read_system</span> <span class="path">/boot /etc /run /var/log</span></div>
+              <div><span class="comment"># Kernel owns hardware, memory, scheduling, namespaces, and filesystems.</span></div>
+              <div><span class="comment"># systemd turns dependency graphs into supervised services.</span></div>
+              <div><span class="comment"># apt/dpkg mutate the root filesystem with package metadata.</span></div>
+              <div><span class="comment"># Netplan describes intent; networkd or NetworkManager applies it.</span></div>
+              <div><span class="prompt">$</span> <span class="cmd">debug</span> <span class="path">from signals, then config, then state</span></div>
+            </div>
+          </div>
+          <aside class="info-panel">
+            <h3>How to use this page</h3>
+            <ul>
+              <li>Start from the practice that owns the failure domain.</li>
+              <li>Use the architecture note to identify which layer can be broken.</li>
+              <li>Copy commands into a non-production shell first when they mutate state.</li>
+              <li>Open accordions for runbooks, examples, and troubleshooting checklists.</li>
+            </ul>
+          </aside>
+        </div>
+      </section>
+
+      <section class="practice searchable" id="practice-1" aria-labelledby="practice-1-title">
+        <header>
+          <span class="kicker">Practice 1</span>
+          <h2 id="practice-1-title">Architecture, Boot Process &amp; systemd</h2>
+          <p class="summary">Treat Ubuntu as a stack of contracts. Firmware starts a bootloader, the bootloader loads the kernel and initramfs, the kernel mounts the first root filesystem, and systemd becomes PID 1 to converge the machine toward a target.</p>
+        </header>
+
+        <article class="topic" id="linux-architecture">
+          <h3>Linux Kernel vs. User Space</h3>
+          <p>The kernel is the privileged broker for CPU scheduling, virtual memory, block I/O, network I/O, device drivers, cgroups, namespaces, filesystems, security modules, and system calls. User space is everything else: shells, daemons, package tools, journald, sshd, container runtimes, editors, and application processes.</p>
+          <div class="grid-3">
+            <div class="mini">
+              <h4>Kernel mode</h4>
+              <p>Runs with hardware privilege. It maps memory, schedules tasks, receives interrupts, mediates syscalls, and enforces capability checks.</p>
+            </div>
+            <div class="mini">
+              <h4>User mode</h4>
+              <p>Runs processes with restricted privileges. Programs ask the kernel for work via syscalls such as <code>open</code>, <code>read</code>, <code>mount</code>, and <code>clone</code>.</p>
+            </div>
+            <div class="mini">
+              <h4>Init boundary</h4>
+              <p>The first user-space process, PID 1, is special. On Ubuntu it is normally <code>systemd</code>, responsible for service supervision and shutdown ordering.</p>
+            </div>
+          </div>
+          <div class="accordion">
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="arch-base-btn" type="button" aria-expanded="false" aria-controls="arch-base">Atomic ground base architecture</button>
+              <div class="accordion-panel" id="arch-base" role="region" aria-labelledby="arch-base-btn" hidden>
+                <p>Virtual memory gives each process a private address space. Page tables translate virtual addresses to physical frames. The kernel can overcommit memory, reclaim page cache, swap cold pages, and kill a process when memory pressure cannot be resolved. The scheduler assigns runnable tasks to CPUs based on policy, priority, cgroup weights, CPU affinity, and load balancing. Block devices are exposed under <code>/dev</code>; filesystems translate path operations into block I/O; VFS lets <code>ext4</code>, <code>xfs</code>, <code>zfs</code>, <code>tmpfs</code>, <code>procfs</code>, and <code>sysfs</code> present a common interface.</p>
+                <div class="code-block" data-lang="bash" data-title="Inspect kernel and runtime boundaries">
+                  <pre><code>uname -a
+cat /proc/cmdline
+cat /proc/meminfo | sed -n '1,12p'
+ls -ld /proc /sys /dev /run
+findmnt -t proc,sysfs,devtmpfs,tmpfs</code></pre>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="arch-cli-btn" type="button" aria-expanded="false" aria-controls="arch-cli">Daily CLI examples</button>
+              <div class="accordion-panel" id="arch-cli" role="region" aria-labelledby="arch-cli-btn" hidden>
+                <div class="code-block" data-lang="bash" data-title="Kernel, process, and syscall investigation">
+                  <pre><code># Kernel release, architecture, and boot arguments
+uname -r
+uname -m
+cat /proc/cmdline
+
+# Process ancestry and namespaces
+ps -eo pid,ppid,user,stat,comm,args --forest | less
+readlink /proc/1/exe
+lsns -p &lt;pid&gt;
+
+# Trace syscalls for one command or attach to a running process
+strace -f -o /tmp/trace.log -- ls /etc
+sudo strace -p &lt;pid&gt; -tt -s 160
+
+# Inspect open files, sockets, and deleted-but-held files
+sudo lsof -p &lt;pid&gt;
+sudo lsof +L1
+sudo ss -tulpn</code></pre>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="arch-trouble-btn" type="button" aria-expanded="false" aria-controls="arch-trouble">Logs, monitoring &amp; troubleshooting</button>
+              <div class="accordion-panel" id="arch-trouble" role="region" aria-labelledby="arch-trouble-btn" hidden>
+                <ul>
+                  <li>Kernel ring buffer: <code>dmesg -T</code> and <code>journalctl -k</code>.</li>
+                  <li>OOM kills: <code>journalctl -k -g "Out of memory|Killed process"</code>.</li>
+                  <li>Device failures: <code>journalctl -k -p warning..alert</code>, <code>lsblk</code>, <code>smartctl</code>, and storage controller logs.</li>
+                  <li>Slow process startup: trace syscalls with <code>strace -f -tt</code> and check filesystem, DNS, and entropy waits.</li>
+                </ul>
+                <div class="code-block" data-lang="bash" data-title="Kernel failure triage">
+                  <pre><code>journalctl -k -b --no-pager | tail -120
+journalctl -k -b -p warning..alert
+journalctl -k -g 'Out of memory|oom-killer|Killed process'
+cat /proc/pressure/memory
+cat /proc/pressure/cpu
+cat /proc/pressure/io</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="topic" id="boot-process">
+          <h3>Boot Process: Firmware -> GRUB -> Kernel -> Initramfs -> systemd</h3>
+          <p>Ubuntu boot failures are easiest to debug when you know the handoff points. Firmware finds a boot entry, GRUB reads its configuration, the kernel receives boot arguments, the initramfs provides early user space and storage/network drivers, and systemd takes over once the real root filesystem is mounted.</p>
+          <div class="matrix" role="region" aria-label="Boot stages">
+            <table>
+              <thead>
+                <tr><th>Stage</th><th>Primary files</th><th>What can break</th><th>Diagnostic entry point</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>UEFI/BIOS</td><td><code>/boot/efi</code>, firmware NVRAM</td><td>Missing boot entry, bad disk order, Secure Boot mismatch</td><td><code>efibootmgr -v</code></td></tr>
+                <tr><td>GRUB</td><td><code>/boot/grub/grub.cfg</code>, <code>/etc/default/grub</code></td><td>Wrong root UUID, old kernel menu, invalid boot args</td><td>GRUB menu, recovery mode</td></tr>
+                <tr><td>Kernel</td><td><code>/boot/vmlinuz-*</code></td><td>Driver panic, unsupported hardware, bad kernel parameter</td><td><code>journalctl -k -b -1</code></td></tr>
+                <tr><td>Initramfs</td><td><code>/boot/initrd.img-*</code>, <code>/etc/initramfs-tools/</code></td><td>Cannot unlock disk, cannot assemble LVM/RAID, missing module</td><td>BusyBox initramfs shell</td></tr>
+                <tr><td>systemd</td><td><code>/etc/systemd/system</code>, <code>/lib/systemd/system</code></td><td>Failed mounts, dependency cycles, service timeout</td><td><code>systemctl --failed</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout warn">
+            <span class="tag">Safety</span>
+            <p>Changing bootloader, initramfs, disk UUID, LUKS, or <code>/etc/fstab</code> configuration can make a host unbootable. Keep console access, a rescue ISO, a tested snapshot, or a cloud provider serial console before rebooting production systems.</p>
+          </div>
+          <div class="accordion">
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="boot-setup-btn" type="button" aria-expanded="false" aria-controls="boot-setup">Setup &amp; orchestration</button>
+              <div class="accordion-panel" id="boot-setup" role="region" aria-labelledby="boot-setup-btn" hidden>
+                <p>Keep boot configuration declarative where possible. Edit <code>/etc/default/grub</code>, regenerate GRUB, regenerate initramfs after early-boot module or crypttab changes, and verify the menu before reboot.</p>
+                <div class="code-block" data-lang="bash" data-title="Regenerate boot artifacts">
+                  <pre><code># Show installed kernels
+dpkg -l 'linux-image*' | awk '/^ii/{print $2, $3}'
+
+# Edit kernel command-line defaults, then regenerate GRUB
+sudoedit /etc/default/grub
+sudo update-grub
+
+# Regenerate initramfs for all installed kernels
+sudo update-initramfs -u -k all
+
+# Confirm boot entries on UEFI systems
+sudo efibootmgr -v</code></pre>
+                </div>
+                <div class="code-block" data-lang="ini" data-title="/etc/default/grub example">
+                  <pre><code>GRUB_DEFAULT=0
+GRUB_TIMEOUT_STYLE=menu
+GRUB_TIMEOUT=5
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
+GRUB_CMDLINE_LINUX="systemd.unified_cgroup_hierarchy=1"</code></pre>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="boot-rescue-btn" type="button" aria-expanded="false" aria-controls="boot-rescue">Troubleshooting boot failures</button>
+              <div class="accordion-panel" id="boot-rescue" role="region" aria-labelledby="boot-rescue-btn" hidden>
+                <ol>
+                  <li>If the machine does not reach GRUB, check firmware boot order, disk visibility, Secure Boot state, and UEFI entries.</li>
+                  <li>If GRUB loads but the kernel panics, boot an older kernel from Advanced options.</li>
+                  <li>If initramfs drops to BusyBox, run <code>blkid</code>, <code>ls /dev/mapper</code>, <code>lvm vgchange -ay</code>, and confirm root UUIDs.</li>
+                  <li>If systemd emergency mode appears, run <code>journalctl -xb</code>, fix failed mounts or units, then <code>systemctl default</code>.</li>
+                </ol>
+                <div class="code-block" data-lang="bash" data-title="Emergency mode runbook">
+                  <pre><code>journalctl -xb --no-pager | tail -200
+systemctl --failed
+findmnt --verify --verbose
+mount -o remount,rw /
+sudoedit /etc/fstab
+systemctl daemon-reload
+systemctl default</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="topic" id="systemd">
+          <h3>systemd Units, Targets &amp; Service Management</h3>
+          <p><code>systemd</code> models the host as a dependency graph of units. Service units start daemons, socket units activate services on demand, timer units replace many cron jobs, mount units track filesystems, and targets group the desired boot state. Parallel startup works because units declare ordering and requirement relationships instead of a single serial boot script.</p>
+          <div class="grid-2">
+            <div class="mini">
+              <h4>Ordering vs. requirement</h4>
+              <p><code>After=network-online.target</code> controls order. <code>Wants=network-online.target</code> or <code>Requires=</code> controls whether another unit is pulled into the transaction.</p>
+            </div>
+            <div class="mini">
+              <h4>Unit locations</h4>
+              <p>Vendor units live in <code>/lib/systemd/system</code>. Local overrides live in <code>/etc/systemd/system</code>. Runtime units live in <code>/run/systemd/system</code>.</p>
+            </div>
+          </div>
+          <div class="code-block" data-lang="ini" data-title="/etc/systemd/system/example-api.service">
+            <pre><code>[Unit]
+Description=Example API service
+Documentation=https://example.internal/runbooks/example-api
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=example
+Group=example
+WorkingDirectory=/opt/example-api
+EnvironmentFile=-/etc/default/example-api
+ExecStart=/usr/local/bin/example-api --config /etc/example-api/config.yaml
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/example-api /var/log/example-api
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+          </div>
+          <div class="accordion">
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="systemd-cli-btn" type="button" aria-expanded="false" aria-controls="systemd-cli">Critical systemctl commands</button>
+              <div class="accordion-panel" id="systemd-cli" role="region" aria-labelledby="systemd-cli-btn" hidden>
+                <div class="code-block" data-lang="bash" data-title="Daily systemd operations">
+                  <pre><code># Service lifecycle
+sudo systemctl start nginx
+sudo systemctl stop nginx
+sudo systemctl restart nginx
+sudo systemctl reload nginx
+sudo systemctl enable --now nginx
+sudo systemctl disable --now nginx
+
+# Status and dependency graph
+systemctl status nginx --no-pager
+systemctl is-active nginx
+systemctl is-enabled nginx
+systemctl list-units --type=service --state=running
+systemctl list-dependencies multi-user.target
+systemctl cat nginx
+systemctl show nginx -p FragmentPath -p MainPID -p Restart -p User
+
+# Failed unit triage
+systemctl --failed
+journalctl -u nginx -b --no-pager
+sudo systemctl reset-failed nginx</code></pre>
+                </div>
+                <div class="code-block" data-lang="output" data-title="Expected signal from systemctl status">
+                  <pre><code>● nginx.service - A high performance web server and a reverse proxy server
+     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-07-05 09:15:22 +07; 3min ago
+   Main PID: 1180 (nginx)
+      Tasks: 3
+     Memory: 5.8M</code></pre>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="systemd-override-btn" type="button" aria-expanded="false" aria-controls="systemd-override">Drop-ins, timers &amp; orchestration</button>
+              <div class="accordion-panel" id="systemd-override" role="region" aria-labelledby="systemd-override-btn" hidden>
+                <p>Never edit vendor unit files directly for local policy. Use drop-ins so package upgrades can replace vendor units without erasing your override.</p>
+                <div class="code-block" data-lang="bash" data-title="Create a service override">
+                  <pre><code>sudo systemctl edit ssh
+
+# After saving the drop-in:
+sudo systemctl daemon-reload
+sudo systemctl restart ssh
+systemctl cat ssh</code></pre>
+                </div>
+                <div class="code-block" data-lang="ini" data-title="/etc/systemd/system/backup.timer">
+                  <pre><code>[Unit]
+Description=Run backup job every night
+
+[Timer]
+OnCalendar=*-*-* 02:15:00
+Persistent=true
+RandomizedDelaySec=10m
+
+[Install]
+WantedBy=timers.target</code></pre>
+                </div>
+                <div class="code-block" data-lang="ini" data-title="/etc/systemd/system/backup.service">
+                  <pre><code>[Unit]
+Description=Nightly backup job
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/backup.sh
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7</code></pre>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="systemd-trouble-btn" type="button" aria-expanded="false" aria-controls="systemd-trouble">Logs, monitoring &amp; troubleshooting</button>
+              <div class="accordion-panel" id="systemd-trouble" role="region" aria-labelledby="systemd-trouble-btn" hidden>
+                <div class="code-block" data-lang="bash" data-title="systemd failure diagnostics">
+                  <pre><code># Boot critical path and service timing
+systemd-analyze
+systemd-analyze blame | head -40
+systemd-analyze critical-chain
+
+# Unit-specific logs and restarts
+journalctl -u example-api -b --since '1 hour ago'
+systemctl show example-api -p NRestarts -p ExecMainStatus -p Result
+
+# Dependency and syntax validation
+systemd-analyze verify /etc/systemd/system/example-api.service
+systemctl list-dependencies --reverse network-online.target</code></pre>
+                </div>
+                <p>Common systemd bugs include confusing <code>After=</code> with <code>Requires=</code>, services that daemonize but declare <code>Type=simple</code>, missing <code>daemon-reload</code>, scripts that rely on interactive shell profiles, and unit sandboxing that blocks file paths required at runtime.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="practice searchable" id="practice-2" aria-labelledby="practice-2-title">
+        <header>
+          <span class="kicker">Practice 2</span>
+          <h2 id="practice-2-title">Package Management &amp; Software Lifecycles</h2>
+          <p class="summary">Ubuntu software management has layers: <code>dpkg</code> installs local Debian packages, <code>apt</code> resolves dependencies from repositories, Snap provides confined app bundles, and PPAs add additional apt sources. Production systems need pinning, provenance, staged upgrades, and rollback plans.</p>
+        </header>
+
+        <article class="topic" id="apt-dpkg">
+          <h3>apt and dpkg Under the Hood</h3>
+          <p><code>apt</code> is the operator-friendly dependency resolver. It downloads package indexes from configured repositories, calculates dependency transactions, fetches <code>.deb</code> files, and calls <code>dpkg</code>. <code>dpkg</code> unpacks archives, runs maintainer scripts, records ownership in <code>/var/lib/dpkg/status</code>, and leaves package states such as installed, half-configured, or config-files.</p>
+          <div class="grid-2">
+            <div class="mini">
+              <h4>Important state</h4>
+              <p><code>/etc/apt/sources.list</code>, <code>/etc/apt/sources.list.d/</code>, <code>/var/lib/apt/lists/</code>, <code>/var/cache/apt/archives/</code>, <code>/var/lib/dpkg/</code>.</p>
+            </div>
+            <div class="mini">
+              <h4>Important logs</h4>
+              <p><code>/var/log/apt/history.log</code>, <code>/var/log/apt/term.log</code>, <code>/var/log/dpkg.log</code>, and journal entries for services restarted by packages.</p>
+            </div>
+          </div>
+          <div class="callout safe">
+            <span class="tag">Practice</span>
+            <p>In production, prefer <code>apt-get</code> in scripts because its output and prompts are more stable. Use <code>apt</code> interactively for human workflows.</p>
+          </div>
+          <div class="accordion">
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="apt-cli-btn" type="button" aria-expanded="false" aria-controls="apt-cli">Critical CLI commands</button>
+              <div class="accordion-panel" id="apt-cli" role="region" aria-labelledby="apt-cli-btn" hidden>
+                <div class="code-block" data-lang="bash" data-title="Daily apt and dpkg operations">
+                  <pre><code># Refresh repository metadata
+sudo apt update
+
+# Show available upgrades without installing
+apt list --upgradable
+sudo apt-get --just-print upgrade
+
+# Install, remove, purge
+sudo apt install nginx
+sudo apt remove nginx
+sudo apt purge nginx
+sudo apt autoremove --purge
+
+# Package discovery and provenance
+apt search 'prometheus node exporter'
+apt show prometheus-node-exporter
+apt policy openssh-server
+dpkg -L openssh-server
+dpkg -S /usr/sbin/sshd
+
+# Repair interrupted transactions
+sudo dpkg --configure -a
+sudo apt -f install
+
+# Hold a risky package during a change freeze
+sudo apt-mark hold linux-generic
+apt-mark showhold
+sudo apt-mark unhold linux-generic</code></pre>
+                </div>
+                <div class="code-block" data-lang="output" data-title="Expected signal from apt policy">
+                  <pre><code>openssh-server:
+  Installed: 1:9.6p1-3ubuntu13
+  Candidate: 1:9.6p1-3ubuntu13.5
+  Version table:
+     1:9.6p1-3ubuntu13.5 500
+        500 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages
+ *** 1:9.6p1-3ubuntu13 100
+        100 /var/lib/dpkg/status</code></pre>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="apt-source-btn" type="button" aria-expanded="false" aria-controls="apt-source">Repositories, keys &amp; pinning</button>
+              <div class="accordion-panel" id="apt-source" role="region" aria-labelledby="apt-source-btn" hidden>
+                <p>Modern apt source files should bind a repository to a specific keyring with <code>Signed-By</code>. Avoid adding keys to a global trust bucket when a per-repo keyring will do.</p>
+                <div class="code-block" data-lang="ini" data-title="/etc/apt/sources.list.d/example.sources">
+                  <pre><code>Types: deb
+URIs: https://packages.example.invalid/ubuntu
+Suites: noble
+Components: main
+Architectures: amd64
+Signed-By: /usr/share/keyrings/example-archive-keyring.gpg</code></pre>
+                </div>
+                <div class="code-block" data-lang="ini" data-title="/etc/apt/preferences.d/example-pin">
+                  <pre><code>Package: *
+Pin: origin packages.example.invalid
+Pin-Priority: 400
+
+Package: example-agent
+Pin: origin packages.example.invalid
+Pin-Priority: 700</code></pre>
+                </div>
+                <div class="code-block" data-lang="bash" data-title="Verify apt source priority">
+                  <pre><code>apt-cache policy
+apt-cache policy example-agent
+grep -R --line-number '^deb\\|^Types:' /etc/apt/sources.list /etc/apt/sources.list.d 2&gt;/dev/null</code></pre>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="apt-trouble-btn" type="button" aria-expanded="false" aria-controls="apt-trouble">Troubleshooting apt failures</button>
+              <div class="accordion-panel" id="apt-trouble" role="region" aria-labelledby="apt-trouble-btn" hidden>
+                <div class="checklist">
+                  <h4>Runbook</h4>
+                  <ol>
+                    <li>Check locks with <code>ps aux | grep -E 'apt|dpkg'</code>. Do not remove locks while a package tool is still running.</li>
+                    <li>Read <code>/var/log/apt/term.log</code> for maintainer script failure output.</li>
+                    <li>Run <code>sudo dpkg --configure -a</code> to finish interrupted package configuration.</li>
+                    <li>Run <code>sudo apt -f install</code> to resolve broken dependencies.</li>
+                    <li>Use <code>apt policy &lt;package&gt;</code> to detect repository priority problems.</li>
+                  </ol>
+                </div>
+                <div class="code-block" data-lang="bash" data-title="Package transaction forensics">
+                  <pre><code>sudo tail -200 /var/log/apt/term.log
+sudo tail -100 /var/log/dpkg.log
+grep -R --line-number 'NO_PUBKEY\\|EXPKEYSIG\\|BADSIG' /var/log/apt /var/log/syslog 2&gt;/dev/null
+sudo apt update -o Debug::Acquire::https=true</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="topic" id="snap-ppa">
+          <h3>Snap, PPAs &amp; Software Supply Chain Choices</h3>
+          <p>Snap packages are mounted SquashFS application bundles managed by <code>snapd</code>. They can use confinement profiles, interfaces, channels, and automatic refreshes. PPAs are Launchpad-hosted apt repositories, useful for newer packages but risky when they override base libraries. Decide per workload whether you want Ubuntu archive stability, vendor apt repositories, Snap confinement, or source-built artifacts.</p>
+          <div class="matrix" role="region" aria-label="Package source comparison">
+            <table>
+              <thead>
+                <tr><th>Source</th><th>Best for</th><th>Risk</th><th>Control</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Ubuntu archive</td><td>Base OS, security updates, stable services</td><td>Versions may be older</td><td>High with apt pinning and mirrors</td></tr>
+                <tr><td>Vendor apt repo</td><td>Agents, databases, runtimes with vendor support</td><td>Key and repository trust boundary</td><td>High if pinned and scoped</td></tr>
+                <tr><td>PPA</td><td>Developer workstations, narrow package needs</td><td>Can replace dependencies globally</td><td>Medium; pin aggressively</td></tr>
+                <tr><td>Snap</td><td>Apps with bundled dependencies and confinement</td><td>Refresh cadence and snapd dependency</td><td>Medium; channels and holds</td></tr>
+                <tr><td>Source build</td><td>Custom patches, isolated appliances</td><td>Patch tracking and reproducibility</td><td>High if built in CI with SBOM and signatures</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="accordion">
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="snap-cli-btn" type="button" aria-expanded="false" aria-controls="snap-cli">Snap and PPA commands</button>
+              <div class="accordion-panel" id="snap-cli" role="region" aria-labelledby="snap-cli-btn" hidden>
+                <div class="code-block" data-lang="bash" data-title="Snap operations">
+                  <pre><code>snap list
+snap info lxd
+sudo snap install lxd --channel=5.21/stable
+sudo snap refresh --list
+sudo snap refresh lxd --channel=5.21/stable
+snap connections lxd
+sudo snap connect &lt;snap&gt;:&lt;plug&gt; &lt;snap&gt;:&lt;slot&gt;
+sudo snap set system refresh.hold="$(date --date='+7 days' --iso-8601=seconds)"</code></pre>
+                </div>
+                <div class="code-block" data-lang="bash" data-title="PPA operations">
+                  <pre><code># Add only when you trust the maintainer and understand dependency impact
+sudo add-apt-repository ppa:&lt;owner&gt;/&lt;ppa-name&gt;
+sudo apt update
+apt policy &lt;package&gt;
+
+# Remove PPA packages by downgrading to Ubuntu archive when possible
+sudo apt install ppa-purge
+sudo ppa-purge ppa:&lt;owner&gt;/&lt;ppa-name&gt;</code></pre>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="lifecycle-btn" type="button" aria-expanded="false" aria-controls="lifecycle">Enterprise lifecycle pattern</button>
+              <div class="accordion-panel" id="lifecycle" role="region" aria-labelledby="lifecycle-btn" hidden>
+                <ol>
+                  <li>Mirror or proxy package sources where possible.</li>
+                  <li>Promote updates through dev, staging, canary, and production rings.</li>
+                  <li>Snapshot VM disks or volumes before kernel, libc, database, and storage driver upgrades.</li>
+                  <li>Record <code>apt-mark showmanual</code>, <code>dpkg -l</code>, and service status before large changes.</li>
+                  <li>Use unattended upgrades for security patches only when alerting, reboot policy, and rollback are defined.</li>
+                </ol>
+                <div class="code-block" data-lang="bash" data-title="Pre-upgrade evidence bundle">
+                  <pre><code>mkdir -p /var/tmp/preupgrade-$(date +%F)
+cd /var/tmp/preupgrade-$(date +%F)
+uname -a &gt; uname.txt
+dpkg -l &gt; dpkg-list.txt
+apt-mark showmanual &gt; apt-manual.txt
+systemctl --failed --no-pager &gt; systemd-failed.txt
+ss -tulpn &gt; listening-sockets.txt
+ip a &gt; ip-addresses.txt
+ip r &gt; routes.txt</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="practice searchable" id="practice-3" aria-labelledby="practice-3-title">
+        <header>
+          <span class="kicker">Practice 3</span>
+          <h2 id="practice-3-title">User, Security &amp; Access Management</h2>
+          <p class="summary">Ubuntu security starts with Unix identity, file permissions, sudo boundaries, SSH policy, kernel security modules, firewall rules, patching, and logs that prove what happened.</p>
+        </header>
+
+        <article class="topic" id="identity-permissions">
+          <h3>Users, Groups, POSIX Permissions &amp; ACLs</h3>
+          <p>Linux authorization begins with user IDs, group IDs, mode bits, and capabilities. A process carries a real/effective UID and GID set; the kernel checks ownership, mode bits, ACL entries, mount options, Linux capabilities, and security module policy before allowing operations.</p>
+          <div class="matrix" role="region" aria-label="Permission primitives">
+            <table>
+              <thead>
+                <tr><th>Primitive</th><th>Meaning</th><th>Daily command</th><th>Gotcha</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Mode bits</td><td>Owner/group/other read, write, execute</td><td><code>chmod 640 file</code></td><td>Directory execute means traversal</td></tr>
+                <tr><td>Ownership</td><td>UID and GID on inode</td><td><code>chown user:group file</code></td><td>Numeric IDs matter across NFS and containers</td></tr>
+                <tr><td>setuid/setgid</td><td>Run executable with file owner/group identity</td><td><code>find / -perm -4000</code></td><td>High-risk privilege escalation surface</td></tr>
+                <tr><td>Sticky bit</td><td>Only owner can remove entries in shared dir</td><td><code>chmod 1777 /shared/tmp</code></td><td>Common on <code>/tmp</code></td></tr>
+                <tr><td>ACL</td><td>Extra allow entries beyond mode bits</td><td><code>getfacl file</code></td><td>Can surprise scripts that only inspect <code>ls -l</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="code-block" data-lang="bash" data-title="Identity and permission operations">
+            <pre><code># User and group facts
+id
+id &lt;user&gt;
+getent passwd &lt;user&gt;
+getent group sudo
+
+# Create a service account without an interactive login
+sudo adduser --system --group --home /var/lib/example --shell /usr/sbin/nologin example
+
+# Permissions and ACLs
+stat -c '%A %a %U:%G %n' /etc/ssh/sshd_config
+sudo chown root:root /etc/ssh/sshd_config
+sudo chmod 0644 /etc/ssh/sshd_config
+getfacl /srv/app
+sudo setfacl -m u:deploy:rwx /srv/app
+sudo setfacl -m d:u:deploy:rwx /srv/app</code></pre>
+          </div>
+          <div class="callout danger">
+            <span class="tag">Safety</span>
+            <p>A recursive <code>chmod</code> or <code>chown</code> from the wrong directory can break the OS. Always run <code>pwd</code>, use absolute paths, and test with <code>find ... -print</code> before adding <code>-exec</code>.</p>
+          </div>
+        </article>
+
+        <article class="topic" id="sudo-ssh">
+          <h3>sudo and OpenSSH Hardening</h3>
+          <p><code>sudo</code> grants controlled privilege escalation and records command intent. OpenSSH is usually the primary administrative entry point, so hardening it means reducing password exposure, limiting root login, constraining users, validating config before reload, and watching authentication logs.</p>
+          <div class="accordion">
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="ssh-config-btn" type="button" aria-expanded="false" aria-controls="ssh-config">Hardened SSH configuration</button>
+              <div class="accordion-panel" id="ssh-config" role="region" aria-labelledby="ssh-config-btn" hidden>
+                <div class="code-block" data-lang="ini" data-title="/etc/ssh/sshd_config.d/20-hardening.conf">
+                  <pre><code>PermitRootLogin no
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PubkeyAuthentication yes
+AuthenticationMethods publickey
+X11Forwarding no
+AllowTcpForwarding no
+ClientAliveInterval 300
+ClientAliveCountMax 2
+MaxAuthTries 3
+LoginGraceTime 30
+AllowUsers ubuntu deploy sre-admin</code></pre>
+                </div>
+                <div class="code-block" data-lang="bash" data-title="Validate and reload sshd safely">
+                  <pre><code># Keep an existing SSH session open while testing a new one.
+sudo sshd -t
+sudo systemctl reload ssh
+systemctl status ssh --no-pager
+
+# Confirm effective settings
+sudo sshd -T | grep -E 'permitrootlogin|passwordauthentication|allowtcpforwarding|maxauthtries|allowusers'</code></pre>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="sudo-config-btn" type="button" aria-expanded="false" aria-controls="sudo-config">sudo policy and least privilege</button>
+              <div class="accordion-panel" id="sudo-config" role="region" aria-labelledby="sudo-config-btn" hidden>
+                <p>Always edit sudo policy with <code>visudo</code> so syntax is validated before writing. Use command aliases for limited operational tasks, but remember that shell escapes in allowed programs can become root shells.</p>
+                <div class="code-block" data-lang="ini" data-title="/etc/sudoers.d/deploy-restart-example">
+                  <pre><code>Cmnd_Alias EXAMPLE_RESTART = /bin/systemctl restart example-api, /bin/systemctl status example-api
+deploy ALL=(root) NOPASSWD: EXAMPLE_RESTART</code></pre>
+                </div>
+                <div class="code-block" data-lang="bash" data-title="sudo operations">
+                  <pre><code>sudo -l
+sudo visudo -f /etc/sudoers.d/deploy-restart-example
+sudo -u example -- id
+journalctl _COMM=sudo --since today
+grep sudo /var/log/auth.log | tail -50</code></pre>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="auth-trouble-btn" type="button" aria-expanded="false" aria-controls="auth-trouble">Authentication troubleshooting</button>
+              <div class="accordion-panel" id="auth-trouble" role="region" aria-labelledby="auth-trouble-btn" hidden>
+                <div class="code-block" data-lang="bash" data-title="SSH and auth logs">
+                  <pre><code># Client-side debug
+ssh -vvv &lt;user&gt;@&lt;host&gt;
+
+# Server-side logs
+sudo journalctl -u ssh -b --no-pager
+sudo tail -100 /var/log/auth.log
+
+# Key and home permission checks
+namei -l /home/&lt;user&gt;/.ssh/authorized_keys
+sudo stat -c '%A %U:%G %n' /home/&lt;user&gt; /home/&lt;user&gt;/.ssh /home/&lt;user&gt;/.ssh/authorized_keys
+
+# Account state
+sudo passwd -S &lt;user&gt;
+sudo chage -l &lt;user&gt;</code></pre>
+                </div>
+                <p>Most SSH failures are file permission problems, wrong key, disabled account, <code>AllowUsers</code> mismatch, expired account, PAM policy, or a network path/firewall issue. Let <code>ssh -vvv</code> tell you where negotiation stops.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="topic" id="apparmor">
+          <h3>AppArmor Profiles</h3>
+          <p>AppArmor is a Linux security module that confines programs by path-based policy. Profiles can allow, deny, audit, or complain about file, capability, network, and mount actions. Ubuntu ships many profiles, and operators commonly write profiles for custom daemons exposed to untrusted input.</p>
+          <div class="code-block" data-lang="ini" data-title="/etc/apparmor.d/usr.local.bin.example-api">
+            <pre><code>#include &lt;tunables/global&gt;
+
+/usr/local/bin/example-api {
+  #include &lt;abstractions/base&gt;
+  #include &lt;abstractions/nameservice&gt;
+
+  capability net_bind_service,
+  network inet stream,
+
+  /usr/local/bin/example-api r,
+  /etc/example-api/** r,
+  /var/lib/example-api/** rwk,
+  /var/log/example-api/** rw,
+  /tmp/** rw,
+
+  deny /etc/shadow r,
+}</code></pre>
+          </div>
+          <div class="accordion">
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="apparmor-cli-btn" type="button" aria-expanded="false" aria-controls="apparmor-cli">AppArmor commands</button>
+              <div class="accordion-panel" id="apparmor-cli" role="region" aria-labelledby="apparmor-cli-btn" hidden>
+                <div class="code-block" data-lang="bash" data-title="Profile lifecycle">
+                  <pre><code>sudo aa-status
+sudo apparmor_parser -r /etc/apparmor.d/usr.local.bin.example-api
+sudo aa-complain /etc/apparmor.d/usr.local.bin.example-api
+sudo aa-enforce /etc/apparmor.d/usr.local.bin.example-api
+sudo aa-logprof
+sudo journalctl -k -g 'apparmor="DENIED"'</code></pre>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="apparmor-trouble-btn" type="button" aria-expanded="false" aria-controls="apparmor-trouble">Troubleshooting denials</button>
+              <div class="accordion-panel" id="apparmor-trouble" role="region" aria-labelledby="apparmor-trouble-btn" hidden>
+                <ol>
+                  <li>Confirm the profile is loaded and enforced with <code>aa-status</code>.</li>
+                  <li>Read kernel audit lines with <code>journalctl -k -g 'apparmor="DENIED"'</code>.</li>
+                  <li>Temporarily switch to complain mode to collect intended access without blocking.</li>
+                  <li>Use <code>aa-logprof</code> to review candidate rules, then manually simplify them.</li>
+                  <li>Reload the profile and restart the confined service.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="practice searchable" id="practice-4" aria-labelledby="practice-4-title">
+        <header>
+          <span class="kicker">Practice 4</span>
+          <h2 id="practice-4-title">Networking &amp; Firewall Configuration</h2>
+          <p class="summary">Ubuntu networking is a contract between declarative configuration, kernel interfaces, routes, resolver state, and packet filtering. Netplan writes backend config, <code>iproute2</code> shows truth in the kernel, <code>systemd-resolved</code> manages DNS views, and UFW simplifies firewall policy.</p>
+        </header>
+
+        <article class="topic" id="netplan-iproute2">
+          <h3>Netplan and iproute2</h3>
+          <p>Netplan reads YAML under <code>/etc/netplan/</code>, validates it, and generates configuration for a renderer such as <code>systemd-networkd</code> on servers or NetworkManager on desktops. The kernel only knows interfaces, addresses, routes, rules, neighbors, and sockets; <code>iproute2</code> is the authoritative CLI for that state.</p>
+          <div class="code-block" data-lang="yaml" data-title="/etc/netplan/01-prod.yaml - static server address">
+            <pre><code>network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    ens160:
+      dhcp4: false
+      addresses:
+        - 10.20.30.15/24
+      routes:
+        - to: default
+          via: 10.20.30.1
+      nameservers:
+        search:
+          - prod.example.com
+        addresses:
+          - 10.20.1.53
+          - 10.20.1.54</code></pre>
+          </div>
+          <div class="code-block" data-lang="yaml" data-title="/etc/netplan/02-bond-vlan.yaml - bond with VLAN">
+            <pre><code>network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    eno1: {}
+    eno2: {}
+  bonds:
+    bond0:
+      interfaces:
+        - eno1
+        - eno2
+      parameters:
+        mode: 802.3ad
+        lacp-rate: fast
+        mii-monitor-interval: 100
+  vlans:
+    bond0.120:
+      id: 120
+      link: bond0
+      addresses:
+        - 172.20.120.10/24
+      routes:
+        - to: default
+          via: 172.20.120.1</code></pre>
+          </div>
+          <div class="callout warn">
+            <span class="tag">Safety</span>
+            <p>Use <code>netplan try</code> over remote SSH. It rolls back if you do not confirm. A bad default route or interface name can strand a host until console access.</p>
+          </div>
+          <div class="accordion">
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="netplan-cli-btn" type="button" aria-expanded="false" aria-controls="netplan-cli">CLI usage</button>
+              <div class="accordion-panel" id="netplan-cli" role="region" aria-labelledby="netplan-cli-btn" hidden>
+                <div class="code-block" data-lang="bash" data-title="Netplan and kernel network state">
+                  <pre><code>sudo netplan generate
+sudo netplan try
+sudo netplan apply
+sudo netplan status --all
+
+# Kernel truth via iproute2
+ip -br link
+ip -br addr
+ip route
+ip route get 8.8.8.8
+ip rule
+ip neigh
+ss -tulpn
+ss -tan state established</code></pre>
+                </div>
+                <div class="code-block" data-lang="output" data-title="Expected signal from ip route get">
+                  <pre><code>8.8.8.8 via 10.20.30.1 dev ens160 src 10.20.30.15 uid 1000
+    cache</code></pre>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="network-trouble-btn" type="button" aria-expanded="false" aria-controls="network-trouble">Troubleshooting packet path</button>
+              <div class="accordion-panel" id="network-trouble" role="region" aria-labelledby="network-trouble-btn" hidden>
+                <ol>
+                  <li>Link layer: <code>ip link</code>, carrier state, cable/VLAN/switch port.</li>
+                  <li>Addressing: <code>ip addr</code>, duplicate IP, DHCP lease, prefix length.</li>
+                  <li>Routing: <code>ip route get &lt;destination&gt;</code> to see source address and egress interface.</li>
+                  <li>Firewall: <code>sudo ufw status verbose</code>, then backend nftables rules if needed.</li>
+                  <li>Application: <code>ss -tulpn</code> for listeners and <code>journalctl -u &lt;service&gt;</code> for bind errors.</li>
+                </ol>
+                <div class="code-block" data-lang="bash" data-title="Network incident commands">
+                  <pre><code>ip -s link show dev ens160
+ip route get &lt;destination-ip&gt;
+ping -c 3 &lt;gateway-ip&gt;
+tracepath &lt;destination-host&gt;
+sudo tcpdump -ni ens160 host &lt;peer-ip&gt;
+sudo journalctl -u systemd-networkd -b --no-pager</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="topic" id="dns-resolved">
+          <h3>systemd-resolved and DNS Management</h3>
+          <p><code>systemd-resolved</code> provides local DNS resolution, split DNS, DNSSEC settings, cache, and the stub resolver commonly found at <code>127.0.0.53</code>. Applications normally call libc resolver functions, which read <code>/etc/resolv.conf</code>; on Ubuntu this often points to the local stub managed by resolved.</p>
+          <div class="accordion">
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="dns-cli-btn" type="button" aria-expanded="false" aria-controls="dns-cli">DNS commands</button>
+              <div class="accordion-panel" id="dns-cli" role="region" aria-labelledby="dns-cli-btn" hidden>
+                <div class="code-block" data-lang="bash" data-title="DNS state and queries">
+                  <pre><code>resolvectl status
+resolvectl dns
+resolvectl domain
+resolvectl query ubuntu.com
+resolvectl query internal.service.prod.example.com
+resolvectl flush-caches
+readlink -f /etc/resolv.conf
+cat /etc/resolv.conf</code></pre>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="dns-trouble-btn" type="button" aria-expanded="false" aria-controls="dns-trouble">DNS failure runbook</button>
+              <div class="accordion-panel" id="dns-trouble" role="region" aria-labelledby="dns-trouble-btn" hidden>
+                <div class="code-block" data-lang="bash" data-title="DNS resolution troubleshooting">
+                  <pre><code># Confirm resolver path
+getent hosts &lt;name&gt;
+resolvectl query &lt;name&gt;
+dig @&lt;dns-server-ip&gt; &lt;name&gt;
+
+# Check split DNS and per-link servers
+resolvectl status
+networkctl status &lt;interface&gt;
+
+# Read resolver logs
+sudo journalctl -u systemd-resolved -b --no-pager
+
+# Reset cache after changing records or search domains
+sudo resolvectl flush-caches
+sudo systemctl restart systemd-resolved</code></pre>
+                </div>
+                <p>Common causes include wrong search domain, VPN split DNS priority, stale cache, <code>/etc/resolv.conf</code> overwritten by tooling, DNS blocked by firewall, or an application bypassing libc and using its own resolver.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="topic" id="ufw-firewall">
+          <h3>UFW Firewall Configuration</h3>
+          <p>UFW is a friendly frontend for host firewall policy. On modern Ubuntu it ultimately programs nftables through the distribution firewall backend. Use UFW for simple server ingress/egress policy, and drop to nftables only when you need complex sets, marks, NAT, or advanced packet classification.</p>
+          <div class="code-block" data-lang="bash" data-title="UFW safe baseline">
+            <pre><code># Always allow your current management path before enabling UFW.
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow OpenSSH
+sudo ufw allow from &lt;admin-cidr&gt; to any port 22 proto tcp
+sudo ufw allow 443/tcp
+sudo ufw enable
+sudo ufw status verbose</code></pre>
+          </div>
+          <div class="accordion">
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="ufw-cli-btn" type="button" aria-expanded="false" aria-controls="ufw-cli">Firewall operations</button>
+              <div class="accordion-panel" id="ufw-cli" role="region" aria-labelledby="ufw-cli-btn" hidden>
+                <div class="code-block" data-lang="bash" data-title="UFW daily driver">
+                  <pre><code>sudo ufw app list
+sudo ufw app info OpenSSH
+sudo ufw status numbered
+sudo ufw delete &lt;rule-number&gt;
+sudo ufw allow from 10.0.0.0/8 to any port 9100 proto tcp comment 'node exporter from private network'
+sudo ufw deny from &lt;bad-ip&gt; comment 'temporary block'
+sudo ufw logging medium
+sudo journalctl -k -g 'UFW BLOCK'</code></pre>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="ufw-trouble-btn" type="button" aria-expanded="false" aria-controls="ufw-trouble">Firewall troubleshooting</button>
+              <div class="accordion-panel" id="ufw-trouble" role="region" aria-labelledby="ufw-trouble-btn" hidden>
+                <ul>
+                  <li>Confirm the service is listening on the expected address with <code>ss -tulpn</code>.</li>
+                  <li>Confirm routing path with <code>ip route get &lt;client-ip&gt;</code>.</li>
+                  <li>Check UFW order with <code>ufw status numbered</code>; first match wins in many firewall chains.</li>
+                  <li>Check kernel logs for drops with <code>journalctl -k -g 'UFW BLOCK'</code>.</li>
+                  <li>For container hosts, inspect Docker or Kubernetes rules before assuming UFW owns the full path.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="practice searchable" id="practice-5" aria-labelledby="practice-5-title">
+        <header>
+          <span class="kicker">Practice 5</span>
+          <h2 id="practice-5-title">Storage, LVM &amp; Filesystem Management</h2>
+          <p class="summary">Storage changes are high blast-radius operations. Understand block devices, partitions, filesystems, mount units, LVM layering, and backup state before resizing or deleting anything.</p>
+        </header>
+
+        <article class="topic" id="block-storage">
+          <h3>Block Devices, Partitioning, ext4 and ZFS Concepts</h3>
+          <p>The kernel exposes disks as block devices such as <code>/dev/sda</code>, <code>/dev/nvme0n1</code>, and virtual devices under device mapper. A partition table slices a disk, a filesystem organizes bytes into files and metadata, and a mount attaches that filesystem into the namespace.</p>
+          <div class="matrix" role="region" aria-label="Storage layers">
+            <table>
+              <thead>
+                <tr><th>Layer</th><th>Examples</th><th>Purpose</th><th>Inspect</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Physical/virtual disk</td><td><code>/dev/sda</code>, <code>/dev/nvme0n1</code></td><td>Raw block device</td><td><code>lsblk -o NAME,SIZE,TYPE,MODEL</code></td></tr>
+                <tr><td>Partition</td><td><code>/dev/sda1</code>, GPT</td><td>Disk subdivision</td><td><code>sudo parted -l</code></td></tr>
+                <tr><td>LVM PV/VG/LV</td><td><code>pv0</code>, <code>vg0</code>, <code>root</code></td><td>Flexible logical volumes</td><td><code>pvs</code>, <code>vgs</code>, <code>lvs</code></td></tr>
+                <tr><td>Filesystem</td><td><code>ext4</code>, <code>xfs</code>, <code>zfs</code></td><td>Files and directories</td><td><code>df -Th</code>, <code>findmnt</code></td></tr>
+                <tr><td>Mount</td><td><code>/</code>, <code>/var</code>, <code>/srv</code></td><td>Namespace attachment</td><td><code>findmnt</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="grid-2">
+            <div class="mini">
+              <h4>ext4</h4>
+              <p>Default general-purpose Linux filesystem with journaling, mature repair tools, online grow support, and predictable operational behavior.</p>
+            </div>
+            <div class="mini">
+              <h4>ZFS</h4>
+              <p>Combines volume manager and filesystem concepts: pools, datasets, snapshots, checksums, compression, quotas, and replication. It requires deliberate memory and operational planning.</p>
+            </div>
+          </div>
+          <div class="code-block" data-lang="bash" data-title="Storage inventory">
+            <pre><code>lsblk -f
+lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS,UUID
+sudo blkid
+findmnt --real
+df -hT
+sudo parted -l</code></pre>
+          </div>
+          <div class="code-block" data-lang="output" data-title="Expected signal from lsblk -f">
+            <pre><code>NAME                  FSTYPE      FSVER LABEL UUID                                 MOUNTPOINTS
+nvme0n1
+├─nvme0n1p1           vfat        FAT32       7A2D-91AF                            /boot/efi
+├─nvme0n1p2           ext4        1.0         11111111-2222-3333-4444-555555555555 /boot
+└─nvme0n1p3           LVM2_member LVM2        aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+  └─ubuntu--vg-root   ext4        1.0         bbbbbbbb-cccc-dddd-eeee-ffffffffffff /</code></pre>
+          </div>
+          <div class="callout danger">
+            <span class="tag">Safety</span>
+            <p><code>fdisk</code>, <code>parted</code>, <code>mkfs</code>, <code>wipefs</code>, and LVM removal commands can destroy data immediately. Confirm device paths with <code>lsblk</code> and backups before writing partition tables or filesystems.</p>
+          </div>
+        </article>
+
+        <article class="topic" id="lvm">
+          <h3>Logical Volume Management (LVM)</h3>
+          <p>LVM adds a flexible mapping layer between disks and filesystems. Physical volumes join volume groups, volume groups allocate extents, and logical volumes become block devices that filesystems can use. This lets you grow filesystems, migrate data, snapshot volumes, and aggregate disks without changing application paths.</p>
+          <div class="accordion">
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="lvm-create-btn" type="button" aria-expanded="false" aria-controls="lvm-create">Create and grow LVM safely</button>
+              <div class="accordion-panel" id="lvm-create" role="region" aria-labelledby="lvm-create-btn" hidden>
+                <div class="code-block" data-lang="bash" data-title="Create a new LVM volume">
+                  <pre><code># Inspect first. Replace device paths deliberately.
+lsblk -f
+sudo pvcreate /dev/sdb
+sudo vgcreate vg_data /dev/sdb
+sudo lvcreate -n lv_apps -L 100G vg_data
+sudo mkfs.ext4 -L apps /dev/vg_data/lv_apps
+sudo mkdir -p /srv/apps
+sudo mount /dev/vg_data/lv_apps /srv/apps
+df -hT /srv/apps</code></pre>
+                </div>
+                <div class="code-block" data-lang="bash" data-title="Grow an ext4 filesystem on LVM">
+                  <pre><code># Add a new disk to the volume group
+sudo pvcreate /dev/sdc
+sudo vgextend vg_data /dev/sdc
+
+# Grow the logical volume and filesystem together
+sudo lvextend -r -L +50G /dev/vg_data/lv_apps
+
+# Confirm result
+lvs
+df -hT /srv/apps</code></pre>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="lvm-snapshot-btn" type="button" aria-expanded="false" aria-controls="lvm-snapshot">Snapshots, migration and rollback</button>
+              <div class="accordion-panel" id="lvm-snapshot" role="region" aria-labelledby="lvm-snapshot-btn" hidden>
+                <p>LVM snapshots are copy-on-write block devices. They are useful for short-lived backup consistency or pre-change rollback, not as long-term backups. If the snapshot fills, it becomes invalid.</p>
+                <div class="code-block" data-lang="bash" data-title="Short-lived snapshot">
+                  <pre><code>sudo lvcreate -s -n lv_apps_snap -L 10G /dev/vg_data/lv_apps
+sudo mkdir -p /mnt/apps-snap
+sudo mount -o ro /dev/vg_data/lv_apps_snap /mnt/apps-snap
+rsync -aHAX --numeric-ids /mnt/apps-snap/ backup:/backups/apps/
+sudo umount /mnt/apps-snap
+sudo lvremove /dev/vg_data/lv_apps_snap</code></pre>
+                </div>
+                <div class="code-block" data-lang="bash" data-title="Move extents away from a disk">
+                  <pre><code>sudo pvs -o+pv_used
+sudo pvmove /dev/sdb /dev/sdc
+sudo vgreduce vg_data /dev/sdb
+sudo pvremove /dev/sdb</code></pre>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="lvm-trouble-btn" type="button" aria-expanded="false" aria-controls="lvm-trouble">LVM troubleshooting</button>
+              <div class="accordion-panel" id="lvm-trouble" role="region" aria-labelledby="lvm-trouble-btn" hidden>
+                <div class="code-block" data-lang="bash" data-title="LVM state and activation">
+                  <pre><code>sudo pvs -a -o+devices
+sudo vgs -o+vg_free
+sudo lvs -a -o+devices,seg_monitor
+sudo vgscan
+sudo vgchange -ay
+sudo lvdisplay -m /dev/vg_data/lv_apps
+sudo journalctl -b -g 'device-mapper|LVM|dm-' --no-pager</code></pre>
+                </div>
+                <p>If volumes do not appear after boot, check initramfs contents, missing disks, changed device names, LUKS unlock order, and whether the volume group was activated.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="topic" id="fstab-mounts">
+          <h3>/etc/fstab and Mount Reliability</h3>
+          <p><code>/etc/fstab</code> declares filesystems that should mount at boot. systemd translates fstab entries into mount units. Bad fstab entries are a classic emergency-mode cause, especially when a non-critical external disk is configured without <code>nofail</code> or a timeout.</p>
+          <div class="code-block" data-lang="ini" data-title="/etc/fstab examples">
+            <pre><code># &lt;device&gt;                                      &lt;mountpoint&gt; &lt;type&gt; &lt;options&gt;                         &lt;dump&gt; &lt;pass&gt;
+UUID=11111111-2222-3333-4444-555555555555      /             ext4   defaults,errors=remount-ro        0      1
+UUID=aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee      /srv/apps     ext4   defaults,noatime                  0      2
+server.example.com:/exports/shared             /mnt/shared   nfs4   rw,nofail,x-systemd.automount,_netdev,x-systemd.device-timeout=10s 0 0
+tmpfs                                          /run/app      tmpfs  size=256m,mode=0750,uid=app,gid=app 0 0</code></pre>
+          </div>
+          <div class="accordion">
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="fstab-cli-btn" type="button" aria-expanded="false" aria-controls="fstab-cli">Mount commands and validation</button>
+              <div class="accordion-panel" id="fstab-cli" role="region" aria-labelledby="fstab-cli-btn" hidden>
+                <div class="code-block" data-lang="bash" data-title="Safe fstab workflow">
+                  <pre><code>sudo findmnt --verify --verbose
+sudo systemctl daemon-reload
+sudo mount -a
+findmnt /srv/apps
+systemctl status srv-apps.mount --no-pager</code></pre>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="fs-repair-btn" type="button" aria-expanded="false" aria-controls="fs-repair">Filesystem checks and repair</button>
+              <div class="accordion-panel" id="fs-repair" role="region" aria-labelledby="fs-repair-btn" hidden>
+                <div class="callout danger">
+                  <span class="tag">Danger</span>
+                  <p>Do not run <code>fsck</code> against a mounted read-write filesystem. Use recovery mode, a live ISO, or an unmounted secondary volume.</p>
+                </div>
+                <div class="code-block" data-lang="bash" data-title="ext4 check workflow">
+                  <pre><code>findmnt /srv/apps
+sudo umount /srv/apps
+sudo e2fsck -f /dev/vg_data/lv_apps
+sudo mount /srv/apps
+df -hT /srv/apps</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="practice searchable" id="practice-6" aria-labelledby="practice-6-title">
+        <header>
+          <span class="kicker">Practice 6</span>
+          <h2 id="practice-6-title">Observability, Logging &amp; Performance Tuning</h2>
+          <p class="summary">Linux observability means correlating logs, unit state, process state, resource pressure, kernel messages, metrics, and workload expectations. Start broad, then drill into the saturated resource.</p>
+        </header>
+
+        <article class="topic" id="journal-rsyslog">
+          <h3>journald, journalctl and rsyslog</h3>
+          <p><code>systemd-journald</code> collects structured logs from the kernel, stdout/stderr of services, syslog sockets, and audit sources. <code>journalctl</code> queries by unit, boot, priority, time, executable, PID, and fields. <code>rsyslog</code> can persist classic text logs under <code>/var/log</code> and forward logs to central systems.</p>
+          <div class="grid-2">
+            <div class="mini">
+              <h4>Journal paths</h4>
+              <p>Runtime logs: <code>/run/log/journal</code>. Persistent logs: <code>/var/log/journal</code>. Config: <code>/etc/systemd/journald.conf</code>.</p>
+            </div>
+            <div class="mini">
+              <h4>Classic logs</h4>
+              <p>Auth: <code>/var/log/auth.log</code>. Syslog: <code>/var/log/syslog</code>. Kernel: <code>/var/log/kern.log</code>. Package logs: <code>/var/log/apt/</code> and <code>/var/log/dpkg.log</code>.</p>
+            </div>
+          </div>
+          <div class="code-block" data-lang="bash" data-title="journalctl daily driver">
+            <pre><code># Current boot and previous boot
+journalctl -b --no-pager
+journalctl -b -1 --no-pager
+
+# Unit and time filters
+journalctl -u ssh -b --since '2 hours ago'
+journalctl -u nginx -p warning..alert
+
+# Kernel and pattern filters
+journalctl -k -b
+journalctl -g 'Out of memory|segfault|I/O error'
+
+# Structured output for automation
+journalctl -u example-api --since today -o json-pretty
+
+# Disk usage and retention
+journalctl --disk-usage
+sudo journalctl --vacuum-time=14d</code></pre>
+          </div>
+          <div class="code-block" data-lang="output" data-title="Expected signal from journalctl -u ssh">
+            <pre><code>Jul 05 09:21:12 host sshd[2241]: Accepted publickey for deploy from 10.20.1.44 port 51420 ssh2
+Jul 05 09:21:12 host sshd[2241]: pam_unix(sshd:session): session opened for user deploy(uid=1001)
+Jul 05 09:27:44 host sshd[2318]: Connection closed by authenticating user root 203.0.113.24 port 42202 [preauth]</code></pre>
+          </div>
+          <div class="accordion">
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="rsyslog-btn" type="button" aria-expanded="false" aria-controls="rsyslog">rsyslog forwarding example</button>
+              <div class="accordion-panel" id="rsyslog" role="region" aria-labelledby="rsyslog-btn" hidden>
+                <div class="code-block" data-lang="ini" data-title="/etc/rsyslog.d/60-forward.conf">
+                  <pre><code># Forward all logs to a central collector over TCP.
+*.* @@logs.example.com:514</code></pre>
+                </div>
+                <div class="code-block" data-lang="bash" data-title="Validate rsyslog">
+                  <pre><code>sudo rsyslogd -N1
+sudo systemctl restart rsyslog
+logger -p authpriv.notice 'rsyslog forwarding test from ubuntu host'
+sudo journalctl -u rsyslog -b --no-pager</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="topic" id="process-performance">
+          <h3>Process Monitoring and Performance Tuning</h3>
+          <p>Performance triage is resource accounting. Find whether the bottleneck is CPU saturation, run queue, memory pressure, swap, disk latency, network, lock contention, or application behavior. Use snapshots for quick checks and time-series tools for trends.</p>
+          <div class="matrix" role="region" aria-label="Performance commands">
+            <table>
+              <thead>
+                <tr><th>Question</th><th>Command</th><th>Interpretation</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>What is consuming CPU?</td><td><code>top</code>, <code>htop</code>, <code>ps -eo pcpu</code></td><td>Look for sustained CPU use and run queue pressure.</td></tr>
+                <tr><td>Is memory tight?</td><td><code>free -h</code>, <code>vmstat 1</code>, PSI</td><td>Swap in/out and memory pressure matter more than low free memory alone.</td></tr>
+                <tr><td>Is disk slow?</td><td><code>iostat -xz 1</code></td><td>High await, high utilization, and queue pressure indicate I/O bottlenecks.</td></tr>
+                <tr><td>Is a process stuck?</td><td><code>strace -p</code>, <code>pstack</code>, <code>cat /proc/&lt;pid&gt;/stack</code></td><td>Observe syscalls or kernel wait points.</td></tr>
+                <tr><td>What changed?</td><td><code>journalctl</code>, apt logs, deploy logs</td><td>Correlate start of symptoms with changes.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="code-block" data-lang="bash" data-title="Performance snapshot">
+            <pre><code>uptime
+top -o %CPU
+ps -eo pid,ppid,user,stat,pcpu,pmem,rss,vsz,comm,args --sort=-pcpu | head -25
+free -h
+vmstat 1 5
+iostat -xz 1 5
+pidstat -durh 1 5
+cat /proc/pressure/cpu
+cat /proc/pressure/memory
+cat /proc/pressure/io</code></pre>
+          </div>
+          <div class="accordion">
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="oom-btn" type="button" aria-expanded="false" aria-controls="oom">Out-of-memory troubleshooting</button>
+              <div class="accordion-panel" id="oom" role="region" aria-labelledby="oom-btn" hidden>
+                <div class="code-block" data-lang="bash" data-title="OOM investigation">
+                  <pre><code>journalctl -k -g 'Out of memory|oom-killer|Killed process' --since '24 hours ago'
+free -h
+swapon --show
+cat /proc/meminfo | sed -n '1,30p'
+ps -eo pid,user,oom,oom_score,oom_score_adj,rss,comm,args --sort=-rss | head -25
+systemctl show &lt;service&gt; -p MemoryMax -p MemoryHigh -p MemoryCurrent</code></pre>
+                </div>
+                <p>Fix the cause, not just the symptom: right-size service memory, tune application heap, set cgroup limits, add swap only if latency tolerance allows it, and alert on memory pressure before the OOM killer acts.</p>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="sysstat-btn" type="button" aria-expanded="false" aria-controls="sysstat">sysstat, sar, iostat and vmstat setup</button>
+              <div class="accordion-panel" id="sysstat" role="region" aria-labelledby="sysstat-btn" hidden>
+                <div class="code-block" data-lang="bash" data-title="Enable sysstat collection">
+                  <pre><code>sudo apt update
+sudo apt install sysstat
+sudo sed -i 's/^ENABLED="false"/ENABLED="true"/' /etc/default/sysstat
+sudo systemctl enable --now sysstat
+
+# Query historical data
+sar -u
+sar -r
+sar -n DEV
+sar -d
+iostat -xz 1 5
+vmstat 1 5</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="topic" id="node-exporter">
+          <h3>Prometheus Node Exporter</h3>
+          <p>Node Exporter exposes Linux host metrics as HTTP text for Prometheus. It reads kernel and userspace sources such as <code>/proc</code>, <code>/sys</code>, filesystem stats, CPU, memory, disk, network, pressure stall information, and systemd collector data when enabled.</p>
+          <div class="code-block" data-lang="bash" data-title="Install packaged node exporter">
+            <pre><code>sudo apt update
+sudo apt install prometheus-node-exporter
+systemctl status prometheus-node-exporter --no-pager
+curl -s http://127.0.0.1:9100/metrics | head</code></pre>
+          </div>
+          <div class="code-block" data-lang="ini" data-title="/etc/systemd/system/node_exporter.service - manual install pattern">
+            <pre><code>[Unit]
+Description=Prometheus Node Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=node_exporter
+Group=node_exporter
+Type=simple
+ExecStart=/usr/local/bin/node_exporter \
+  --web.listen-address=:9100 \
+  --collector.systemd \
+  --collector.processes
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+          </div>
+          <div class="accordion">
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="node-exporter-sec-btn" type="button" aria-expanded="false" aria-controls="node-exporter-sec">Metrics exposure and firewalling</button>
+              <div class="accordion-panel" id="node-exporter-sec" role="region" aria-labelledby="node-exporter-sec-btn" hidden>
+                <div class="callout warn">
+                  <span class="tag">Safety</span>
+                  <p>Node Exporter should not be exposed to the public Internet. Restrict port <code>9100/tcp</code> to Prometheus, a private network, or a mutually authenticated proxy.</p>
+                </div>
+                <div class="code-block" data-lang="bash" data-title="Restrict node exporter ingress">
+                  <pre><code>sudo ufw allow from &lt;prometheus-ip&gt; to any port 9100 proto tcp
+sudo ufw status numbered
+curl -s http://127.0.0.1:9100/metrics | grep '^node_memory_MemAvailable_bytes' | head</code></pre>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="alerts-btn" type="button" aria-expanded="false" aria-controls="alerts">Core alert ideas</button>
+              <div class="accordion-panel" id="alerts" role="region" aria-labelledby="alerts-btn" hidden>
+                <ul>
+                  <li>Host down: Prometheus scrape failure for more than a few minutes.</li>
+                  <li>Disk full: filesystem free below threshold and predicted to fill soon.</li>
+                  <li>Memory pressure: sustained PSI or swap churn, not just low free memory.</li>
+                  <li>CPU saturation: high load per CPU and sustained run queue.</li>
+                  <li>Disk latency: high await or node disk IO time.</li>
+                  <li>Systemd failed units: failed service count greater than zero.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="practice searchable" id="practice-7" aria-labelledby="practice-7-title">
+        <header>
+          <span class="kicker">Practice 7</span>
+          <h2 id="practice-7-title">The Daily CLI Masterclass</h2>
+          <p class="summary">Production Linux operators live in text streams. Master command composition, process control, file discovery, JSON/YAML inspection, shell safety, and bootstrapping automation.</p>
+        </header>
+
+        <article class="topic" id="text-files">
+          <h3>Text Manipulation, Search and File Discovery</h3>
+          <p>Prefer small, composable tools. Use <code>rg</code> when available for recursive search, <code>find</code> for metadata and actions, <code>awk</code> for column logic, <code>sed</code> for stream edits, and <code>jq</code>/<code>yq</code> for structured data instead of brittle regular expressions.</p>
+          <div class="code-block" data-lang="bash" data-title="Search and inspect text">
+            <pre><code># Fast recursive search
+rg -n 'PermitRootLogin|PasswordAuthentication' /etc/ssh
+rg -n --hidden --glob '!/.git' 'secret|token|password' .
+
+# Find files by metadata
+find /var/log -type f -mtime -1 -size +10M -print
+find /srv/app -type f -name '*.log' -print0 | xargs -0 du -h | sort -h
+
+# Extract useful columns
+ps -eo user,comm,pcpu,pmem --sort=-pcpu | awk 'NR==1 || $3 &gt; 5'
+ss -tulpn | awk 'NR==1 || /:443/'
+
+# Safe preview before destructive action
+find /tmp -type f -mtime +7 -print
+# then, only after review:
+find /tmp -type f -mtime +7 -delete</code></pre>
+          </div>
+          <div class="code-block" data-lang="bash" data-title="Structured data examples">
+            <pre><code># JSON logs
+journalctl -u example-api -o json --since '10 minutes ago' \
+  | jq -r '[.__REALTIME_TIMESTAMP, .PRIORITY, .MESSAGE] | @tsv'
+
+# YAML via yq when installed
+yq '.network.ethernets' /etc/netplan/*.yaml
+
+# Compare config snapshots
+diff -u /etc/ssh/sshd_config.bak /etc/ssh/sshd_config</code></pre>
+          </div>
+        </article>
+
+        <article class="topic" id="process-control">
+          <h3>Process Control, Jobs and Signals</h3>
+          <p>A process has an identity, parent, environment, file descriptors, signal handlers, namespaces, cgroup, and resource limits. Use systemd for services, shell job control for interactive work, and signals when you understand what the process does with them.</p>
+          <div class="code-block" data-lang="bash" data-title="Process control">
+            <pre><code># Interactive job control
+long-running-command
+# Press Ctrl-Z to stop it
+bg %1
+jobs -l
+fg %1
+
+# Signals
+kill -TERM &lt;pid&gt;
+kill -HUP &lt;pid&gt;
+kill -KILL &lt;pid&gt;   # last resort; process cannot clean up
+
+# Process tree and environment
+pstree -aps &lt;pid&gt;
+tr '\0' '\n' &lt; /proc/&lt;pid&gt;/environ
+ls -l /proc/&lt;pid&gt;/fd
+cat /proc/&lt;pid&gt;/limits</code></pre>
+          </div>
+          <div class="callout info">
+            <span class="tag">Rule</span>
+            <p>Use <code>systemctl restart &lt;unit&gt;</code> for services managed by systemd. Killing the child process directly can fight the supervisor, hide restart loops, or bypass ExecStop hooks.</p>
+          </div>
+        </article>
+
+        <article class="topic" id="bash-automation">
+          <h3>Bash Scripting Primitives</h3>
+          <p>Bash is excellent glue for host operations when scripts are small, explicit, and defensive. Use strict modes carefully, quote variables, validate inputs, log intent, trap cleanup, and make destructive behavior opt-in.</p>
+          <div class="code-block" data-lang="bash" data-title="Defensive bash skeleton">
+            <pre><code>#!/usr/bin/env bash
+set -Eeuo pipefail
+IFS=$'\n\t'
+
+usage() {
+  printf 'Usage: %s --namespace &lt;name&gt; --image &lt;image&gt;\n' "${0##*/}" &gt;&amp;2
+}
+
+log() {
+  printf '[%s] %s\n' "$(date --iso-8601=seconds)" "$*" &gt;&amp;2
+}
+
+cleanup() {
+  rm -f "${tmpfile:-}"
+}
+trap cleanup EXIT
+
+namespace=""
+image=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --namespace) namespace="${2:-}"; shift 2 ;;
+    --image) image="${2:-}"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) usage; exit 2 ;;
+  esac
+done
+
+[[ -n "$namespace" &amp;&amp; -n "$image" ]] || { usage; exit 2; }
+
+tmpfile="$(mktemp)"
+log "would operate on namespace=$namespace image=$image"</code></pre>
+          </div>
+          <div class="matrix" role="region" aria-label="Bash safety">
+            <table>
+              <thead>
+                <tr><th>Pattern</th><th>Use it for</th><th>Warning</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>set -e</code></td><td>Exit on unhandled failure</td><td>Can surprise inside conditionals and pipelines; test scripts.</td></tr>
+                <tr><td><code>set -u</code></td><td>Catch unset variables</td><td>Use <code>${var:-}</code> for optional values.</td></tr>
+                <tr><td><code>trap</code></td><td>Cleanup temp files and locks</td><td>Keep cleanup idempotent.</td></tr>
+                <tr><td><code>mktemp</code></td><td>Safe temporary files</td><td>Never invent predictable temp paths.</td></tr>
+                <tr><td><code>shellcheck</code></td><td>Static analysis</td><td>Use comments only when intentionally ignoring a rule.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="topic" id="cloud-init">
+          <h3>cloud-init Bootstrapping</h3>
+          <p><code>cloud-init</code> is early-boot automation for cloud images. It reads datasource metadata and user-data, configures identity, networking, packages, files, commands, and final scripts, then records module state so most actions run only once per instance unless cleaned.</p>
+          <div class="code-block" data-lang="yaml" data-title="cloud-config example">
+            <pre><code>#cloud-config
+hostname: app-01
+manage_etc_hosts: true
+package_update: true
+package_upgrade: false
+packages:
+  - curl
+  - jq
+  - prometheus-node-exporter
+
+users:
+  - default
+  - name: deploy
+    groups: [sudo]
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:/bin/systemctl restart example-api,/bin/systemctl status example-api']
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAA_REPLACE_WITH_PUBLIC_KEY deploy@example
+
+write_files:
+  - path: /etc/motd
+    permissions: '0644'
+    owner: root:root
+    content: |
+      Managed Ubuntu host. Unauthorized access is prohibited.
+
+runcmd:
+  - [ systemctl, enable, --now, prometheus-node-exporter ]
+  - [ ufw, allow, from, 10.0.0.0/8, to, any, port, '9100', proto, tcp ]
+  - [ ufw, --force, enable ]</code></pre>
+          </div>
+          <div class="accordion">
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="cloud-init-cli-btn" type="button" aria-expanded="false" aria-controls="cloud-init-cli">cloud-init operations</button>
+              <div class="accordion-panel" id="cloud-init-cli" role="region" aria-labelledby="cloud-init-cli-btn" hidden>
+                <div class="code-block" data-lang="bash" data-title="cloud-init logs and status">
+                  <pre><code>cloud-init status --long
+sudo cloud-init analyze show
+sudo cloud-init analyze blame
+sudo tail -200 /var/log/cloud-init.log
+sudo tail -200 /var/log/cloud-init-output.log
+sudo cloud-init query --all | less</code></pre>
+                </div>
+                <div class="code-block" data-lang="output" data-title="Expected signal from cloud-init status --long">
+                  <pre><code>status: done
+boot_status_code: enabled-by-generator
+last_update: Sun, 05 Jul 2026 02:30:18 +0000
+detail:
+Cloud-init completed all stages successfully.</code></pre>
+                </div>
+                <div class="code-block" data-lang="bash" data-title="Re-run cloud-init in a lab image">
+                  <pre><code># Do not run clean casually on production instances; it resets cloud-init state.
+sudo cloud-init clean --logs
+sudo reboot</code></pre>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" id="cloud-init-trouble-btn" type="button" aria-expanded="false" aria-controls="cloud-init-trouble">Bootstrap troubleshooting</button>
+              <div class="accordion-panel" id="cloud-init-trouble" role="region" aria-labelledby="cloud-init-trouble-btn" hidden>
+                <ol>
+                  <li>Validate YAML indentation and ensure the file starts with <code>#cloud-config</code>.</li>
+                  <li>Check datasource detection in <code>/run/cloud-init/</code> and <code>cloud-init query --all</code>.</li>
+                  <li>Review <code>/var/log/cloud-init.log</code> for module errors and <code>cloud-init-output.log</code> for command output.</li>
+                  <li>Avoid long-running daemons in <code>runcmd</code>; install systemd units and enable them instead.</li>
+                  <li>Make scripts idempotent because image rebuilds and retries happen during platform automation.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="topic" id="incident-flow">
+          <h3>Daily Incident Flow: From Symptom to Layer</h3>
+          <p>When a host is unhealthy, avoid random command thrashing. Establish scope, identify the failing layer, collect current evidence, make the smallest reversible change, and record the result.</p>
+          <div class="code-block" data-lang="bash" data-title="Ten-minute host triage">
+            <pre><code>date --iso-8601=seconds
+hostnamectl
+uptime
+systemctl --failed --no-pager
+journalctl -p warning..alert -b --since '30 minutes ago' --no-pager
+df -hT
+free -h
+ss -tulpn
+ip -br addr
+ip route
+resolvectl status
+top -b -n 1 | head -40</code></pre>
+          </div>
+          <div class="checklist">
+            <h4>Decision sequence</h4>
+            <ol>
+              <li>Is the host reachable and is time correct?</li>
+              <li>Are critical services active and stable?</li>
+              <li>Is there a recent kernel, package, deploy, or config change?</li>
+              <li>Is a resource saturated: CPU, memory, disk, inode, I/O, network, DNS?</li>
+              <li>Can you restore service by rollback, restart, scaling, freeing space, or failing over?</li>
+              <li>What evidence should be preserved before cleanup?</li>
+            </ol>
+          </div>
+        </article>
+      </section>
+
+      <section class="practice searchable" id="references" aria-labelledby="references-title">
+        <header>
+          <span class="kicker">References</span>
+          <h2 id="references-title">Primary Documentation</h2>
+          <p class="summary">Use these references when command flags, defaults, or version-specific behavior matter. The page is designed to be readable offline, but production runbooks should point to authoritative docs.</p>
+        </header>
+        <div class="reference-grid">
+          <article>
+            <h3>Ubuntu Server</h3>
+            <p><a href="https://documentation.ubuntu.com/server/">Ubuntu Server documentation</a> for administration, security, storage, networking, and package operations.</p>
+          </article>
+          <article>
+            <h3>systemd</h3>
+            <p><a href="https://www.freedesktop.org/software/systemd/man/latest/">systemd manual pages</a> for units, services, targets, timers, journald, and resolved.</p>
+          </article>
+          <article>
+            <h3>Netplan</h3>
+            <p><a href="https://netplan.readthedocs.io/">Netplan documentation</a> for YAML schema, examples, renderers, and troubleshooting.</p>
+          </article>
+          <article>
+            <h3>OpenSSH</h3>
+            <p><a href="https://man.openbsd.org/sshd_config">sshd_config manual</a> for server-side authentication, forwarding, and access-control options.</p>
+          </article>
+          <article>
+            <h3>cloud-init</h3>
+            <p><a href="https://cloudinit.readthedocs.io/en/latest/">cloud-init documentation</a> for datasources, modules, user-data formats, and debugging.</p>
+          </article>
+          <article>
+            <h3>Prometheus Node Exporter</h3>
+            <p><a href="https://github.com/prometheus/node_exporter">Node Exporter project</a> for collectors, flags, metrics behavior, and release notes.</p>
+          </article>
+        </div>
+      </section>
+
+      <div class="no-results" role="status">No sections match the current filter.</div>
+
+      <footer>
+        <p>Standalone static cookbook page. Commands are examples for Ubuntu servers; review them against your version, role, and production change controls before execution.</p>
+      </footer>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var body = document.body;
+      var menuButton = document.getElementById("menu-button");
+      var sidebar = document.getElementById("site-sidebar");
+      var search = document.getElementById("page-search");
+      var navLinks = Array.prototype.slice.call(document.querySelectorAll(".nav-link"));
+      var practices = Array.prototype.slice.call(document.querySelectorAll(".practice.searchable"));
+
+      function closeNav() {
+        body.classList.remove("nav-open");
+        if (menuButton) {
+          menuButton.setAttribute("aria-expanded", "false");
+        }
+      }
+
+      if (menuButton) {
+        menuButton.addEventListener("click", function () {
+          var open = body.classList.toggle("nav-open");
+          menuButton.setAttribute("aria-expanded", String(open));
+        });
+      }
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+          closeNav();
+          if (document.activeElement === search) {
+            search.value = "";
+            applyFilter();
+            search.blur();
+          }
+        }
+        if (event.key === "/" && !/input|textarea|select/i.test(event.target.tagName)) {
+          event.preventDefault();
+          search.focus();
+        }
+      });
+
+      document.addEventListener("click", function (event) {
+        if (!body.classList.contains("nav-open")) {
+          return;
+        }
+        if (sidebar && sidebar.contains(event.target)) {
+          return;
+        }
+        if (menuButton && menuButton.contains(event.target)) {
+          return;
+        }
+        closeNav();
+      });
+
+      navLinks.forEach(function (link) {
+        link.addEventListener("click", closeNav);
+      });
+
+      function escapeHtml(text) {
+        return text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function highlightBash(text) {
+        var html = escapeHtml(text);
+        html = html.replace(/^(\s*)(#.*)$/gm, "$1<span class=\"tok-comment\">$2</span>");
+        html = html.replace(/(^|\n)(\$)(?=\s)/g, "$1<span class=\"tok-prompt\">$2</span>");
+        html = html.replace(/(\s)(--?[A-Za-z0-9][A-Za-z0-9-]*)/g, "$1<span class=\"tok-flag\">$2</span>");
+        html = html.replace(/(\$\{?[A-Za-z_][A-Za-z0-9_]*\}?)/g, "<span class=\"tok-var\">$1</span>");
+        html = html.replace(/\b(sudo|systemctl|journalctl|apt|apt-get|dpkg|snap|ip|ss|ufw|find|grep|rg|awk|sed|curl|ssh|strace|lsblk|findmnt|mount|umount|lvs|vgs|pvs|resolvectl|netplan|cloud-init|sar|iostat|vmstat|ps|top|kill|chmod|chown|setfacl|getfacl)\b/g, "<span class=\"tok-key\">$1</span>");
+        return html;
+      }
+
+      function highlightYaml(text) {
+        var html = escapeHtml(text);
+        html = html.replace(/^(\s*)(#.*)$/gm, "$1<span class=\"tok-comment\">$2</span>");
+        html = html.replace(/^(\s*-?\s*)([A-Za-z0-9_.-]+)(:)/gm, "$1<span class=\"tok-key\">$2</span>$3");
+        html = html.replace(/('[^'\n]*'|"[^"\n]*")/g, "<span class=\"tok-string\">$1</span>");
+        html = html.replace(/\b(true|false|null)\b/g, "<span class=\"tok-var\">$1</span>");
+        return html;
+      }
+
+      function highlightIni(text) {
+        var html = escapeHtml(text);
+        html = html.replace(/^(\s*)(#.*)$/gm, "$1<span class=\"tok-comment\">$2</span>");
+        html = html.replace(/^(\s*)(\[[^\]\n]+\])/gm, "$1<span class=\"tok-section\">$2</span>");
+        html = html.replace(/^(\s*)([A-Za-z0-9_.-]+)(=|:)/gm, "$1<span class=\"tok-key\">$2</span>$3");
+        html = html.replace(/('[^'\n]*'|"[^"\n]*")/g, "<span class=\"tok-string\">$1</span>");
+        return html;
+      }
+
+      function highlightOutput(text) {
+        return "<span class=\"tok-output\">" + escapeHtml(text) + "</span>";
+      }
+
+      function highlight(code, lang) {
+        var text = code.textContent;
+        if (lang === "bash" || lang === "shell") {
+          code.innerHTML = highlightBash(text);
+        } else if (lang === "yaml" || lang === "yml") {
+          code.innerHTML = highlightYaml(text);
+        } else if (lang === "ini" || lang === "systemd") {
+          code.innerHTML = highlightIni(text);
+        } else if (lang === "output") {
+          code.innerHTML = highlightOutput(text);
+        } else {
+          code.innerHTML = escapeHtml(text);
+        }
+      }
+
+      Array.prototype.slice.call(document.querySelectorAll(".code-block")).forEach(function (block) {
+        var lang = block.getAttribute("data-lang") || "text";
+        var title = block.getAttribute("data-title") || "";
+        var toolbar = document.createElement("div");
+        toolbar.className = "code-toolbar";
+        toolbar.innerHTML = "<span class=\"lang\">" + escapeHtml(lang) + "</span><span class=\"title\">" + escapeHtml(title) + "</span><button class=\"copy-btn\" type=\"button\">Copy</button>";
+        block.insertBefore(toolbar, block.firstChild);
+        var code = block.querySelector("pre code");
+        if (code) {
+          highlight(code, lang);
+        }
+      });
+
+      function fallbackCopy(text, button) {
+        var textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.left = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+          document.execCommand("copy");
+          markCopied(button);
+        } finally {
+          document.body.removeChild(textarea);
+        }
+      }
+
+      function markCopied(button) {
+        button.textContent = "Copied";
+        button.classList.add("ok");
+        window.setTimeout(function () {
+          button.textContent = "Copy";
+          button.classList.remove("ok");
+        }, 1400);
+      }
+
+      document.addEventListener("click", function (event) {
+        var copyButton = event.target.closest(".copy-btn");
+        if (!copyButton) {
+          return;
+        }
+        var block = copyButton.closest(".code-block");
+        var code = block ? block.querySelector("pre code") : null;
+        if (!code) {
+          return;
+        }
+        var text = code.textContent.replace(/\n+$/g, "");
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () {
+            markCopied(copyButton);
+          }).catch(function () {
+            fallbackCopy(text, copyButton);
+          });
+        } else {
+          fallbackCopy(text, copyButton);
+        }
+      });
+
+      Array.prototype.slice.call(document.querySelectorAll(".accordion-trigger")).forEach(function (trigger) {
+        trigger.addEventListener("click", function () {
+          var panel = document.getElementById(trigger.getAttribute("aria-controls"));
+          var wasOpen = trigger.getAttribute("aria-expanded") === "true";
+          trigger.setAttribute("aria-expanded", String(!wasOpen));
+          if (panel) {
+            panel.hidden = wasOpen;
+          }
+        });
+      });
+
+      function applyFilter() {
+        var query = search.value.trim().toLowerCase();
+        var visiblePractices = 0;
+        practices.forEach(function (practice) {
+          var topics = Array.prototype.slice.call(practice.querySelectorAll(".topic"));
+          var practiceMatches = practice.querySelector("header").textContent.toLowerCase().indexOf(query) !== -1;
+          var visibleTopics = 0;
+          topics.forEach(function (topic) {
+            var match = !query || practiceMatches || topic.textContent.toLowerCase().indexOf(query) !== -1;
+            topic.classList.toggle("is-hidden", !match);
+            if (match) {
+              visibleTopics += 1;
+            }
+          });
+          var visible = !query || visibleTopics > 0 || practiceMatches;
+          practice.classList.toggle("is-hidden", !visible);
+          if (visible) {
+            visiblePractices += 1;
+          }
+        });
+        body.classList.toggle("has-no-results", Boolean(query && visiblePractices === 0));
+      }
+
+      if (search) {
+        search.addEventListener("input", applyFilter);
+      }
+
+      if ("IntersectionObserver" in window) {
+        var sections = navLinks.map(function (link) {
+          var target = document.querySelector(link.getAttribute("href"));
+          return target ? { link: link, target: target } : null;
+        }).filter(Boolean);
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) {
+              return;
+            }
+            navLinks.forEach(function (link) {
+              link.classList.remove("is-active");
+            });
+            var active = navLinks.find(function (link) {
+              return link.getAttribute("href") === "#" + entry.target.id;
+            });
+            if (active) {
+              active.classList.add("is-active");
+            }
+          });
+        }, { rootMargin: "-38% 0px -52% 0px", threshold: 0.01 });
+        sections.forEach(function (item) {
+          observer.observe(item.target);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

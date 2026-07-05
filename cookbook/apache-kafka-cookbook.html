@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A standalone Apache Kafka cookbook covering core architecture, KRaft and ZooKeeper, Strimzi, CLI operations, Kafka Connect, Schema Registry, stream processing, observability, and troubleshooting.">
+    <title>Apache Kafka Cookbook</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #080c10;
+        --panel: #101820;
+        --panel-2: #14202a;
+        --panel-3: #0c1218;
+        --ink: #edf6f7;
+        --muted: #9dafb8;
+        --faint: #70818b;
+        --line: #263640;
+        --line-strong: #3a5260;
+        --accent: #2dd4bf;
+        --accent-2: #fbbf24;
+        --accent-3: #60a5fa;
+        --good: #34d399;
+        --warn: #f59e0b;
+        --danger: #ef4444;
+        --bash: #34d399;
+        --yaml: #60a5fa;
+        --json: #fbbf24;
+        --props: #fb7185;
+        --code: #070b0f;
+        --shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+        --sidebar: 310px;
+        --top: 58px;
+        --max: 1080px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 78px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+
+        *,
+        *::before,
+        *::after {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        background:
+          linear-gradient(90deg, rgba(45, 212, 191, 0.05) 1px, transparent 1px),
+          linear-gradient(180deg, rgba(251, 191, 36, 0.035) 1px, transparent 1px),
+          radial-gradient(circle at 20% -12%, rgba(96, 165, 250, 0.18), transparent 32rem),
+          radial-gradient(circle at 92% 2%, rgba(45, 212, 191, 0.12), transparent 26rem),
+          var(--bg);
+        background-size: 44px 44px, 44px 44px, auto, auto, auto;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.62;
+      }
+
+      a {
+        color: var(--accent);
+        text-decoration-thickness: 0.08em;
+        text-underline-offset: 0.18em;
+      }
+
+      code,
+      pre,
+      kbd {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      }
+
+      code {
+        padding: 1px 5px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        color: var(--ink);
+        background: #111b24;
+        font-size: 0.88em;
+        overflow-wrap: anywhere;
+      }
+
+      .skip-link {
+        position: fixed;
+        z-index: 1000;
+        top: 12px;
+        left: 12px;
+        transform: translateY(-150%);
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: var(--accent);
+        color: #031d1a;
+        font-weight: 850;
+      }
+
+      .skip-link:focus {
+        transform: translateY(0);
+      }
+
+      .mobile-bar {
+        display: none;
+      }
+
+      .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: var(--sidebar);
+        overflow-y: auto;
+        border-right: 1px solid var(--line);
+        background: rgba(8, 12, 16, 0.96);
+        backdrop-filter: blur(16px);
+        z-index: 30;
+      }
+
+      .brand {
+        padding: 24px 22px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .brand .eyebrow,
+      .section-eyebrow {
+        margin: 0 0 8px;
+        color: var(--accent);
+        font-size: 0.76rem;
+        font-weight: 900;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        line-height: 1.08;
+        letter-spacing: 0;
+      }
+
+      .brand p {
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 0.91rem;
+      }
+
+      .home-link {
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        margin-top: 14px;
+        padding: 7px 10px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        color: var(--ink);
+        background: var(--panel-3);
+        font-size: 0.82rem;
+        font-weight: 850;
+        text-decoration: none;
+      }
+
+      .home-link:hover,
+      .home-link:focus {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .toc {
+        padding: 14px 12px 30px;
+      }
+
+      .toc a {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        min-height: 40px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        color: var(--muted);
+        font-size: 0.9rem;
+        font-weight: 760;
+        text-decoration: none;
+      }
+
+      .toc a:hover,
+      .toc a:focus,
+      .toc a.is-active {
+        color: var(--ink);
+        background: rgba(45, 212, 191, 0.11);
+      }
+
+      .toc .num {
+        display: inline-grid;
+        place-items: center;
+        flex: 0 0 auto;
+        min-width: 26px;
+        height: 26px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        color: var(--accent);
+        font-size: 0.76rem;
+      }
+
+      .toc .minor {
+        min-height: 32px;
+        margin-left: 36px;
+        padding-block: 5px;
+        color: var(--faint);
+        font-size: 0.8rem;
+      }
+
+      .page {
+        margin-left: var(--sidebar);
+        min-height: 100vh;
+      }
+
+      main {
+        width: min(var(--max), calc(100vw - var(--sidebar) - 48px));
+        margin: 0 auto;
+        padding: 44px 0 80px;
+      }
+
+      .hero {
+        padding: 24px 0 34px;
+      }
+
+      .hero h2 {
+        max-width: 940px;
+        margin: 0;
+        font-size: clamp(2.7rem, 7vw, 6.2rem);
+        line-height: 0.94;
+        letter-spacing: 0;
+      }
+
+      .hero-lead {
+        max-width: 850px;
+        margin: 24px 0 0;
+        color: var(--muted);
+        font-size: clamp(1.05rem, 1.7vw, 1.22rem);
+      }
+
+      .meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 34px;
+        padding: 6px 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--muted);
+        background: rgba(16, 24, 32, 0.82);
+        font-size: 0.9rem;
+      }
+
+      .pill strong {
+        margin-right: 6px;
+        color: var(--ink);
+      }
+
+      .topology {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 30px;
+      }
+
+      .topology-card {
+        min-height: 132px;
+        padding: 15px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(16, 24, 32, 0.88);
+        box-shadow: var(--shadow);
+      }
+
+      .topology-card span {
+        display: inline-grid;
+        place-items: center;
+        width: 32px;
+        height: 32px;
+        margin-bottom: 14px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        color: var(--accent);
+        background: var(--code);
+        font-weight: 900;
+      }
+
+      .topology-card strong {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--ink);
+      }
+
+      .topology-card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .practice {
+        margin-top: 44px;
+        padding-top: 44px;
+        border-top: 1px solid var(--line);
+        scroll-margin-top: 24px;
+      }
+
+      .practice h2 {
+        margin: 0;
+        font-size: clamp(1.75rem, 4vw, 3rem);
+        line-height: 1.05;
+        letter-spacing: 0;
+      }
+
+      .practice-intro {
+        max-width: 860px;
+        margin: 13px 0 22px;
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .card,
+      .callout,
+      .metric-table,
+      .flow {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(16, 24, 32, 0.9);
+        box-shadow: var(--shadow);
+      }
+
+      .card {
+        padding: 18px;
+      }
+
+      .card h3,
+      .card h4,
+      .runbook h3 {
+        margin: 0 0 9px;
+        color: var(--ink);
+        letter-spacing: 0;
+      }
+
+      .card p,
+      .card li,
+      .runbook p,
+      .runbook li {
+        color: var(--muted);
+      }
+
+      .card p,
+      .runbook p {
+        margin: 8px 0;
+      }
+
+      .card ul,
+      .card ol,
+      .runbook ul,
+      .runbook ol {
+        margin: 8px 0;
+        padding-left: 21px;
+      }
+
+      .callout {
+        margin: 16px 0;
+        padding: 15px 17px;
+        border-left-width: 4px;
+      }
+
+      .callout strong {
+        color: var(--ink);
+      }
+
+      .callout.info {
+        border-left-color: var(--accent-3);
+      }
+
+      .callout.safe {
+        border-left-color: var(--good);
+      }
+
+      .callout.warn {
+        border-left-color: var(--warn);
+      }
+
+      .callout.danger {
+        border-left-color: var(--danger);
+      }
+
+      .matrix {
+        width: 100%;
+        overflow-x: auto;
+        margin: 16px 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      table {
+        width: 100%;
+        min-width: 700px;
+        border-collapse: collapse;
+        font-size: 0.92rem;
+      }
+
+      th,
+      td {
+        padding: 11px 13px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--muted);
+        background: var(--panel-3);
+        font-size: 0.75rem;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0;
+        overflow: hidden;
+        margin: 16px 0;
+      }
+
+      .flow div {
+        padding: 16px;
+        border-right: 1px solid var(--line);
+      }
+
+      .flow div:last-child {
+        border-right: 0;
+      }
+
+      .flow span {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--accent);
+        font-size: 0.78rem;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      details.accordion {
+        margin: 16px 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(16, 24, 32, 0.92);
+        overflow: hidden;
+      }
+
+      details.accordion summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 17px;
+        color: var(--ink);
+        background: var(--panel-3);
+        font-weight: 850;
+        cursor: pointer;
+        list-style: none;
+      }
+
+      details.accordion summary::-webkit-details-marker {
+        display: none;
+      }
+
+      details.accordion summary::after {
+        content: "+";
+        color: var(--accent);
+        font-size: 1.25rem;
+      }
+
+      details.accordion[open] summary::after {
+        content: "-";
+      }
+
+      .accordion-body {
+        padding: 17px;
+      }
+
+      .codeblock {
+        margin: 14px 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--code);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+
+      .code-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 11px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.025);
+      }
+
+      .code-title {
+        min-width: 0;
+        overflow: hidden;
+        color: var(--muted);
+        font-size: 0.74rem;
+        font-weight: 900;
+        letter-spacing: 0;
+        text-transform: uppercase;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .copy-button {
+        flex: 0 0 auto;
+        min-height: 28px;
+        padding: 0 9px;
+        border: 1px solid var(--line-strong);
+        border-radius: 7px;
+        color: var(--muted);
+        background: var(--panel-3);
+        font: 0.74rem ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        cursor: pointer;
+      }
+
+      .copy-button:hover,
+      .copy-button:focus {
+        border-color: var(--accent);
+        color: var(--ink);
+      }
+
+      .copy-button.is-copied {
+        border-color: var(--good);
+        color: var(--good);
+      }
+
+      pre {
+        margin: 0;
+        padding: 14px 15px;
+        overflow-x: auto;
+      }
+
+      pre code {
+        display: block;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        color: #dceaf4;
+        background: transparent;
+        font-size: 0.84rem;
+        line-height: 1.68;
+        white-space: pre;
+      }
+
+      .codeblock[data-lang="bash"] {
+        border-color: color-mix(in srgb, var(--bash) 42%, var(--line));
+      }
+
+      .codeblock[data-lang="bash"] .code-title {
+        color: var(--bash);
+      }
+
+      .codeblock[data-lang="yaml"] {
+        border-color: color-mix(in srgb, var(--yaml) 42%, var(--line));
+      }
+
+      .codeblock[data-lang="yaml"] .code-title {
+        color: var(--yaml);
+      }
+
+      .codeblock[data-lang="json"] {
+        border-color: color-mix(in srgb, var(--json) 42%, var(--line));
+      }
+
+      .codeblock[data-lang="json"] .code-title {
+        color: var(--json);
+      }
+
+      .codeblock[data-lang="properties"] {
+        border-color: color-mix(in srgb, var(--props) 42%, var(--line));
+      }
+
+      .codeblock[data-lang="properties"] .code-title {
+        color: var(--props);
+      }
+
+      .bash-hint {
+        color: var(--bash);
+      }
+
+      .yaml-hint {
+        color: var(--yaml);
+      }
+
+      .json-hint {
+        color: var(--json);
+      }
+
+      .props-hint {
+        color: var(--props);
+      }
+
+      .metric-table {
+        overflow-x: auto;
+        margin-top: 16px;
+      }
+
+      .refs {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .refs a {
+        display: block;
+        padding: 13px 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--ink);
+        background: rgba(16, 24, 32, 0.84);
+        text-decoration: none;
+      }
+
+      .refs a:hover,
+      .refs a:focus {
+        border-color: var(--accent);
+      }
+
+      footer {
+        margin-top: 56px;
+        padding-top: 22px;
+        border-top: 1px solid var(--line);
+        color: var(--faint);
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 1060px) {
+        .mobile-bar {
+          position: sticky;
+          top: 0;
+          z-index: 40;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          min-height: var(--top);
+          padding: 10px 14px;
+          border-bottom: 1px solid var(--line);
+          background: rgba(8, 12, 16, 0.94);
+          backdrop-filter: blur(14px);
+        }
+
+        .menu-button {
+          min-height: 36px;
+          padding: 0 12px;
+          border: 1px solid var(--line-strong);
+          border-radius: 8px;
+          color: var(--ink);
+          background: var(--panel);
+          font: inherit;
+          font-weight: 850;
+          cursor: pointer;
+        }
+
+        .sidebar {
+          top: var(--top);
+          width: min(330px, 84vw);
+          height: calc(100vh - var(--top));
+          transform: translateX(-104%);
+          transition: transform 0.18s ease;
+        }
+
+        body.nav-open .sidebar {
+          transform: translateX(0);
+        }
+
+        .page {
+          margin-left: 0;
+        }
+
+        main {
+          width: min(var(--max), calc(100vw - 32px));
+        }
+
+        .topology,
+        .flow {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 720px) {
+        main {
+          width: min(var(--max), calc(100vw - 28px));
+          padding-top: 26px;
+        }
+
+        .hero h2 {
+          font-size: clamp(2.35rem, 13vw, 4.1rem);
+        }
+
+        .topology,
+        .grid,
+        .refs,
+        .flow {
+          grid-template-columns: 1fr;
+        }
+
+        .flow div {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .flow div:last-child {
+          border-bottom: 0;
+        }
+      }
+
+      @media print {
+        .sidebar,
+        .mobile-bar,
+        .copy-button,
+        .skip-link {
+          display: none !important;
+        }
+
+        .page {
+          margin-left: 0;
+        }
+
+        main {
+          width: auto;
+          padding: 0;
+        }
+
+        body {
+          color: #000;
+          background: #fff;
+        }
+
+        a,
+        code {
+          color: #000;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="mobile-bar">
+      <button class="menu-button" type="button" id="menu-button" aria-controls="sidebar" aria-expanded="false">Contents</button>
+      <a class="home-link" href="../index.html">Cookbook home</a>
+    </div>
+
+    <aside class="sidebar" id="sidebar" aria-label="Apache Kafka cookbook navigation">
+      <div class="brand">
+        <p class="eyebrow">Streaming systems</p>
+        <h1>Apache Kafka Cookbook</h1>
+        <p>KRaft, ZooKeeper legacy, Strimzi, CLI, Connect, schemas, streams, and day-2 operations.</p>
+        <a class="home-link" href="../index.html">Cookbook home</a>
+      </div>
+      <nav class="toc" aria-label="Practice navigation">
+        <a href="#practice-core"><span class="num">01</span><span>Core Architecture and Fundamentals</span></a>
+        <a class="minor" href="#core-log">Log, partitions, replication</a>
+        <a class="minor" href="#core-kraft">KRaft vs ZooKeeper</a>
+        <a href="#practice-setup"><span class="num">02</span><span>Setup, Orchestration, and K8s</span></a>
+        <a class="minor" href="#setup-kraft">KRaft server properties</a>
+        <a class="minor" href="#setup-strimzi">Strimzi CRDs</a>
+        <a href="#practice-cli"><span class="num">03</span><span>Day-to-Day CLI Operations</span></a>
+        <a class="minor" href="#cli-topics">Topics and configs</a>
+        <a class="minor" href="#cli-consumers">Consumers and lag</a>
+        <a href="#practice-integration"><span class="num">04</span><span>Data Integration and Schemas</span></a>
+        <a class="minor" href="#integration-connect">Kafka Connect</a>
+        <a class="minor" href="#integration-schemas">Schema Registry</a>
+        <a href="#practice-observability"><span class="num">05</span><span>Observability and Troubleshooting</span></a>
+        <a class="minor" href="#observability-metrics">Metrics</a>
+        <a class="minor" href="#observability-runbooks">Runbooks</a>
+      </nav>
+    </aside>
+
+    <div class="page">
+      <main id="main-content">
+        <header class="hero" id="top">
+          <p class="section-eyebrow">Cookbook entry</p>
+          <h2>Apache Kafka, from append-only log to production streaming platform.</h2>
+          <p class="hero-lead">
+            A single-file field manual for designing, operating, and debugging Kafka systems: brokers,
+            partitions, producers, consumer groups, KRaft quorum controllers, ZooKeeper legacy clusters,
+            Strimzi on Kubernetes, Kafka Connect, Schema Registry, Kafka Streams, ksqlDB, JMX metrics,
+            Prometheus, Grafana, and practical CLI work.
+          </p>
+          <div class="meta-row" aria-label="Cookbook summary">
+            <span class="pill"><strong>5</strong> practices</span>
+            <span class="pill"><strong>KRaft first</strong> with ZooKeeper migration notes</span>
+            <span class="pill"><strong>CLI heavy</strong> with copyable commands</span>
+            <span class="pill"><strong>Day-2 ready</strong> metrics and runbooks</span>
+          </div>
+          <div class="topology" aria-label="Kafka platform topology">
+            <div class="topology-card"><span>1</span><strong>Producers</strong><p>Batch records, choose partitions, attach keys, and send to leaders with durability controls.</p></div>
+            <div class="topology-card"><span>2</span><strong>Brokers</strong><p>Persist append-only partition logs, replicate data, and serve client fetches.</p></div>
+            <div class="topology-card"><span>3</span><strong>Controllers</strong><p>KRaft quorum manages metadata, leader election, broker fencing, and topic state.</p></div>
+            <div class="topology-card"><span>4</span><strong>Consumers</strong><p>Read offsets through group assignments, commit progress, and rebalance on membership change.</p></div>
+            <div class="topology-card"><span>5</span><strong>Ecosystem</strong><p>Connect, schemas, streams, UI, metrics, alerts, and Kubernetes operators complete the platform.</p></div>
+          </div>
+        </header>
+
+        <section class="practice" id="practice-core">
+          <p class="section-eyebrow">Practice 1</p>
+          <h2>Core Architecture and Fundamentals</h2>
+          <p class="practice-intro">
+            Kafka is a distributed commit log. The durable unit is not a queue message sitting in memory;
+            it is a record appended to a partition log, replicated to other brokers, and consumed by offset.
+          </p>
+
+          <div class="flow" id="core-log">
+            <div><span>Produce</span><strong>Key and batch</strong><p>Producers serialize keys and values, batch records, compress them, and send each batch to the leader for the selected partition.</p></div>
+            <div><span>Append</span><strong>Leader writes</strong><p>The leader broker appends the batch to the partition log and assigns monotonically increasing offsets.</p></div>
+            <div><span>Replicate</span><strong>Followers fetch</strong><p>Replica brokers pull from the leader and stay in the in-sync replica set when they keep up.</p></div>
+            <div><span>Consume</span><strong>Groups commit</strong><p>Consumers fetch by offset and commit their progress to Kafka, so processing can resume after failures.</p></div>
+          </div>
+
+          <div class="grid">
+            <article class="card">
+              <h3>Atomic parts</h3>
+              <ul>
+                <li><strong>Broker:</strong> a Kafka server process that stores partitions and handles client requests.</li>
+                <li><strong>Topic:</strong> a named stream split into one or more partitions.</li>
+                <li><strong>Partition:</strong> an ordered append-only log. Ordering is guaranteed only within one partition.</li>
+                <li><strong>Replica:</strong> a copy of a partition. One replica is leader; the rest fetch from it.</li>
+                <li><strong>Offset:</strong> the position of a record inside a partition. It is a cursor, not a timestamp.</li>
+                <li><strong>Consumer group:</strong> cooperating consumers where each partition is assigned to one group member at a time.</li>
+              </ul>
+            </article>
+            <article class="card">
+              <h3>Durability knobs</h3>
+              <ul>
+                <li><code>replication.factor=3</code> tolerates one broker loss while keeping a clean leader path.</li>
+                <li><code>min.insync.replicas=2</code> requires at least two in-sync replicas for acknowledged writes when producers use <code>acks=all</code>.</li>
+                <li><code>unclean.leader.election.enable=false</code> favors consistency over availability by avoiding stale replicas as leaders.</li>
+                <li><code>retention.ms</code> and <code>retention.bytes</code> delete old log segments; <code>cleanup.policy=compact</code> keeps the latest value per key.</li>
+              </ul>
+            </article>
+          </div>
+
+          <div class="matrix">
+            <table>
+              <thead>
+                <tr><th>Concept</th><th>Under the hood</th><th>Operational signal</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Segment files</td><td>Each partition is a directory under <code>log.dirs</code>. Kafka rolls segment files by size or time and maintains indexes for offset lookup.</td><td>Disk growth, log segment count, retention deletes, compaction backlog.</td></tr>
+                <tr><td>Producer acks</td><td><code>acks=0</code> fire-and-forget, <code>acks=1</code> leader only, <code>acks=all</code> waits for ISR rules.</td><td>Latency vs data-loss risk; failed produce requests when ISR falls below minimum.</td></tr>
+                <tr><td>Consumer offsets</td><td>Offsets are stored in the internal <code>__consumer_offsets</code> topic for normal consumer groups.</td><td>Lag, commit failures, duplicate processing after crashes.</td></tr>
+                <tr><td>Rebalance</td><td>The group coordinator assigns partitions when members join, leave, timeout, or change subscription metadata.</td><td>Stop-the-world processing gaps, repeated assignment logs, lag spikes.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <details class="accordion" open>
+            <summary>Producer and consumer mechanics</summary>
+            <div class="accordion-body">
+              <div class="grid">
+                <article class="card">
+                  <h3>Producer path</h3>
+                  <ol>
+                    <li>Serialize key and value with matching client serializers.</li>
+                    <li>Choose a partition by explicit partition, key hash, or sticky batching for null keys.</li>
+                    <li>Accumulate records in memory until <code>batch.size</code>, <code>linger.ms</code>, or memory pressure triggers send.</li>
+                    <li>Send to the current partition leader. Retry safely with idempotence enabled.</li>
+                    <li>Receive acknowledgement based on <code>acks</code> and ISR state.</li>
+                  </ol>
+                </article>
+                <article class="card">
+                  <h3>Consumer path</h3>
+                  <ol>
+                    <li>Join a group with <code>group.id</code> and subscribe to topics.</li>
+                    <li>Coordinator assigns partitions to members with the selected assignor.</li>
+                    <li>Consumer fetches from leaders and processes records in offset order per partition.</li>
+                    <li>Offsets commit automatically or manually after processing.</li>
+                    <li>If heartbeats stop beyond <code>session.timeout.ms</code>, the group rebalances.</li>
+                  </ol>
+                </article>
+              </div>
+              <div class="callout safe"><strong>Production default:</strong> use idempotent producers, <code>acks=all</code>, a replication factor of at least 3 for important topics, and commit offsets only after side effects are complete.</div>
+            </div>
+          </details>
+
+          <section id="core-kraft">
+            <h3>KRaft consensus vs ZooKeeper legacy</h3>
+            <p>
+              Modern Kafka runs metadata through KRaft, Kafka's Raft-based quorum controller. ZooKeeper mode is legacy:
+              you will still meet it in older estates, but new deployments should start with KRaft unless a vendor support
+              matrix forces otherwise.
+            </p>
+            <div class="matrix">
+              <table>
+                <thead>
+                  <tr><th>Area</th><th>KRaft mode</th><th>ZooKeeper legacy mode</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Metadata</td><td>Stored in Kafka metadata log and managed by quorum controllers.</td><td>Stored in ZooKeeper znodes; Kafka controller watches ZooKeeper state.</td></tr>
+                  <tr><td>Controller process</td><td>Dedicated controllers or combined broker/controller nodes for small labs.</td><td>One broker becomes active controller; ZooKeeper coordinates broker liveness.</td></tr>
+                  <tr><td>Identity</td><td><code>node.id</code>, <code>process.roles</code>, <code>controller.quorum.voters</code>.</td><td><code>broker.id</code> and <code>zookeeper.connect</code>.</td></tr>
+                  <tr><td>Operational risk</td><td>One less distributed system to run; controller quorum still needs odd-sized, stable voters.</td><td>Kafka availability depends on ZooKeeper health and session behavior.</td></tr>
+                  <tr><td>Migration</td><td>Plan feature level, controllers, rollback windows, client compatibility, and policy plugins.</td><td>Existing clusters may need staged migration before ZooKeeper removal.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="practice" id="practice-setup">
+          <p class="section-eyebrow">Practice 2</p>
+          <h2>Setup, Orchestration, and K8s</h2>
+          <p class="practice-intro">
+            Kafka setup is mostly about making identity, listeners, storage, and replication boring. Most incidents start
+            with advertised listener mistakes, under-sized disks, missing rack awareness, or accidental single-replica topics.
+          </p>
+
+          <section id="setup-kraft">
+            <details class="accordion" open>
+              <summary>KRaft broker/controller properties</summary>
+              <div class="accordion-body">
+                <p>Use separate controllers for production. A combined node is acceptable for local labs or tiny non-critical environments.</p>
+                <div class="codeblock" data-lang="properties">
+                  <div class="code-head"><span class="code-title">properties - config/kraft/server.properties for one lab node</span></div>
+                  <pre><code>process.roles=broker,controller
+node.id=1
+controller.quorum.voters=1@localhost:9093
+
+listeners=PLAINTEXT://:9092,CONTROLLER://:9093
+advertised.listeners=PLAINTEXT://localhost:9092
+controller.listener.names=CONTROLLER
+listener.security.protocol.map=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+inter.broker.listener.name=PLAINTEXT
+
+log.dirs=/var/lib/kafka/data
+num.partitions=6
+default.replication.factor=3
+min.insync.replicas=2
+auto.create.topics.enable=false
+unclean.leader.election.enable=false
+
+log.retention.hours=168
+log.segment.bytes=1073741824
+group.initial.rebalance.delay.ms=3000</code></pre>
+                </div>
+                <div class="codeblock" data-lang="bash">
+                  <div class="code-head"><span class="code-title">bash - initialize and start a KRaft log directory</span></div>
+                  <pre><code>$ KAFKA_CLUSTER_ID="$(bin/kafka-storage.sh random-uuid)"
+$ bin/kafka-storage.sh format \
+  --config config/kraft/server.properties \
+  --cluster-id "$KAFKA_CLUSTER_ID"
+$ bin/kafka-server-start.sh config/kraft/server.properties</code></pre>
+                </div>
+              </div>
+            </details>
+
+            <details class="accordion">
+              <summary>ZooKeeper legacy properties for existing estates</summary>
+              <div class="accordion-body">
+                <p>Keep this model only where you already operate it. Treat ZooKeeper as production infrastructure with its own quorum, disks, backups, alerts, and upgrades.</p>
+                <div class="codeblock" data-lang="properties">
+                  <div class="code-head"><span class="code-title">properties - legacy broker identity and metadata store</span></div>
+                  <pre><code>broker.id=1
+zookeeper.connect=zk-1:2181,zk-2:2181,zk-3:2181/kafka-prod
+
+listeners=PLAINTEXT://:9092
+advertised.listeners=PLAINTEXT://broker-1.example.com:9092
+log.dirs=/var/lib/kafka/data
+
+default.replication.factor=3
+min.insync.replicas=2
+auto.create.topics.enable=false
+unclean.leader.election.enable=false</code></pre>
+                </div>
+              </div>
+            </details>
+          </section>
+
+          <div class="grid">
+            <article class="card">
+              <h3>Bare metal and VM checklist</h3>
+              <ul>
+                <li>Run brokers on stable local SSD or high-IOPS block storage. Kafka prefers predictable disks over clever shared filesystems.</li>
+                <li>Use stable DNS names and never expose internal broker names to external clients unless routing supports them.</li>
+                <li>Set rack or zone metadata with <code>broker.rack</code> so replicas spread across failure domains.</li>
+                <li>Separate data logs from OS logs; alert when disk approaches 70-80 percent.</li>
+                <li>Pin JVM heap conservatively. Page cache is part of Kafka performance; do not starve the OS.</li>
+              </ul>
+            </article>
+            <article class="card">
+              <h3>Docker Compose lab</h3>
+              <p>Use Compose for learning and integration tests, not as a substitute for a managed production deployment.</p>
+              <div class="codeblock" data-lang="yaml">
+                <div class="code-head"><span class="code-title">yaml - single-node KRaft lab compose</span></div>
+                <pre><code>services:
+  kafka:
+    image: apache/kafka:&lt;kafka-version&gt;
+    hostname: kafka
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"</code></pre>
+              </div>
+            </article>
+          </div>
+
+          <section id="setup-strimzi">
+            <h3>Strimzi on Kubernetes</h3>
+            <p>
+              Strimzi turns Kafka operations into Kubernetes custom resources. The Cluster Operator reconciles brokers,
+              listeners, certificates, rolling updates, users, topics, Connect clusters, and optional metrics wiring.
+            </p>
+            <div class="codeblock" data-lang="bash">
+              <div class="code-head"><span class="code-title">bash - install operator and watch reconciliation</span></div>
+              <pre><code>$ kubectl create namespace kafka
+$ kubectl apply -f "https://strimzi.io/install/latest?namespace=kafka" -n kafka
+$ kubectl get pods -n kafka -w
+$ kubectl logs deploy/strimzi-cluster-operator -n kafka -f</code></pre>
+            </div>
+            <details class="accordion" open>
+              <summary>Minimal Strimzi KRaft cluster and topic CRDs</summary>
+              <div class="accordion-body">
+                <div class="codeblock" data-lang="yaml">
+                  <div class="code-head"><span class="code-title">yaml - KafkaNodePool plus Kafka custom resource</span></div>
+                  <pre><code>apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  name: controllers
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: events
+spec:
+  replicas: 3
+  roles:
+    - controller
+  storage:
+    type: persistent-claim
+    size: 50Gi
+    deleteClaim: false
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  name: brokers
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: events
+spec:
+  replicas: 3
+  roles:
+    - broker
+  storage:
+    type: persistent-claim
+    size: 500Gi
+    deleteClaim: false
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: events
+  namespace: kafka
+  annotations:
+    strimzi.io/kraft: enabled
+    strimzi.io/node-pools: enabled
+spec:
+  kafka:
+    version: &lt;kafka-version&gt;
+    metadataVersion: &lt;kafka-metadata-version&gt;
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+    config:
+      default.replication.factor: 3
+      min.insync.replicas: 2
+      offsets.topic.replication.factor: 3
+      transaction.state.log.replication.factor: 3
+      transaction.state.log.min.isr: 2
+      auto.create.topics.enable: false
+      unclean.leader.election.enable: false
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}</code></pre>
+                </div>
+                <div class="codeblock" data-lang="yaml">
+                  <div class="code-head"><span class="code-title">yaml - managed topic resource</span></div>
+                  <pre><code>apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: orders-v1
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: events
+spec:
+  topicName: orders.v1
+  partitions: 12
+  replicas: 3
+  config:
+    min.insync.replicas: 2
+    cleanup.policy: delete
+    retention.ms: 604800000</code></pre>
+                </div>
+              </div>
+            </details>
+            <div class="callout warn"><strong>Strimzi safety note:</strong> deleting a <code>Kafka</code>, <code>KafkaTopic</code>, or PVC can delete data depending on storage and finalizer behavior. Review <code>deleteClaim</code>, backups, and topic ownership before destructive changes.</div>
+          </section>
+        </section>
+
+        <section class="practice" id="practice-cli">
+          <p class="section-eyebrow">Practice 3</p>
+          <h2>Day-to-Day CLI Operations and Examples</h2>
+          <p class="practice-intro">
+            The Kafka shell tools are still the fastest way to prove cluster state. Set a bootstrap variable once, then
+            keep commands repeatable and explicit.
+          </p>
+
+          <div class="codeblock" data-lang="bash">
+            <div class="code-head"><span class="code-title">bash - operator shell setup</span></div>
+            <pre><code>$ export BOOTSTRAP="localhost:9092"
+$ export TOPIC="orders.v1"
+$ export GROUP="orders-api"
+$ alias kt='bin/kafka-topics.sh --bootstrap-server "$BOOTSTRAP"'
+$ alias kc='bin/kafka-configs.sh --bootstrap-server "$BOOTSTRAP"'
+$ alias kg='bin/kafka-consumer-groups.sh --bootstrap-server "$BOOTSTRAP"'</code></pre>
+          </div>
+
+          <section id="cli-topics">
+            <div class="grid">
+              <article class="card">
+                <h3>Topics</h3>
+                <div class="codeblock" data-lang="bash">
+                  <div class="code-head"><span class="code-title">bash - create, describe, alter, and list topics</span></div>
+                  <pre><code>$ bin/kafka-topics.sh --bootstrap-server "$BOOTSTRAP" \
+  --create --topic "$TOPIC" \
+  --partitions 12 \
+  --replication-factor 3 \
+  --config min.insync.replicas=2 \
+  --config retention.ms=604800000
+
+$ bin/kafka-topics.sh --bootstrap-server "$BOOTSTRAP" --describe --topic "$TOPIC"
+$ bin/kafka-topics.sh --bootstrap-server "$BOOTSTRAP" --alter --topic "$TOPIC" --partitions 24
+$ bin/kafka-topics.sh --bootstrap-server "$BOOTSTRAP" --list</code></pre>
+                </div>
+              </article>
+              <article class="card">
+                <h3>Topic config changes</h3>
+                <div class="codeblock" data-lang="bash">
+                  <div class="code-head"><span class="code-title">bash - inspect and change topic configuration</span></div>
+                  <pre><code>$ bin/kafka-configs.sh --bootstrap-server "$BOOTSTRAP" \
+  --entity-type topics --entity-name "$TOPIC" --describe
+
+$ bin/kafka-configs.sh --bootstrap-server "$BOOTSTRAP" \
+  --entity-type topics --entity-name "$TOPIC" --alter \
+  --add-config retention.ms=1209600000,segment.bytes=536870912
+
+$ bin/kafka-configs.sh --bootstrap-server "$BOOTSTRAP" \
+  --entity-type topics --entity-name "$TOPIC" --alter \
+  --delete-config segment.bytes</code></pre>
+                </div>
+              </article>
+            </div>
+            <div class="callout danger"><strong>Destructive command:</strong> <code>--delete --topic</code> removes data when topic deletion is enabled. Verify the exact topic, backups, consumers, and environment before running it.</div>
+          </section>
+
+          <details class="accordion" open>
+            <summary>Console producer and consumer recipes</summary>
+            <div class="accordion-body">
+              <div class="grid">
+                <article class="card">
+                  <h3>Produce keyed test data</h3>
+                  <div class="codeblock" data-lang="bash">
+                    <div class="code-head"><span class="code-title">bash - console producer with keys and strong acks</span></div>
+                    <pre><code>$ bin/kafka-console-producer.sh --bootstrap-server "$BOOTSTRAP" \
+  --topic "$TOPIC" \
+  --property parse.key=true \
+  --property key.separator=: \
+  --producer-property acks=all \
+  --producer-property enable.idempotence=true
+order-1001:{"order_id":"1001","status":"created","total":42.50}
+order-1002:{"order_id":"1002","status":"paid","total":19.99}</code></pre>
+                  </div>
+                </article>
+                <article class="card" id="cli-consumers">
+                  <h3>Consume with group and keys</h3>
+                  <div class="codeblock" data-lang="bash">
+                    <div class="code-head"><span class="code-title">bash - console consumer with group and key display</span></div>
+                    <pre><code>$ bin/kafka-console-consumer.sh --bootstrap-server "$BOOTSTRAP" \
+  --topic "$TOPIC" \
+  --group "$GROUP" \
+  --from-beginning \
+  --property print.key=true \
+  --property key.separator=" | " \
+  --timeout-ms 30000</code></pre>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </details>
+
+          <details class="accordion" open>
+            <summary>Consumer groups, lag, and offset resets</summary>
+            <div class="accordion-body">
+              <div class="codeblock" data-lang="bash">
+                <div class="code-head"><span class="code-title">bash - inspect group lag and members</span></div>
+                <pre><code>$ bin/kafka-consumer-groups.sh --bootstrap-server "$BOOTSTRAP" --list
+$ bin/kafka-consumer-groups.sh --bootstrap-server "$BOOTSTRAP" \
+  --describe --group "$GROUP" --members --verbose
+$ bin/kafka-consumer-groups.sh --bootstrap-server "$BOOTSTRAP" \
+  --describe --group "$GROUP" --state</code></pre>
+              </div>
+              <div class="codeblock" data-lang="bash">
+                <div class="code-head"><span class="code-title">bash - dry-run then execute an offset reset</span></div>
+                <pre><code># Stop all consumers in the group before resetting offsets.
+$ bin/kafka-consumer-groups.sh --bootstrap-server "$BOOTSTRAP" \
+  --group "$GROUP" \
+  --topic "$TOPIC" \
+  --reset-offsets --to-earliest --dry-run
+
+$ bin/kafka-consumer-groups.sh --bootstrap-server "$BOOTSTRAP" \
+  --group "$GROUP" \
+  --topic "$TOPIC" \
+  --reset-offsets --to-earliest --execute</code></pre>
+              </div>
+              <div class="callout warn"><strong>Offset reset note:</strong> reset only when every consumer in the group is stopped. Otherwise the group may commit newer offsets after your reset and erase the intended change.</div>
+            </div>
+          </details>
+
+          <details class="accordion">
+            <summary>Admin commands for leaders, reassignments, and log levels</summary>
+            <div class="accordion-body">
+              <div class="codeblock" data-lang="bash">
+                <div class="code-head"><span class="code-title">bash - preferred leader election and partition reassignment</span></div>
+                <pre><code>$ bin/kafka-leader-election.sh --bootstrap-server "$BOOTSTRAP" \
+  --election-type preferred --all-topic-partitions
+
+$ bin/kafka-reassign-partitions.sh --bootstrap-server "$BOOTSTRAP" \
+  --topics-to-move-json-file topics-to-move.json \
+  --broker-list "1,2,3,4" --generate
+
+$ bin/kafka-reassign-partitions.sh --bootstrap-server "$BOOTSTRAP" \
+  --reassignment-json-file reassignment.json --execute
+
+$ bin/kafka-reassign-partitions.sh --bootstrap-server "$BOOTSTRAP" \
+  --reassignment-json-file reassignment.json --verify</code></pre>
+              </div>
+              <div class="codeblock" data-lang="bash">
+                <div class="code-head"><span class="code-title">bash - dynamic broker and controller logger levels</span></div>
+                <pre><code>$ bin/kafka-configs.sh --bootstrap-server "$BOOTSTRAP" \
+  --entity-type broker-loggers --entity-name 1 \
+  --alter --add-config kafka.server.KafkaApis=DEBUG
+
+$ bin/kafka-configs.sh --bootstrap-controller controller-1:9093 \
+  --entity-type broker-loggers --entity-name 1 \
+  --alter --add-config org.apache.kafka.raft.KafkaNetworkChannel=TRACE</code></pre>
+              </div>
+            </div>
+          </details>
+        </section>
+
+        <section class="practice" id="practice-integration">
+          <p class="section-eyebrow">Practice 4</p>
+          <h2>Data Integration and Schemas</h2>
+          <p class="practice-intro">
+            Kafka becomes a platform when source systems, sink systems, and event contracts are managed deliberately.
+            Connect moves data. Schema Registry makes data evolution observable and enforceable. Streams and ksqlDB transform
+            the data in motion.
+          </p>
+
+          <section id="integration-connect">
+            <h3>Kafka Connect</h3>
+            <div class="grid">
+              <article class="card">
+                <h3>Architecture</h3>
+                <ul>
+                  <li><strong>Worker:</strong> JVM process running standalone or distributed mode.</li>
+                  <li><strong>Connector:</strong> logical job configuration, such as JDBC source or S3 sink.</li>
+                  <li><strong>Task:</strong> parallel execution unit assigned to workers.</li>
+                  <li><strong>Converter:</strong> maps Connect's internal data model to Kafka bytes, often JSON, Avro, Protobuf, or JSON Schema.</li>
+                  <li><strong>SMT:</strong> single message transform for lightweight per-record changes.</li>
+                  <li><strong>Internal topics:</strong> configs, offsets, and status. Replicate them like production metadata.</li>
+                </ul>
+              </article>
+              <article class="card">
+                <h3>Distributed worker properties</h3>
+                <div class="codeblock" data-lang="properties">
+                  <div class="code-head"><span class="code-title">properties - connect-distributed.properties</span></div>
+                  <pre><code>bootstrap.servers=kafka-1:9092,kafka-2:9092,kafka-3:9092
+group.id=connect-prod
+
+config.storage.topic=_connect-configs
+offset.storage.topic=_connect-offsets
+status.storage.topic=_connect-status
+config.storage.replication.factor=3
+offset.storage.replication.factor=3
+status.storage.replication.factor=3
+
+key.converter=org.apache.kafka.connect.storage.StringConverter
+value.converter=io.confluent.connect.avro.AvroConverter
+value.converter.schema.registry.url=http://schema-registry:8081
+
+plugin.path=/opt/connectors
+rest.port=8083</code></pre>
+                </div>
+              </article>
+            </div>
+            <details class="accordion" open>
+              <summary>Connect REST API examples</summary>
+              <div class="accordion-body">
+                <div class="codeblock" data-lang="bash">
+                  <div class="code-head"><span class="code-title">bash - list plugins and create a connector</span></div>
+                  <pre><code>$ curl -s http://connect:8083/connector-plugins | jq .
+
+$ curl -s -X PUT http://connect:8083/connectors/jdbc-orders-source/config \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": "2",
+    "connection.url": "jdbc:postgresql://postgres:5432/app",
+    "connection.user": "${file:/opt/connect-secrets/db.properties:user}",
+    "connection.password": "${file:/opt/connect-secrets/db.properties:password}",
+    "mode": "timestamp+incrementing",
+    "timestamp.column.name": "updated_at",
+    "incrementing.column.name": "id",
+    "topic.prefix": "dbserver1.",
+    "table.whitelist": "public.orders"
+  }' | jq .</code></pre>
+                </div>
+                <div class="codeblock" data-lang="bash">
+                  <div class="code-head"><span class="code-title">bash - status, restart, pause, resume, delete</span></div>
+                  <pre><code>$ curl -s http://connect:8083/connectors/jdbc-orders-source/status | jq .
+$ curl -s -X POST http://connect:8083/connectors/jdbc-orders-source/restart?includeTasks=true&amp;onlyFailed=true
+$ curl -s -X PUT http://connect:8083/connectors/jdbc-orders-source/pause
+$ curl -s -X PUT http://connect:8083/connectors/jdbc-orders-source/resume
+
+# Deletes connector config. Source offsets may remain in the offsets topic.
+$ curl -s -X DELETE http://connect:8083/connectors/jdbc-orders-source</code></pre>
+                </div>
+              </div>
+            </details>
+          </section>
+
+          <section id="integration-schemas">
+            <h3>Confluent Schema Registry</h3>
+            <p>
+              Schema Registry stores schemas by subject, assigns immutable IDs, checks compatibility, and lets serializers
+              put a schema ID in each record so consumers can resolve the writer schema at read time.
+            </p>
+            <div class="matrix">
+              <table>
+                <thead>
+                  <tr><th>Compatibility</th><th>Meaning</th><th>Common use</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><code>BACKWARD</code></td><td>New consumers can read data written with the previous schema.</td><td>Default for many event streams where consumers deploy after producers.</td></tr>
+                  <tr><td><code>FORWARD</code></td><td>Old consumers can read data written with the new schema.</td><td>Producer-first rollouts with conservative consumers.</td></tr>
+                  <tr><td><code>FULL</code></td><td>Backward and forward compatible for the last version.</td><td>Shared events with many independently deployed services.</td></tr>
+                  <tr><td><code>*_TRANSITIVE</code></td><td>Compatibility checked against all previous versions, not just the last.</td><td>Long-lived topics and strict data contracts.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <details class="accordion" open>
+              <summary>Schema Registry curl recipes</summary>
+              <div class="accordion-body">
+                <div class="codeblock" data-lang="bash">
+                  <div class="code-head"><span class="code-title">bash - subjects, versions, and compatibility</span></div>
+                  <pre><code>$ export SR="http://schema-registry:8081"
+$ curl -s "$SR/subjects" | jq .
+$ curl -s "$SR/subjects/orders.v1-value/versions" | jq .
+$ curl -s "$SR/config/orders.v1-value" | jq .
+
+$ curl -s -X PUT "$SR/config/orders.v1-value" \
+  -H 'Content-Type: application/vnd.schemaregistry.v1+json' \
+  -d '{"compatibility":"BACKWARD_TRANSITIVE"}' | jq .</code></pre>
+                </div>
+                <div class="codeblock" data-lang="json">
+                  <div class="code-head"><span class="code-title">json - Avro schema body for registration</span></div>
+                  <pre><code>{
+  "schemaType": "AVRO",
+  "schema": "{\"type\":\"record\",\"name\":\"OrderCreated\",\"namespace\":\"example.orders\",\"fields\":[{\"name\":\"order_id\",\"type\":\"string\"},{\"name\":\"total\",\"type\":\"double\"},{\"name\":\"created_at\",\"type\":{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}}]}"
+}</code></pre>
+                </div>
+                <div class="codeblock" data-lang="bash">
+                  <div class="code-head"><span class="code-title">bash - register and check compatibility</span></div>
+                  <pre><code>$ curl -s -X POST "$SR/subjects/orders.v1-value/versions" \
+  -H 'Content-Type: application/vnd.schemaregistry.v1+json' \
+  --data @order-created-schema.json | jq .
+
+$ curl -s -X POST "$SR/compatibility/subjects/orders.v1-value/versions/latest" \
+  -H 'Content-Type: application/vnd.schemaregistry.v1+json' \
+  --data @candidate-schema.json | jq .</code></pre>
+                </div>
+              </div>
+            </details>
+          </section>
+
+          <section>
+            <h3>Kafka Streams and ksqlDB overview</h3>
+            <div class="grid">
+              <article class="card">
+                <h3>Kafka Streams</h3>
+                <p>Use Kafka Streams when transformations belong in an application artifact with code review, tests, custom logic, and application-level deployment controls.</p>
+                <ul>
+                  <li>Tasks map to input partitions and run inside your app instances.</li>
+                  <li>State stores use local RocksDB and changelog topics for recovery.</li>
+                  <li>Repartition topics appear when keying changes before joins or aggregations.</li>
+                  <li>Monitor processing rate, commit latency, record lateness, and state restore time.</li>
+                </ul>
+              </article>
+              <article class="card">
+                <h3>ksqlDB</h3>
+                <p>Use ksqlDB when SQL-speed iteration matters: materialized views, stream-table joins, continuous queries, and quick operational exploration.</p>
+                <div class="codeblock" data-lang="bash">
+                  <div class="code-head"><span class="code-title">bash - ksqlDB CLI session</span></div>
+                  <pre><code>$ ksql http://ksqldb:8088
+ksql&gt; SHOW TOPICS;
+ksql&gt; CREATE STREAM orders_raw (order_id STRING, status STRING, total DOUBLE)
+      WITH (KAFKA_TOPIC='orders.v1', VALUE_FORMAT='JSON');
+ksql&gt; CREATE TABLE order_totals AS
+      SELECT status, COUNT(*) AS count, SUM(total) AS total
+      FROM orders_raw GROUP BY status EMIT CHANGES;</code></pre>
+                </div>
+              </article>
+            </div>
+          </section>
+        </section>
+
+        <section class="practice" id="practice-observability">
+          <p class="section-eyebrow">Practice 5</p>
+          <h2>Observability, Metrics, and Troubleshooting</h2>
+          <p class="practice-intro">
+            Kafka day-2 work is a loop: read broker health, correlate with client symptoms, check logs, and prove whether
+            the bottleneck is leader availability, disk, network, group rebalancing, serialization, or downstream processing.
+          </p>
+
+          <section id="observability-metrics">
+            <h3>JMX Exporter, Prometheus, and Grafana</h3>
+            <div class="grid">
+              <article class="card">
+                <h3>Enable JMX Exporter</h3>
+                <div class="codeblock" data-lang="bash">
+                  <div class="code-head"><span class="code-title">bash - java agent for a broker process</span></div>
+                  <pre><code>$ export KAFKA_OPTS="-javaagent:/opt/jmx/jmx_prometheus_javaagent.jar=9404:/opt/jmx/kafka-jmx.yml"
+$ bin/kafka-server-start.sh config/kraft/server.properties</code></pre>
+                </div>
+                <div class="codeblock" data-lang="yaml">
+                  <div class="code-head"><span class="code-title">yaml - compact kafka-jmx.yml</span></div>
+                  <pre><code>lowercaseOutputName: true
+lowercaseOutputLabelNames: true
+rules:
+  - pattern: 'kafka.server&lt;type=(.+), name=(.+)&gt;&lt;&gt;Value'
+    name: kafka_server_$1_$2
+  - pattern: 'kafka.network&lt;type=(.+), name=(.+)&gt;&lt;&gt;Value'
+    name: kafka_network_$1_$2
+  - pattern: 'kafka.log&lt;type=(.+), name=(.+)&gt;&lt;&gt;Value'
+    name: kafka_log_$1_$2</code></pre>
+                </div>
+              </article>
+              <article class="card">
+                <h3>Prometheus scrape</h3>
+                <div class="codeblock" data-lang="yaml">
+                  <div class="code-head"><span class="code-title">yaml - scrape broker metrics</span></div>
+                  <pre><code>scrape_configs:
+  - job_name: kafka-brokers
+    static_configs:
+      - targets:
+          - kafka-1:9404
+          - kafka-2:9404
+          - kafka-3:9404
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance</code></pre>
+                </div>
+                <p>In Strimzi, prefer the operator's metrics examples or PodMonitor/ServiceMonitor integration if you run the Prometheus Operator.</p>
+              </article>
+            </div>
+
+            <div class="metric-table">
+              <table>
+                <thead>
+                  <tr><th>Metric or MBean</th><th>Why it matters</th><th>First response</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><code>UnderReplicatedPartitions</code></td><td>Followers are behind or unavailable.</td><td>Check broker health, disk, network, ISR shrink logs, and reassignment activity.</td></tr>
+                  <tr><td><code>OfflinePartitionsCount</code></td><td>No usable leader exists for at least one partition.</td><td>Treat as urgent; recover brokers or restore replicas before accepting writes.</td></tr>
+                  <tr><td><code>ActiveControllerCount</code></td><td>Should be exactly 1 from a cluster perspective in broker metrics.</td><td>Investigate controller churn or split monitoring labels.</td></tr>
+                  <tr><td><code>NetworkProcessorAvgIdlePercent</code></td><td>Low idle means network threads are saturated.</td><td>Review request rate, connection count, TLS cost, broker CPU, and client batching.</td></tr>
+                  <tr><td><code>RequestQueueSize</code></td><td>Requests are waiting before processing.</td><td>Look for disk latency, CPU saturation, controller events, or overloaded brokers.</td></tr>
+                  <tr><td><code>BytesInPerSec / BytesOutPerSec</code></td><td>Throughput and replication pressure.</td><td>Compare by broker and topic; rebalance hot partitions or keys.</td></tr>
+                  <tr><td><code>consumer lag</code></td><td>Consumers are behind the log end offset.</td><td>Scale consumers up to partition count, optimize processing, or fix downstream slowness.</td></tr>
+                  <tr><td><code>FailedProduceRequestsPerSec</code></td><td>Writes are failing.</td><td>Check ISR, authorization, message size, timeouts, and serialization errors.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section>
+            <h3>Logs and where to look</h3>
+            <div class="grid">
+              <article class="card">
+                <h3>Bare metal or VM</h3>
+                <ul>
+                  <li>Process logs are usually controlled by <code>config/log4j.properties</code> or <code>config/log4j2.yaml</code>.</li>
+                  <li>Broker logs commonly include <code>server.log</code>, <code>controller.log</code>, <code>state-change.log</code>, and <code>kafka-request.log</code>.</li>
+                  <li>Data logs live under <code>log.dirs</code>, with one directory per topic partition.</li>
+                </ul>
+              </article>
+              <article class="card">
+                <h3>Kubernetes and Docker</h3>
+                <div class="codeblock" data-lang="bash">
+                  <div class="code-head"><span class="code-title">bash - logs from common runtimes</span></div>
+                  <pre><code>$ kubectl logs -n kafka pod/events-brokers-0 -c kafka --tail=200
+$ kubectl logs -n kafka deploy/strimzi-cluster-operator --tail=200
+$ kubectl describe pod -n kafka events-brokers-0
+$ docker logs kafka --tail 200
+$ docker exec kafka ls -lah /var/lib/kafka/data</code></pre>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section id="observability-runbooks">
+            <h3>Troubleshooting runbooks</h3>
+            <div class="grid">
+              <article class="card runbook">
+                <h3>Under-replicated partitions</h3>
+                <ol>
+                  <li>Run <code>kafka-topics.sh --describe</code> and identify partitions where ISR is smaller than replicas.</li>
+                  <li>Check broker logs for fetcher, disk, network, and authorization errors.</li>
+                  <li>Verify disk fullness and IO latency on follower brokers.</li>
+                  <li>Avoid broker restarts until you know whether replicas are catching up or falling further behind.</li>
+                </ol>
+                <div class="codeblock" data-lang="bash">
+                  <div class="code-head"><span class="code-title">bash - identify ISR shrinkage</span></div>
+                  <pre><code>$ bin/kafka-topics.sh --bootstrap-server "$BOOTSTRAP" --describe \
+  | awk '/Isr:/ &amp;&amp; $0 !~ /Replicas: ([^ ]+) Isr: \1/ { print }'</code></pre>
+                </div>
+              </article>
+              <article class="card runbook">
+                <h3>Consumer lag spike</h3>
+                <ol>
+                  <li>Check if lag is all partitions or a single hot partition.</li>
+                  <li>Look for repeated rebalances in consumer logs.</li>
+                  <li>Compare processing time with <code>max.poll.interval.ms</code>.</li>
+                  <li>Scale consumers only up to partition count; beyond that, instances idle.</li>
+                </ol>
+                <div class="codeblock" data-lang="bash">
+                  <div class="code-head"><span class="code-title">bash - lag detail by partition</span></div>
+                  <pre><code>$ bin/kafka-consumer-groups.sh --bootstrap-server "$BOOTSTRAP" \
+  --describe --group "$GROUP" \
+  | sort -k6 -nr | head -20</code></pre>
+                </div>
+              </article>
+              <article class="card runbook">
+                <h3>Partition rebalance loop</h3>
+                <ul>
+                  <li>Increase <code>max.poll.interval.ms</code> if processing batches legitimately takes longer than the default.</li>
+                  <li>Decrease batch size or work per poll if processing is too chunky.</li>
+                  <li>Use static membership with <code>group.instance.id</code> for stable stateful consumers.</li>
+                  <li>Prefer cooperative assignors where client versions support them.</li>
+                </ul>
+              </article>
+              <article class="card runbook">
+                <h3>Connect task failed</h3>
+                <ul>
+                  <li>Read <code>/connectors/&lt;name&gt;/status</code>; task trace often points to serialization, auth, DB, or sink errors.</li>
+                  <li>Restart only failed tasks first.</li>
+                  <li>Check dead letter queue topic if configured.</li>
+                  <li>Confirm connector plugin versions match worker and Kafka client compatibility.</li>
+                </ul>
+                <div class="codeblock" data-lang="bash">
+                  <div class="code-head"><span class="code-title">bash - failed task trace</span></div>
+                  <pre><code>$ curl -s http://connect:8083/connectors/jdbc-orders-source/status | jq '.tasks[] | select(.state!="RUNNING")'
+$ curl -s -X POST 'http://connect:8083/connectors/jdbc-orders-source/restart?includeTasks=true&amp;onlyFailed=true'</code></pre>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <details class="accordion">
+            <summary>UI tools: Kafdrop and UI for Apache Kafka</summary>
+            <div class="accordion-body">
+              <p>
+                UI tools are useful for browsing topics, partitions, consumer groups, and sample messages. Treat them as
+                operational consoles: protect with authentication, network policy, and read-only permissions unless you
+                intentionally allow topic or record actions.
+              </p>
+              <div class="codeblock" data-lang="yaml">
+                <div class="code-head"><span class="code-title">yaml - local UI for Apache Kafka lab</span></div>
+                <pre><code>services:
+  kafka-ui:
+    image: provectuslabs/kafka-ui:&lt;ui-version&gt;
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081</code></pre>
+              </div>
+            </div>
+          </details>
+        </section>
+
+        <section class="practice" id="references">
+          <p class="section-eyebrow">References</p>
+          <h2>Primary documentation</h2>
+          <p class="practice-intro">Use these as the source of truth before applying a version-specific production change.</p>
+          <div class="refs">
+            <a href="https://kafka.apache.org/43/">Apache Kafka 4.3 documentation</a>
+            <a href="https://kafka.apache.org/43/getting-started/zk2kraft/">Apache Kafka KRaft vs ZooKeeper</a>
+            <a href="https://kafka.apache.org/43/operations/basic-kafka-operations/">Apache Kafka basic operations</a>
+            <a href="https://kafka.apache.org/43/operations/monitoring/">Apache Kafka monitoring</a>
+            <a href="https://kafka.apache.org/43/kafka-connect/">Apache Kafka Connect</a>
+            <a href="https://strimzi.io/docs/operators/latest/full/deploying.html">Strimzi deployment and management</a>
+            <a href="https://docs.confluent.io/platform/current/schema-registry/index.html">Confluent Schema Registry</a>
+            <a href="https://docs.confluent.io/platform/current/ksqldb/index.html">ksqlDB documentation</a>
+            <a href="https://github.com/prometheus/jmx_exporter">Prometheus JMX Exporter</a>
+          </div>
+        </section>
+
+        <footer>
+          <p>Apache Kafka Cookbook. Standalone HTML page with embedded CSS and vanilla JavaScript. Use commands carefully in production.</p>
+        </footer>
+      </main>
+    </div>
+
+    <script>
+      (function () {
+        var menuButton = document.getElementById("menu-button");
+        var sidebar = document.getElementById("sidebar");
+        var navLinks = Array.prototype.slice.call(document.querySelectorAll(".toc a[href^='#']"));
+
+        function setNav(open) {
+          document.body.classList.toggle("nav-open", open);
+          if (menuButton) {
+            menuButton.setAttribute("aria-expanded", String(open));
+          }
+        }
+
+        if (menuButton) {
+          menuButton.addEventListener("click", function () {
+            setNav(!document.body.classList.contains("nav-open"));
+          });
+        }
+
+        navLinks.forEach(function (link) {
+          link.addEventListener("click", function (event) {
+            var target = document.querySelector(link.getAttribute("href"));
+            if (!target) {
+              return;
+            }
+            event.preventDefault();
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+            history.replaceState(null, "", link.getAttribute("href"));
+            setNav(false);
+          });
+        });
+
+        document.querySelectorAll(".codeblock").forEach(function (block) {
+          var code = block.querySelector("pre code");
+          var head = block.querySelector(".code-head");
+          if (!code || !head) {
+            return;
+          }
+          var button = document.createElement("button");
+          button.type = "button";
+          button.className = "copy-button";
+          button.textContent = "Copy";
+          head.appendChild(button);
+          button.addEventListener("click", function () {
+            navigator.clipboard.writeText(code.innerText).then(function () {
+              button.textContent = "Copied";
+              button.classList.add("is-copied");
+              window.setTimeout(function () {
+                button.textContent = "Copy";
+                button.classList.remove("is-copied");
+              }, 1400);
+            }).catch(function () {
+              button.textContent = "Select";
+            });
+          });
+        });
+
+        if ("IntersectionObserver" in window) {
+          var sections = navLinks.map(function (link) {
+            return document.querySelector(link.getAttribute("href"));
+          }).filter(Boolean);
+          var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+              if (!entry.isIntersecting) {
+                return;
+              }
+              navLinks.forEach(function (link) {
+                link.classList.toggle("is-active", link.getAttribute("href") === "#" + entry.target.id);
+              });
+            });
+          }, { rootMargin: "-20% 0px -70% 0px", threshold: 0.01 });
+          sections.forEach(function (section) {
+            observer.observe(section);
+          });
+        }
+
+        document.addEventListener("keydown", function (event) {
+          if (event.key === "Escape") {
+            setNav(false);
+          }
+        });
+
+        document.addEventListener("click", function (event) {
+          if (!document.body.classList.contains("nav-open")) {
+            return;
+          }
+          if (sidebar && sidebar.contains(event.target)) {
+            return;
+          }
+          if (menuButton && menuButton.contains(event.target)) {
+            return;
+          }
+          setNav(false);
+        });
+      })();
+    </script>
+  </body>
+</html>
